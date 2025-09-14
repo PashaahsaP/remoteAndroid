@@ -1,0 +1,199 @@
+package com.example.wmsRemote.viewModel
+
+import android.widget.Toast
+import androidx.core.text.isDigitsOnly
+import androidx.lifecycle.LiveData
+import androidx.lifecycle.MutableLiveData
+import androidx.lifecycle.ViewModel
+import androidx.lifecycle.viewModelScope
+import com.example.wmsRemote.Adapters.AdapterHelper
+import com.example.wmsRemote.AssemblyActivity
+import com.example.wmsRemote.Classes.AssemblyItem
+import com.example.wmsRemote.data.db.AssemblySession
+import com.example.wmsRemote.data.db.MainDB
+import com.example.wmsRemote.data.enums.StatusType
+import com.example.wmsRemote.models.client
+import com.example.wmswherther.data.db.Request
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
+import org.json.JSONObject
+
+class AssemblyViewModel : ViewModel() {
+
+    private val ip = "192.168.6.208"
+    private val _sessions = MutableLiveData<List<AssemblySession>>()
+    private val _menuStatus = MutableLiveData<Int>()
+    private val _assemblyStatus = MutableLiveData<Int>()
+    private val _activeElement = MutableLiveData<AssemblyItem>()
+    private val _items = MutableLiveData<List<AssemblyItem>>()
+    private val _count = MutableLiveData<Int>()
+    val sessions: LiveData<List<AssemblySession>> get() = _sessions
+    val menuStatus: LiveData<Int> get() = _menuStatus
+    val assemblyStatus: LiveData<Int> get() = _assemblyStatus
+    val activeElement: LiveData<AssemblyItem> get() = _activeElement
+    val items: LiveData<List<AssemblyItem>> get() = _items
+    val count: LiveData<Int>get() = _count
+
+
+    fun loadCollection(db: MainDB): Unit
+    {
+        var client: Request = Request()
+        viewModelScope.launch {
+            var data : List<AssemblySession> = listOf()
+            withContext(Dispatchers.IO) {
+                data =  client.getAllAssemblySession(ip)
+                    .filter { item-> item["status"] == "created"}
+                    .map { item ->
+                    var statusVal = when(item["status"].toString()){
+                        "created" -> StatusType.Created.ordinal
+                        "work" -> StatusType.Work.ordinal
+                        "enterCell"-> StatusType.EnterCell.ordinal
+                        "enterBarcode"->StatusType.EnterBarcode.ordinal
+                        "enterCount"->StatusType.EnterCount.ordinal
+                        "finished"->StatusType.Finished.ordinal
+                        "canceled"->StatusType.Canceled.ordinal
+                        else -> 999
+                    }
+                    AssemblySession(
+                        id =  item["id"].toString().toInt(),
+                        supplier = item["supplierId"].toString().toInt(),
+                        out = client.getCellById(ip, item["outCell"].toString())["name"].toString(),
+                        status = statusVal,
+                        created_at = item["createdAt"].toString(),
+                        finished_at = item["finishedAt"].toString(),
+                        amount = item["amount"].toString().toInt(),
+                        lines = item["lines"].toString().toInt()
+                    )
+                }
+
+            }
+            withContext(Dispatchers.Main){
+                _sessions.value = data
+            }
+
+        }
+
+    }
+    fun getItem(count: Int) : AssemblyItem{
+        val data = _items.value?.get(count)
+        if(data != null){
+            return data
+        }else{
+            return  AssemblyItem(1,2,1,2,3,"","",1, listOf())
+        }
+    }
+    fun changeMenuStatus(status: Int){
+        _menuStatus.value = status
+    }
+    fun setActiveElement(element: AssemblyItem){
+        _activeElement.value = element
+    }
+    fun loadItems(sessionId: Int, db: MainDB, supplierId: Int)
+    {
+        viewModelScope.launch {
+            var items: List<AssemblyItem> = listOf()
+            withContext(Dispatchers.IO){
+                var func = AdapterHelper.getAssemblyItems[supplierId]
+                items = func!!.invoke(sessionId, db)
+            }
+            withContext(Dispatchers.Main) {
+                _count.value = 0
+                setActiveElement(items[count.value ?: 0])
+                _items.value = items
+            }
+        }
+    }
+    fun removeElementFromCollection(elem: AssemblyItem?){
+        if(elem != null)
+            _items.value =  _items.value?.minusElement(elem)
+    }
+
+    fun changeAssemblyStatus(enterCell: Int) {
+        _assemblyStatus.value = enterCell
+    }
+
+    fun searchBtnHandler(trim: String, assemblyActivity: AssemblyActivity, db: MainDB) {
+        if(assemblyStatus.value == StatusType.EnterCell.ordinal) {
+            if (activeElement.value!!.cell != trim) {
+                var act = items.value?.firstOrNull { item -> item.cell == trim }
+                if(act != null) {
+                    setActiveElement(act)
+                }
+            }
+        }
+
+
+        var isHaveBarcodeCount = activeElement.value?.barcodes?.filter { item -> item == trim }
+       if(activeElement.value!!.cell == trim && assemblyStatus.value == StatusType.EnterCell.ordinal){
+            changeAssemblyStatus(StatusType.EnterBarcode.ordinal)
+        }else if (isHaveBarcodeCount?.count() != 0 && assemblyStatus.value == StatusType.EnterBarcode.ordinal){
+            changeAssemblyStatus(StatusType.EnterCount.ordinal)
+        }
+    }
+    suspend fun searchBtnHandlerCount(trim: String, assemblyActivity: AssemblyActivity, db: MainDB) {
+        val amount = activeElement.value?.amount
+       if(trim.isDigitsOnly()) {
+           val amountInt = trim.toInt()
+           if (amountInt > 0 && amountInt <= amount.toString().toInt()) {
+               val cur = activeElement.value
+               var assItem = client.getAssemblyBorkItemById(ip, cur!!.assemblyItemId)
+               client.updateAssemblyBorkItem(
+                   ip, AssemblyItem(
+                       assemblyItemId = assItem["id"].toString().toInt(),
+                       barcodes = listOf(),
+                       supplierId = 1,
+                       catalogId = cur.catalogId,
+                       cell = cur.cell,
+                       status = cur.status,
+                       name = cur.name,
+                       amount = cur.amount,
+                       sessionId = cur.sessionId,
+                   )
+               )
+               if (_items.value?.count() == 1) {
+                   var assemblyId = assItem["assemblyId"].toString()
+                   var assembly = client.getAssemblySessionById(ip, assemblyId)
+                   client.updateAssemblySession(ip, AssemblySession(
+                       id = assembly["id"].toString().toInt(),
+                       supplier = 1,
+                       out = "1",
+                       status = 1,
+                       finished_at = "",
+                       created_at = "",
+                       lines = assembly["lines"].toString().toInt(),
+                       amount =  assembly["amount"].toString().toInt()
+                   ))
+                   viewModelScope.launch {
+                       withContext(Dispatchers.Main) {
+                           _sessions.value = listOf()
+                           loadCollection(db)
+                           changeMenuStatus(0)
+                       }
+                   }
+               } else
+                   viewModelScope.launch {
+                       withContext(Dispatchers.Main) {
+                           removeElementFromCollection(_activeElement.value)
+                           val next = getItem(_count.value ?: 0)
+                           setActiveElement(next)
+                       }
+                   }
+
+
+            }else{
+                viewModelScope.launch {
+                    withContext(Dispatchers.Main){
+                        Toast.makeText(assemblyActivity,"Число должно быть больше 0 и не больше ${amount}", Toast.LENGTH_SHORT).show()
+                    }
+                }
+            }
+        }else{
+           viewModelScope.launch {
+               withContext(Dispatchers.Main){
+                   Toast.makeText(assemblyActivity,"Должны быть только числа", Toast.LENGTH_SHORT).show()
+               }
+           }
+        }
+    }
+}
