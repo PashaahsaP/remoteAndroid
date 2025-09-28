@@ -8,6 +8,7 @@ import androidx.room.migration.Migration
 import androidx.sqlite.db.SupportSQLiteDatabase
 
 @Database(entities = [
+
     Cell::class,
     CatalogAtomy::class,
     CatalogBork::class,
