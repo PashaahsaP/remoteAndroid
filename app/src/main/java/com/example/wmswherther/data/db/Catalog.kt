@@ -9,8 +9,9 @@ import androidx.room.PrimaryKey
         ForeignKey(entity = Supplier::class, parentColumns = ["id"], childColumns = ["supplierId"], onDelete = ForeignKey.CASCADE)
     ])
 data class Catalog(
-    @PrimaryKey(autoGenerate = true) val id: Long = 0,
+    @PrimaryKey(autoGenerate = true) val id: String = 0,
     val name: String,
-    val supplierId: Long?,
+    val sku: String?,
+    val supplierId: Long,
     val other: String? // JSON
 )
