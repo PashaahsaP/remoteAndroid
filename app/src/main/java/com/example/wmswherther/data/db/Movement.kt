@@ -17,10 +17,10 @@ import com.example.wmsRemote.data.db.Cell
     indices = [Index("cellFromId"), Index("cellToId"), Index("userId"), Index("operationTypeId")]
 )
 data class Movement(
-    @PrimaryKey(autoGenerate = true) val id: Long = 0,
-    val cellFromId: Long?,
-    val cellToId: Long?,
-    val userId: Long?,
+    @PrimaryKey(autoGenerate = false) val id: String,
+    val cellFromId: String,
+    val cellToId: String,
+    val userId: String?,
     val executedAt: Long,
     val operationTypeId: Long
 )

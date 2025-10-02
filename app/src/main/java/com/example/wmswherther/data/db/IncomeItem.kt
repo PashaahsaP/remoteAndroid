@@ -10,9 +10,9 @@ import androidx.room.PrimaryKey
         ForeignKey(entity = SessionIncome::class, parentColumns = ["id"], childColumns = ["sessionId"], onDelete = ForeignKey.CASCADE)
     ], indices = [Index("sessionId")])
 data class IncomeItem(
-    @PrimaryKey(autoGenerate = true) val id: Long = 0,
-    val sessionId: Long,
-    val goodsId: Long,
+    @PrimaryKey(autoGenerate = false) val id: String,
+    val sessionId: String,
+    val goodsId: String,
     val status: String,
     val other: String? // JSON
 )

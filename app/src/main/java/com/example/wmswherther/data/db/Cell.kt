@@ -12,13 +12,12 @@ import com.example.wmswherther.data.db.CellType
     foreignKeys = [
         ForeignKey(entity = CellType::class, parentColumns = ["id"], childColumns = ["typeCellId"])
     ],
-    indices = [Index("typeCellId")]
+    indices = [Index("typeCellId"), Index("name")]
 )
 data class Cell (
-    @PrimaryKey(autoGenerate = true)
-    var id: Int? = null,
+    @PrimaryKey(autoGenerate = false)  var id: String,
     @ColumnInfo(name = "typeCellId")
-    val typeCellId: Long,
+    val typeCellId: String,
     @ColumnInfo(name = "name")
     var name: String,
 )

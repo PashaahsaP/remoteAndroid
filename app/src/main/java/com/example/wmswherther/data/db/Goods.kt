@@ -15,10 +15,10 @@ import com.example.wmsRemote.data.db.Cell
     indices = [Index("cellId"), Index("catalogId")]
 )
 data class Goods(
-    @PrimaryKey(autoGenerate = true) val id: Long = 0,
+    @PrimaryKey(autoGenerate = false) val id: String,
     val amount: Int,
-    val cellId: Long,
-    val catalogId: Long,
+    val cellId: String,
+    val catalogId: String,
     val createdAt: Long,
     val other: String? // JSON
 )

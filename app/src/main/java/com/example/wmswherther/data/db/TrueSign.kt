@@ -12,9 +12,9 @@ import com.example.wmsRemote.data.db.Cell
 
     ])
 data class TrueSign(
-    @PrimaryKey(autoGenerate = true) val id: Long = 0,
-    val goodsId: Long,
-    val catalogId: Long,
+    @PrimaryKey(autoGenerate = false) val id: String,
+    val goodsId: String,
+    val catalogId: String,
     val name: String?,
     val other: String? // JSON
 )

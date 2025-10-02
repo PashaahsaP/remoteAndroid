@@ -32,6 +32,7 @@ import com.example.wmswherther.data.db.Request
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import java.util.UUID
 
 class AssemblyActivity : AppCompatActivity() {
     private var _binding: ActivityAssemblyBinding? = null
@@ -42,6 +43,7 @@ class AssemblyActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
         var color = ContextCompat.getColor(this, R.color.regularBlue)
+        val id = UUID.randomUUID().toString()
         val db = MainDB.getDB(this)
         _binding = ActivityAssemblyBinding.inflate(layoutInflater)
         setContentView(binding.root)

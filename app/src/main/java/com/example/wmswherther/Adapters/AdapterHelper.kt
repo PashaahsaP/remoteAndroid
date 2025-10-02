@@ -47,7 +47,6 @@ import java.time.LocalDateTime
 object AdapterHelper {
     var client = Request()
     var ip = "192.168.6.208"
-
     // <editor-fold desc="assembly code">
     val getAssemblyItems: Map<Int, suspend (sessionId: Int, db: MainDB) -> List<AssemblyItem>> = mapOf(
         1 to { sessionId, db ->

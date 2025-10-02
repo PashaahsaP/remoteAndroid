@@ -14,14 +14,14 @@ import com.example.wmsRemote.data.db.Cell
 
     ])
 data class SessionOutcome(
-    @PrimaryKey(autoGenerate = true) val id: Long = 0,
-    val supplierId: Long?,
-    val toCellId: Long?,
-    val outCellId: Long?,
+    @PrimaryKey(autoGenerate = false) val id: String,
+    val supplierId: String?,
+    val toCellId: String?,
+    val outCellId: String?,
     val status: Int,
     val createdAt: Long,
     val startedAt: Long?,
     val finishedAt: Long?,
-    val pickerSessionId: Long?,
+    val pickerSessionId: String?,
     val other: String? // JSON
 )

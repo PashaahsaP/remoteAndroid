@@ -14,9 +14,9 @@ import com.example.wmsRemote.data.db.GoodsBork
     ], indices = [Index("name")])
 
 data class Barcode(
-    @PrimaryKey(autoGenerate = true) val id: Long = 0,
+    @PrimaryKey(autoGenerate = false) val id: String,
     val name: String,
-    val catalogId: Long,
-    val supplierId: Long?,
+    val catalogId: String,
+    val supplierId: String?,
     val other: String? // JSON
 )

@@ -31,8 +31,7 @@ abstract class MainDB :RoomDatabase(){
                 MainDB::class.java,
                 name="Wms.db"
             ).addMigrations(
-                MIGRATION_1_2,
-                MIGRATION_2_3
+                MIGRATION_1_2
             )
                 //.fallbackToDestructiveMigration()45345345  99999999999999999
                 .build()
@@ -42,134 +41,334 @@ abstract class MainDB :RoomDatabase(){
 }
 val MIGRATION_1_2 = object : Migration(1, 2) {
     override fun migrate(database: SupportSQLiteDatabase) {
-        // Create the 'cells' table
-        database.execSQL(
-            """
+        // <editor-fold desc="Barcodes">
+
+
+            database.execSQL(
+                """
+                CREATE TABLE IF NOT EXISTS barcodes (
+                    id TEXT NOT NULL PRIMARY KEY,
+                    name TEXT NOT NULL,
+                    catalogId TEXT NOT NULL,
+                    supplierId TEXT,
+                    other TEXT,
+                    FOREIGN KEY(catalogId) REFERENCES Catalog(Id) ON DELETE CASCADE,
+                    FOREIGN KEY(supplierId) REFERENCES Supplier(Id) ON DELETE CASCADE
+                )
+                """
+            )
+            database.execSQL("CREATE INDEX IF NOT EXISTS index_barcodes_name ON barcodes(name)")
+            // </editor-fold>
+        // <editor-fold desc="Catalog">
+            database.execSQL(
+                    """
+                        CREATE TABLE IF NOT EXISTS catalogs (
+                            id TEXT NOT NULL PRIMARY KEY,
+                            name TEXT NOT NULL,
+                            sku TEXT,
+                            supplierId TEXT NOT NULL,
+                            other TEXT,
+                            FOREIGN KEY(supplierId) REFERENCES Supplier(id) ON DELETE CASCADE
+                        )
+                        """
+                )
+                database.execSQL("CREATE INDEX IF NOT EXISTS index_catalogs_name ON catalogs(name)")
+                database.execSQL("CREATE INDEX IF NOT EXISTS index_catalogs_sku ON catalogs(sku)")
+            // </editor-fold>
+        // <editor-fold desc="Cells">
+        database.execSQL("""
             CREATE TABLE IF NOT EXISTS cells (
-                id INTEGER PRIMARY KEY AUTOINCREMENT,
-                name TEXT NOT NULL
-            )
-        """
-        )
-        // Create the 'catalog' table
-        database.execSQL(
-            """
-            CREATE TABLE IF NOT EXISTS catalog_atomy (
-                id INTEGER PRIMARY KEY AUTOINCREMENT,
-                name TEXT,
-                firstBarcode TEXT NOT NULL,
-                secondBarcode TEXT
-            )
-        """
-        )
-        database.execSQL(
-            """
-            CREATE TABLE IF NOT EXISTS catalog_bork (
-                id INTEGER PRIMARY KEY AUTOINCREMENT,
-                name TEXT NOT NULL
-            )
-        """
-        )
-        // Create the 'goods' table
-        database.execSQL(
-            """
-            CREATE TABLE IF NOT EXISTS goods_atomy (
-                Id INTEGER PRIMARY KEY AUTOINCREMENT,
-                catalogId INTEGER NOT NULL,
-                cellId INTEGER NOT NULL,
-                amount INTEGER NOT NULL,
-                TE TEXT NOT NULL,
-                date TEXT NOT NULL,
-                createdAt TEXT NOT NULL,
-                FOREIGN KEY (catalogId) REFERENCES catalog_atomy(id) ON DELETE CASCADE,
-                FOREIGN KEY (cellId) REFERENCES cells(id) ON DELETE CASCADE
-            )
-        """
-        )
-        database.execSQL(
-            """
-            CREATE TABLE IF NOT EXISTS goods_bork (
-                Id INTEGER PRIMARY KEY AUTOINCREMENT,
-                catalogId INTEGER NOT NULL,
-                cellId INTEGER NOT NULL,
-                amount INTEGER NOT NULL,
-                createdAt TEXT NOT NULL,
-                FOREIGN KEY (catalogId) REFERENCES catalog_bork(id) ON DELETE CASCADE,
-                FOREIGN KEY (cellId) REFERENCES cells(id) ON DELETE CASCADE
-            )
-        """
-        )
-        database.execSQL(
-            """
-            CREATE TABLE IF NOT EXISTS barcode_bork (
-                Id INTEGER PRIMARY KEY AUTOINCREMENT,
-                catalogId INTEGER NOT NULL,
+                id TEXT NOT NULL PRIMARY KEY,
+                typeCellId TEXT NOT NULL,
                 name TEXT NOT NULL,
-                type TEXT,
-                FOREIGN KEY (catalogId) REFERENCES catalog_bork(id) ON DELETE CASCADE,
+                FOREIGN KEY(typeCellId) REFERENCES CellType(id)
             )
-        """
-        )
-        database.execSQL("CREATE INDEX IF NOT EXISTS index_goods_atomy_TE ON goods_atomy(TE)")
-        database.execSQL("CREATE INDEX IF NOT EXISTS index_barcode_bork_name ON barcode_bork(name)")
-    }
-}
-val MIGRATION_2_3 = object : Migration(2, 3) {
-    override fun migrate(database: SupportSQLiteDatabase) {
-        // Create the 'supplier' table
-        database.execSQL(
-            """
-            CREATE TABLE IF NOT EXISTS assembly_session (
-                id INTEGER PRIMARY KEY AUTOINCREMENT,
+        """)
+
+        // Создаем индексы
+        database.execSQL("CREATE INDEX IF NOT EXISTS index_typeCellId ON cells(typeCellId)")
+        database.execSQL("CREATE INDEX IF NOT EXISTS index_name ON cells(name)")
+        // </editor-fold>
+        // <editor-fold desc="CellTypes">
+        database.execSQL("""
+            CREATE TABLE IF NOT EXISTS cell_types (
+                id TEXT NOT NULL PRIMARY KEY,
+                type TEXT NOT NULL,
+                mask TEXT,
+                other TEXT
+            )
+        """)
+        // </editor-fold>
+        // <editor-fold desc="Changes">
+        database.execSQL("""
+            CREATE TABLE IF NOT EXISTS changes (
+                id TEXT NOT NULL PRIMARY KEY,
+                entityId TEXT NOT NULL,
+                operationTypeId TEXT NOT NULL,
                 status INTEGER NOT NULL,
-                supplier INTEGER NOT NULL,
+                supplierId TEXT,
+                other TEXT,
+                FOREIGN KEY(operationTypeId) REFERENCES OperationType(id) ON DELETE CASCADE,
+                FOREIGN KEY(supplierId) REFERENCES Supplier(id) ON DELETE CASCADE
+            )
+        """)
+        database.execSQL("CREATE INDEX IF NOT EXISTS index_changes_operationTypeId ON changes(operationTypeId)")
+        database.execSQL("CREATE INDEX IF NOT EXISTS index_changes_supplierId ON changes(supplierId)")
+        // </editor-fold>
+        // <editor-fold desc="Credential">
+        database.execSQL("""
+            CREATE TABLE IF NOT EXISTS credentials (
+                id TEXT NOT NULL PRIMARY KEY,
+                type TEXT NOT NULL,
+                other TEXT
+            )
+        """)
+        // </editor-fold>
+        // <editor-fold desc="Goods">
+        database.execSQL("""
+            CREATE TABLE IF NOT EXISTS goods (
+                id TEXT NOT NULL PRIMARY KEY,
                 amount INTEGER NOT NULL,
-                createdAt TEXT NOT NULL,
-                finishedAt TEXT NOT NULL,
-                out TEXT
+                cellId TEXT NOT NULL,
+                catalogId TEXT NOT NULL,
+                createdAt INTEGER NOT NULL,
+                other TEXT,
+                FOREIGN KEY(cellId) REFERENCES Cell(id),
+                FOREIGN KEY(catalogId) REFERENCES Catalog(id)
             )
-            """
-        )
-        database.execSQL(
-            """
-            CREATE TABLE IF NOT EXISTS assembly_bork_item (
-                id INTEGER PRIMARY KEY AUTOINCREMENT,
-                status INTEGER NOT NULL,
-                createdAt TEXT NOT NULL,
-                finishedAt TEXT NOT NULL,
-                FOREIGN KEY (goodsId) REFERENCES goods_bork(id) ON DELETE CASCADE,
-                FOREIGN KEY (assemblyId) REFERENCES assembly_session(id) ON DELETE CASCADE
+        """)
+        database.execSQL("CREATE INDEX IF NOT EXISTS index_goods_cellId ON goods(cellId)")
+        database.execSQL("CREATE INDEX IF NOT EXISTS index_goods_catalogId ON goods(catalogId)")
+        // </editor-fold>
+        // <editor-fold desc="IncomeItems">
+        database.execSQL("""
+            CREATE TABLE IF NOT EXISTS income_items (
+                id TEXT NOT NULL PRIMARY KEY,
+                sessionId TEXT NOT NULL,
+                goodsId TEXT NOT NULL,
+                status TEXT NOT NULL,
+                other TEXT,
+                FOREIGN KEY(sessionId) REFERENCES SessionIncome(id) ON DELETE CASCADE
             )
-            """//goods
-        )
-        database.execSQL(
-            """
-            CREATE TABLE IF NOT EXISTS assembly_atomy_item (
-                id INTEGER PRIMARY KEY AUTOINCREMENT,
-                status INTEGER NOT NULL,
-                createdAt TEXT NOT NULL,
-                finishedAt TEXT NOT NULL,
-                FOREIGN KEY (goodsId) REFERENCES goods_atomy(id) ON DELETE CASCADE,
-                FOREIGN KEY (assemblyId) REFERENCES assembly_session(id) ON DELETE CASCADE
-            )
-            """//goods
-        )
-        database.execSQL(
-            """
-            CREATE TABLE IF NOT EXISTS shipment (
-                id INTEGER PRIMARY KEY AUTOINCREMENT,
-                status INTEGER NOT NULL,
-                out TEXT NOT NULL
-                createdAt TEXT NOT NULL,
-                finishedAt TEXT NOT NULL,
-                FOREIGN KEY (assemblyId) REFERENCES assembly_session(id) ON DELETE CASCADE
-            )
-            """//goods
-        )
+        """)
 
+        database.execSQL("CREATE INDEX IF NOT EXISTS index_income_items_sessionId ON income_items(sessionId)")
+        // </editor-fold>
+        // <editor-fold desc="Movements">
+        database.execSQL("""
+            CREATE TABLE IF NOT EXISTS movements (
+                id TEXT NOT NULL PRIMARY KEY,
+                cellFromId TEXT NOT NULL,
+                cellToId TEXT NOT NULL,
+                userId TEXT,
+                executedAt INTEGER NOT NULL,
+                operationTypeId INTEGER NOT NULL,
+                FOREIGN KEY(cellFromId) REFERENCES Cell(id),
+                FOREIGN KEY(cellToId) REFERENCES Cell(id),
+                FOREIGN KEY(userId) REFERENCES User(id),
+                FOREIGN KEY(operationTypeId) REFERENCES OperationType(id)
+            )
+        """)
 
+        database.execSQL("CREATE INDEX IF NOT EXISTS index_movements_cellFromId ON movements(cellFromId)")
+        database.execSQL("CREATE INDEX IF NOT EXISTS index_movements_cellToId ON movements(cellToId)")
+        database.execSQL("CREATE INDEX IF NOT EXISTS index_movements_userId ON movements(userId)")
+        database.execSQL("CREATE INDEX IF NOT EXISTS index_movements_operationTypeId ON movements(operationTypeId)")
+        // </editor-fold>
+        // <editor-fold desc="OperationTypes">
+        database.execSQL("""
+            CREATE TABLE IF NOT EXISTS operation_types (
+                id TEXT NOT NULL PRIMARY KEY,
+                name TEXT NOT NULL,
+                supplierId TEXT,
+                FOREIGN KEY(supplierId) REFERENCES Supplier(id) ON DELETE CASCADE
+            )
+        """)
+
+        database.execSQL("CREATE INDEX IF NOT EXISTS index_operation_types_supplierId ON operation_types(supplierId)")
+        // </editor-fold>
+        // <editor-fold desc="OutcomeItems">
+        database.execSQL("""
+            CREATE TABLE IF NOT EXISTS outcome_items (
+                id TEXT NOT NULL PRIMARY KEY,
+                sessionId TEXT NOT NULL,
+                goodsId TEXT NOT NULL,
+                cellId TEXT,
+                status INTEGER NOT NULL,
+                other TEXT,
+                FOREIGN KEY(sessionId) REFERENCES SessionOutcome(id) ON DELETE CASCADE,
+                FOREIGN KEY(goodsId) REFERENCES Goods(id) ON DELETE CASCADE,
+                FOREIGN KEY(cellId) REFERENCES Cell(id) ON DELETE CASCADE
+            )
+        """)
+
+        database.execSQL("CREATE INDEX IF NOT EXISTS index_outcome_items_sessionId ON outcome_items(sessionId)")
+        database.execSQL("CREATE INDEX IF NOT EXISTS index_outcome_items_goodsId ON outcome_items(goodsId)")
+        database.execSQL("CREATE INDEX IF NOT EXISTS index_outcome_items_cellId ON outcome_items(cellId)")
+        // </editor-fold>
+        // <editor-fold desc="Packages">
+        database.execSQL("""
+            CREATE TABLE IF NOT EXISTS packages (
+                id TEXT NOT NULL PRIMARY KEY,
+                supplierId TEXT,
+                name TEXT,
+                baseAmount INTEGER,
+                catalogId TEXT,
+                weight REAL,
+                height REAL,
+                width REAL,
+                volume REAL,
+                other TEXT,
+                FOREIGN KEY(supplierId) REFERENCES Supplier(id) ON DELETE CASCADE,
+                FOREIGN KEY(catalogId) REFERENCES Catalog(id) ON DELETE CASCADE
+            )
+        """)
+
+        // Создаем индексы для внешних ключей
+        database.execSQL("CREATE INDEX IF NOT EXISTS index_packages_supplierId ON packages(supplierId)")
+        database.execSQL("CREATE INDEX IF NOT EXISTS index_packages_catalogId ON packages(catalogId)")
+        // </editor-fold>
+        // <editor-fold desc="PickerItems">
+        database.execSQL("""
+            CREATE TABLE IF NOT EXISTS picker_items (
+                id TEXT NOT NULL PRIMARY KEY,
+                sessionId TEXT NOT NULL,
+                goodsId TEXT NOT NULL,
+                cellId TEXT,
+                status INTEGER NOT NULL,
+                startedAt INTEGER,
+                finishedAt INTEGER,
+                other TEXT,
+                FOREIGN KEY(sessionId) REFERENCES SessionPicker(id) ON DELETE CASCADE,
+                FOREIGN KEY(goodsId) REFERENCES Goods(id) ON DELETE CASCADE,
+                FOREIGN KEY(cellId) REFERENCES Cell(id) ON DELETE CASCADE
+            )
+        """)
+
+        // Создаем индексы для быстрого поиска по внешним ключам
+        database.execSQL("CREATE INDEX IF NOT EXISTS index_picker_items_sessionId ON picker_items(sessionId)")
+        database.execSQL("CREATE INDEX IF NOT EXISTS index_picker_items_goodsId ON picker_items(goodsId)")
+        database.execSQL("CREATE INDEX IF NOT EXISTS index_picker_items_cellId ON picker_items(cellId)")
+        // </editor-fold>
+        // <editor-fold desc="Services">
+        database.execSQL("""
+            CREATE TABLE IF NOT EXISTS services (
+                id TEXT NOT NULL PRIMARY KEY,
+                supplierId TEXT,
+                name TEXT NOT NULL,
+                other TEXT,
+                FOREIGN KEY(supplierId) REFERENCES Supplier(id) ON DELETE CASCADE
+            )
+        """)
+        database.execSQL("CREATE INDEX IF NOT EXISTS index_services_supplierId ON services(supplierId)")
+        // </editor-fold>
+        // <editor-fold desc="IncomeSessions">
+        database.execSQL("""
+            CREATE TABLE IF NOT EXISTS sessions_income (
+                id TEXT NOT NULL PRIMARY KEY,
+                supplierId TEXT,
+                incomeCellId TEXT,
+                toCellId TEXT,
+                status INTEGER NOT NULL,
+                createdAt INTEGER NOT NULL,
+                startedAt INTEGER,
+                finishedAt INTEGER,
+                other TEXT,
+                FOREIGN KEY(supplierId) REFERENCES Supplier(id) ON DELETE CASCADE,
+                FOREIGN KEY(incomeCellId) REFERENCES Cell(id) ON DELETE CASCADE,
+                FOREIGN KEY(toCellId) REFERENCES Cell(id) ON DELETE CASCADE
+            )
+        """)
+
+        // Индексы для оптимизации запросов по внешним ключам
+        database.execSQL("CREATE INDEX IF NOT EXISTS index_sessions_income_supplierId ON sessions_income(supplierId)")
+        database.execSQL("CREATE INDEX IF NOT EXISTS index_sessions_income_incomeCellId ON sessions_income(incomeCellId)")
+        database.execSQL("CREATE INDEX IF NOT EXISTS index_sessions_income_toCellId ON sessions_income(toCellId)")
+        // </editor-fold>
+        // <editor-fold desc="OutcomeSessions">
+        database.execSQL("""
+            CREATE TABLE IF NOT EXISTS sessions_outcome (
+                id TEXT NOT NULL PRIMARY KEY,
+                supplierId TEXT,
+                toCellId TEXT,
+                outCellId TEXT,
+                status INTEGER NOT NULL,
+                createdAt INTEGER NOT NULL,
+                startedAt INTEGER,
+                finishedAt INTEGER,
+                pickerSessionId TEXT,
+                other TEXT,
+                FOREIGN KEY(supplierId) REFERENCES Supplier(id) ON DELETE CASCADE,
+                FOREIGN KEY(toCellId) REFERENCES Cell(id) ON DELETE CASCADE,
+                FOREIGN KEY(outCellId) REFERENCES Cell(id) ON DELETE CASCADE,
+                FOREIGN KEY(pickerSessionId) REFERENCES SessionPicker(id) ON DELETE CASCADE
+            )
+        """.trimIndent())
+
+            database.execSQL("CREATE INDEX IF NOT EXISTS index_sessions_outcome_supplierId ON sessions_outcome(supplierId)")
+            database.execSQL("CREATE INDEX IF NOT EXISTS index_sessions_outcome_toCellId ON sessions_outcome(toCellId)")
+            database.execSQL("CREATE INDEX IF NOT EXISTS index_sessions_outcome_outCellId ON sessions_outcome(outCellId)")
+            database.execSQL("CREATE INDEX IF NOT EXISTS index_sessions_outcome_pickerSessionId ON sessions_outcome(pickerSessionId)")
+        // </editor-fold>
+        // <editor-fold desc="PickerSession">
+        database.execSQL("""
+            CREATE TABLE IF NOT EXISTS sessions_picker (
+                id TEXT NOT NULL PRIMARY KEY,
+                supplierId TEXT,
+                outCellId TEXT,
+                status TEXT NOT NULL,
+                createdAt INTEGER NOT NULL,
+                startedAt INTEGER,
+                finishedAt INTEGER,
+                other TEXT,
+                FOREIGN KEY(supplierId) REFERENCES Supplier(id) ON DELETE CASCADE,
+                FOREIGN KEY(outCellId) REFERENCES Cell(id) ON DELETE CASCADE
+            )
+        """)
+
+        database.execSQL("CREATE INDEX IF NOT EXISTS index_sessions_picker_supplierId ON sessions_picker(supplierId)")
+        database.execSQL("CREATE INDEX IF NOT EXISTS index_sessions_picker_outCellId ON sessions_picker(outCellId)")
+        // </editor-fold>
+        // <editor-fold desc="Suppliers">
+        database.execSQL("""
+            CREATE TABLE IF NOT EXISTS suppliers (
+                id TEXT NOT NULL PRIMARY KEY,
+                name TEXT NOT NULL,
+                other TEXT
+            )
+        """.trimIndent())
+        // </editor-fold>
+        // <editor-fold desc="TrueSings">
+        database.execSQL("""
+            CREATE TABLE IF NOT EXISTS true_signs (
+                id TEXT NOT NULL PRIMARY KEY,
+                goodsId TEXT NOT NULL,
+                catalogId TEXT NOT NULL,
+                name TEXT,
+                other TEXT,
+                FOREIGN KEY(goodsId) REFERENCES Goods(id) ON DELETE CASCADE,
+                FOREIGN KEY(catalogId) REFERENCES Catalog(id) ON DELETE CASCADE
+            )
+        """)
+
+        database.execSQL("CREATE INDEX IF NOT EXISTS index_true_signs_goodsId ON true_signs(goodsId)")
+        database.execSQL("CREATE INDEX IF NOT EXISTS index_true_signs_catalogId ON true_signs(catalogId)")
+       // </editor-fold>
+        // <editor-fold desc="Users">
+        database.execSQL("""
+            CREATE TABLE IF NOT EXISTS users (
+                id TEXT NOT NULL PRIMARY KEY,
+                firstName TEXT NOT NULL,
+                lastName TEXT NOT NULL,
+                credentialId TEXT,
+                other TEXT,
+                FOREIGN KEY(credentialId) REFERENCES Credential(id) ON DELETE CASCADE
+            )
+        """)
+
+        database.execSQL("CREATE INDEX IF NOT EXISTS index_users_credentialId ON users(credentialId)")
+        // </editor-fold>
     }
 }
-
 
 

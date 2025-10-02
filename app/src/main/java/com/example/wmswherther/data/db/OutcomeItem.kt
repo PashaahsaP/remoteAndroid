@@ -14,10 +14,10 @@ import com.example.wmsRemote.data.db.Cell
 
     ])
 data class OutcomeItem(
-    @PrimaryKey(autoGenerate = true) val id: Long = 0,
-    val sessionId: Long,
-    val goodsId: Long,
-    val cellId: Long?,
+    @PrimaryKey(autoGenerate = false) val id: String,
+    val sessionId: String,
+    val goodsId: String,
+    val cellId: String?,
     val status: Int,
     val other: String? // JSON
 )

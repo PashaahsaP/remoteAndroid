@@ -11,10 +11,10 @@ import androidx.room.PrimaryKey
 
     ])
 data class Change(
-    @PrimaryKey(autoGenerate = true) val id: Long = 0,
-    val entityId: Long,
-    val operationTypeId: Long,
+    @PrimaryKey(autoGenerate = false) val id: String,
+    val entityId: String,
+    val operationTypeId: String,
     val status: Int,
-    val supplierId: Long?,
+    val supplierId: String?,
     val other: String? // JSON
 )

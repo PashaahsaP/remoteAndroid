@@ -11,8 +11,8 @@ import androidx.room.PrimaryKey
 
         ])
 data class Service (
-    @PrimaryKey(autoGenerate = true) val id: Long = 0,
-    val supplierId: Long?,
+    @PrimaryKey(autoGenerate = false) val id: String,
+    val supplierId: String?,
     val name: String,
     val other: String?
 )

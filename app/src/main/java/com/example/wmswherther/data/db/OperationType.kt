@@ -10,7 +10,7 @@ import androidx.room.PrimaryKey
         ForeignKey(entity = Supplier::class, parentColumns = ["id"], childColumns = ["supplierId"], onDelete = ForeignKey.CASCADE)
     ])
 data class OperationType(
-    @PrimaryKey(autoGenerate = true) val id: Long = 0,
+    @PrimaryKey(autoGenerate = false) val id: String,
     val name: String,
-    val supplierId: Long?
+    val supplierId: String?
 )

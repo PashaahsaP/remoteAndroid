@@ -12,9 +12,9 @@ import com.example.wmsRemote.data.db.Cell
 
     ])
 data class SessionPicker(
-    @PrimaryKey(autoGenerate = true) val id: Long = 0,
-    val supplierId: Long?,
-    val outCellId: Long?,
+    @PrimaryKey(autoGenerate = false) val id: String,
+    val supplierId: String?,
+    val outCellId: String?,
     val status: String,
     val createdAt: Long,
     val startedAt: Long?,

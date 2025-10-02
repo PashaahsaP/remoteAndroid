@@ -10,11 +10,11 @@ import androidx.room.PrimaryKey
         ForeignKey(entity = Catalog::class, parentColumns = ["id"], childColumns = ["catalogId"], onDelete = ForeignKey.CASCADE)
     ])
 data class PackageEntity(
-    @PrimaryKey(autoGenerate = true) val id: Long = 0,
-    val supplierId: Long?,
+    @PrimaryKey(autoGenerate = false) val id: String,
+    val supplierId: String?,
     val name: String?,
     val baseAmount: Int?,
-    val catalogId: Long?,
+    val catalogId: String?,
     val weight: Double?,
     val height: Double?,
     val width: Double?,
