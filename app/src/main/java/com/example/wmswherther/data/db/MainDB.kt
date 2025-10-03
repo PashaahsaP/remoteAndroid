@@ -6,20 +6,49 @@ import androidx.room.Room
 import androidx.room.RoomDatabase
 import androidx.room.migration.Migration
 import androidx.sqlite.db.SupportSQLiteDatabase
+import com.example.wmswherther.data.db.Barcode
+import com.example.wmswherther.data.db.Catalog
+import com.example.wmswherther.data.db.CellType
+import com.example.wmswherther.data.db.Change
+import com.example.wmswherther.data.db.Credential
+import com.example.wmswherther.data.db.Goods
+import com.example.wmswherther.data.db.IncomeItem
+import com.example.wmswherther.data.db.Movement
+import com.example.wmswherther.data.db.OperationType
+import com.example.wmswherther.data.db.OutcomeItem
+import com.example.wmswherther.data.db.PickerItem
+import com.example.wmswherther.data.db.Service
+import com.example.wmswherther.data.db.SessionIncome
+import com.example.wmswherther.data.db.SessionOutcome
+import com.example.wmswherther.data.db.SessionPicker
+import com.example.wmswherther.data.db.Supplier
+import com.example.wmswherther.data.db.TrueSign
+import com.example.wmswherther.data.db.User
 
 @Database(entities = [
 
+    Barcode::class,
+    Catalog::class,
     Cell::class,
-    CatalogAtomy::class,
-    CatalogBork::class,
-    GoodsAtomy::class,
-    GoodsBork::class,
-    AssemblySession::class,
-    AssemblyBorkItem::class,
-    AssemblyAtomyItem::class,
-    Shipment::class,
-    BarcodeBork::class
-                     ], version = 3)
+    CellType::class,
+    Change::class,
+    Credential::class,
+    Goods::class,
+    IncomeItem::class,
+    Movement::class,
+    OperationType::class,
+    OutcomeItem::class,
+    Package::class,
+    PickerItem::class,
+    Service::class,
+    SessionIncome::class,
+    SessionOutcome::class,
+    SessionPicker::class,
+    Supplier::class,
+    TrueSign::class,
+    User::class
+
+                     ], version = 1)
 abstract class MainDB :RoomDatabase(){
 
     abstract  fun getDao() : Dao
