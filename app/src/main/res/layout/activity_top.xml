@@ -2,27 +2,30 @@
 <androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
-    android:layout_height="50dp"
-    android:maxHeight="50dp"
+    android:layout_height="75dp"
     android:background="@color/regularBlue"
+    android:paddingBottom="5dp"
     >
 
     <ImageButton
-        android:id="@+id/button"
-        android:background="@null"
+        android:id="@+id/threeDotImage"
         android:layout_width="45dp"
         android:layout_height="45dp"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintTop_toTopOf="parent"
+        android:background="@null"
         android:src="@drawable/threedostreal"
-        />
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent" />
 
-    <Button
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="Search"
-        app:layout_constraintEnd_toStartOf="@+id/button"
-        app:layout_constraintTop_toTopOf="parent">
+    <ImageButton
+        android:id="@+id/searchImage"
+        android:layout_width="45dp"
+        android:layout_height="45dp"
+        android:layout_marginRight="10dp"
 
-    </Button>
+        android:background="@null"
+        android:src="@drawable/loupe_search_svgrepo_com"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toStartOf="@+id/threeDotImage" />
+
+
 </androidx.constraintlayout.widget.ConstraintLayout>
