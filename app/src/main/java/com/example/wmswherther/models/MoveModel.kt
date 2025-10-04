@@ -6,7 +6,6 @@ import androidx.annotation.RequiresApi
 import androidx.lifecycle.LiveData
 import com.example.wmsRemote.Adapters.AdapterHelper
 import com.example.wmsRemote.data.db.Cell
-import com.example.wmsRemote.data.db.GoodsAtomy
 import com.example.wmsRemote.data.db.MainDB
 import com.example.wmsRemote.viewModel.MoveItem
 import kotlinx.coroutines.CoroutineScope

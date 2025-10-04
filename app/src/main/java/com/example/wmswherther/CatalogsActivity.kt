@@ -9,7 +9,6 @@ import androidx.activity.enableEdgeToEdge
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.content.ContextCompat
 import com.example.wmsRemote.R
-import com.example.wmsRemote.data.db.CatalogBork
 import com.example.wmsRemote.databinding.ActivityCatalogsBinding
 import com.example.wmsRemote.data.db.MainDB
 
@@ -25,7 +24,7 @@ class CatalogsActivity : AppCompatActivity() {
         setContentView(R.layout.activity_catalogs)
         _binding = ActivityCatalogsBinding.inflate(layoutInflater)
         setContentView(binding.root)
-
+        
         with(binding){
             etCatalogs.setOnEditorActionListener { textView, actionId, event ->
                 if (actionId == EditorInfo.IME_ACTION_DONE || actionId == EditorInfo.IME_ACTION_UNSPECIFIED) {

@@ -15,9 +15,7 @@ import androidx.core.content.ContextCompat
 import androidx.lifecycle.lifecycleScope
 import com.example.wmsRemote.R
 import com.example.wmsRemote.databinding.ActivitySearchByCellBinding
-import com.example.wmsRemote.data.db.CatalogAtomy
 import com.example.wmsRemote.data.db.Cell
-import com.example.wmsRemote.data.db.GoodsAtomy
 import com.example.wmsRemote.data.db.MainDB
 import com.example.wmswherther.HelperFunction
 import com.example.wmswherther.data.db.Request

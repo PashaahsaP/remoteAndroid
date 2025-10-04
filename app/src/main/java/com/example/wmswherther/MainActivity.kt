@@ -10,12 +10,7 @@ import androidx.annotation.RequiresApi
 import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.lifecycleScope
 import com.example.wmsRemote.databinding.ActivityMainBinding
-import com.example.wmsRemote.data.db.BarcodeBork
-import com.example.wmsRemote.data.db.CatalogAtomy
-import com.example.wmsRemote.data.db.CatalogBork
 import com.example.wmsRemote.data.db.Cell
-import com.example.wmsRemote.data.db.GoodsAtomy
-import com.example.wmsRemote.data.db.GoodsBork
 import com.example.wmsRemote.data.db.MainDB
 import com.example.wmswherther.LogActivity
 import kotlinx.coroutines.*

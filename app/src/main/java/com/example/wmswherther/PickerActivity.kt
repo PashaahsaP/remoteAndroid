@@ -10,10 +10,8 @@ import androidx.appcompat.app.AppCompatActivity
 import android.widget.EditText
 import androidx.annotation.RequiresApi
 import androidx.lifecycle.lifecycleScope
-import com.example.wmsRemote.data.db.CatalogAtomy
 import com.example.wmsRemote.databinding.ActivityPickerBinding
 import com.example.wmsRemote.data.db.Cell
-import com.example.wmsRemote.data.db.GoodsAtomy
 import com.example.wmsRemote.data.db.MainDB
 import com.example.wmswherther.HelperFunction
 import com.example.wmswherther.data.db.Request

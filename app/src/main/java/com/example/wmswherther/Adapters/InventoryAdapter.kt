@@ -11,7 +11,6 @@ import androidx.recyclerview.widget.RecyclerView
 import androidx.swiperefreshlayout.widget.SwipeRefreshLayout
 import com.example.wmsRemote.R
 import com.example.wmsRemote.Classes.IInventoryItem
-import com.example.wmsRemote.data.db.CatalogBork
 import com.example.wmsRemote.models.client
 import com.example.wmsRemote.viewModel.InventoryViewModel
 import com.example.wmsRemote.viewModel.retryRequest
