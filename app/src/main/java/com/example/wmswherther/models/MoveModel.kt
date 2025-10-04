@@ -23,15 +23,16 @@ suspend fun processMoving(
 ): MutableList<MoveItem> {
     val stayItem =  collection!!.filter { inventoryItem -> inventoryItem.item.third.first == 0 }
     val movingItem = collection.filter { inventoryItem -> inventoryItem.item.third.first != 0 }
-    var func = AdapterHelper.MoveItems[supplier]
-    var resultMoving = func!!.invoke(movingItem, db, text, context)
-    return (stayItem + resultMoving).toMutableList()
+    //var func = AdapterHelper.MoveItems[supplier]
+    //var resultMoving = func!!.invoke(movingItem, db, text, context)
+    //return (stayItem + resultMoving).toMutableList()
+    return stayItem.toMutableList()
 }
 
 
 
-@RequiresApi(Build.VERSION_CODES.O)
-suspend fun updateDB(movingCollection: List<MoveItem>, newCell: LiveData<String>, db: MainDB, viewModelScope: CoroutineScope, moveToCell: String): MutableList<MoveItem> {
+//@RequiresApi(Build.VERSION_CODES.O)
+/*suspend fun updateDB(movingCollection: List<MoveItem>, newCell: LiveData<String>, db: MainDB, viewModelScope: CoroutineScope, moveToCell: String): MutableList<MoveItem> {
         val result: MutableList<MoveItem> = mutableListOf()
         var cellId = db.getDao().getCellByName(moveToCell).id
         if (cellId == null) {
@@ -88,5 +89,5 @@ suspend fun updateDB(movingCollection: List<MoveItem>, newCell: LiveData<String>
             }
         }
         return result
-}
+}*/
 

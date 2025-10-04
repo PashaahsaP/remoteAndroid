@@ -8,17 +8,20 @@
     tools:context=".MainActivity"
     android:orientation="vertical">
 
+    <include android:id="@+id/topPanel" layout="@layout/activity_top"
+        />
+
     <Button
         android:id="@+id/btnAdd"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
+        android:width="180dp"
         android:layout_marginTop="30dp"
         android:backgroundTint="#0080fe"
         android:text="@string/Add"
-        android:width="180dp"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent" />
+        app:layout_constraintTop_toBottomOf="@+id/topPanel" />
 
 
     <Button

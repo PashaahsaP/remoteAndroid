@@ -7,8 +7,8 @@ import androidx.room.PrimaryKey
 
 @Entity(tableName = "barcodes",
     foreignKeys = [
-        ForeignKey(entity = Catalog::class, parentColumns = ["Id"], childColumns = ["catalogId"], onDelete = ForeignKey.CASCADE),
-        ForeignKey(entity = Supplier::class, parentColumns = ["Id"], childColumns = ["supplierId"], onDelete = ForeignKey.CASCADE),
+        ForeignKey(entity = Catalog::class, parentColumns = ["id"], childColumns = ["catalogId"], onDelete = ForeignKey.CASCADE),
+        ForeignKey(entity = Supplier::class, parentColumns = ["id"], childColumns = ["supplierId"], onDelete = ForeignKey.CASCADE),
 
     ], indices = [Index("name")])
 

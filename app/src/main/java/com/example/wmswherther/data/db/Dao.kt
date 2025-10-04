@@ -25,18 +25,7 @@ interface Dao {
     @Delete
     suspend fun deleteCell(cell: Cell)
     // </editor-fold>
-    // <editor-fold desc="assemblySession">
-    @Insert
-    fun insertAssemblySession(assembly: AssemblySession) : Long
-    @Update
-    suspend fun updateAssemblySession(assembly: AssemblySession)
-    @Query("SELECT * FROM assembly_session")
-    fun getAllAssemblySession(): List<AssemblySession>
-    @Query("SELECT * FROM assembly_session  WHERE id =:assemblyId")
-    suspend fun getAssemblySession(assemblyId: Int): AssemblySession
-    @Delete
-    suspend fun deleteAssemblySession(assembly: AssemblySession)
-    // </editor-fold>
+
 
 
 }

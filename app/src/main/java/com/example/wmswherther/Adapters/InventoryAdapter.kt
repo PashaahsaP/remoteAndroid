@@ -31,7 +31,7 @@ class InventoryAdapter(
     private var catalogs: MutableList<CatalogItem> = mutableListOf()
 
     init {
-        getCatalog()
+        //getCatalog()
         println()
     }
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): InventoryViewHolder {
@@ -112,7 +112,7 @@ class InventoryAdapter(
         data = newData
         notifyDataSetChanged()
     }
-    fun getCatalog () : Unit {
+    /*fun getCatalog () : Unit {
         var ip = "192.168.6.208"
         coroutine.launch {
             var borkCatalogInJson = HelperFunction.retryRequest(context) { client.getAllBorkCatalog(ip)}
@@ -127,11 +127,11 @@ class InventoryAdapter(
                 }
             }
         }
-    }
+    }*/
     fun convertToInt(nullableInt: Int?): Int {
         return nullableInt ?: 0  // If nullableInt is null, use 0 as default
     }
-    fun getCatalogsBorkFromJsonArr(obj: JSONArray) : MutableList<CatalogBork> {
+    /*fun getCatalogsBorkFromJsonArr(obj: JSONArray) : MutableList<CatalogBork> {
         var mutableList: MutableList<CatalogBork> = mutableListOf()
         for (i in 0 until obj.length()){
             var obj = obj.getJSONObject(i)
@@ -150,7 +150,7 @@ class InventoryAdapter(
             id = obj["id"].toString().toInt(),
             name = obj["name"].toString()
         )
-    }
+    }*/
 
 }
 

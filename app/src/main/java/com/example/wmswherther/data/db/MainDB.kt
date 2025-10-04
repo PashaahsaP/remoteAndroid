@@ -16,6 +16,7 @@ import com.example.wmswherther.data.db.IncomeItem
 import com.example.wmswherther.data.db.Movement
 import com.example.wmswherther.data.db.OperationType
 import com.example.wmswherther.data.db.OutcomeItem
+import com.example.wmswherther.data.db.PackageEntity
 import com.example.wmswherther.data.db.PickerItem
 import com.example.wmswherther.data.db.Service
 import com.example.wmswherther.data.db.SessionIncome
@@ -38,7 +39,7 @@ import com.example.wmswherther.data.db.User
     Movement::class,
     OperationType::class,
     OutcomeItem::class,
-    Package::class,
+    PackageEntity::class,
     PickerItem::class,
     Service::class,
     SessionIncome::class,
@@ -237,7 +238,7 @@ val MIGRATION_1_2 = object : Migration(1, 2) {
         // </editor-fold>
         // <editor-fold desc="Packages">
         database.execSQL("""
-            CREATE TABLE IF NOT EXISTS packages (
+            CREATE TABLE IF NOT EXISTS package_entities (
                 id TEXT NOT NULL PRIMARY KEY,
                 supplierId TEXT,
                 name TEXT,

@@ -45,7 +45,7 @@ class SearchActivity : AppCompatActivity() {
                 binding.swipe.isRefreshing = true
             }
             withContext(Dispatchers.IO){
-                var req : Request =  Request()
+             /*   var req : Request =  Request()
                 var data = HelperFunction.retryRequest(this@SearchActivity){req.getAllAtomyGoods(ip)}
                 searchItems = data.map{ item ->
                     var obj = JSONObject(item);
@@ -54,7 +54,7 @@ class SearchActivity : AppCompatActivity() {
                     var catalogJson = HelperFunction.retryRequest(this@SearchActivity){req.getAtomyCatalogById(ip,catalogId)}//todo может не выполнится т.к. не будет записи в бд с таким id
                     var cellJson = HelperFunction.retryRequest(this@SearchActivity){req.getCellById(ip, cellId)}
                     Triple(obj["TE"].toString(), catalogJson["firstBarcode"].toString(), cellJson["name"].toString())
-                }
+                }*/
             }
             withContext(Dispatchers.Main){
                 binding.swipe.isRefreshing = false

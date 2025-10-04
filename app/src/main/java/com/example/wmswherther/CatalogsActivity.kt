@@ -11,6 +11,7 @@ import androidx.core.content.ContextCompat
 import com.example.wmsRemote.R
 import com.example.wmsRemote.databinding.ActivityCatalogsBinding
 import com.example.wmsRemote.data.db.MainDB
+import java.util.UUID
 
 class CatalogsActivity : AppCompatActivity() {
     private var _binding: ActivityCatalogsBinding? = null
@@ -24,7 +25,6 @@ class CatalogsActivity : AppCompatActivity() {
         setContentView(R.layout.activity_catalogs)
         _binding = ActivityCatalogsBinding.inflate(layoutInflater)
         setContentView(binding.root)
-        
         with(binding){
             etCatalogs.setOnEditorActionListener { textView, actionId, event ->
                 if (actionId == EditorInfo.IME_ACTION_DONE || actionId == EditorInfo.IME_ACTION_UNSPECIFIED) {

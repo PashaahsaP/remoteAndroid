@@ -9,6 +9,7 @@ import com.example.wmsRemote.Classes.IInventoryItem
 import com.example.wmsRemote.InventoryActivity
 import com.example.wmsRemote.data.db.Cell
 import com.example.wmsRemote.data.db.MainDB
+import com.example.wmsRemote.viewModel.InventoryItem
 import com.example.wmsRemote.viewModel.InventoryViewModel
 import com.example.wmsRemote.viewModel.retryRequest
 import com.example.wmswherther.HelperFunction
@@ -29,9 +30,10 @@ suspend fun processInputBarcode(
     context: Context
 ): List<IInventoryItem> {
     if (values != null) {
-        var func = AdapterHelper.getProcessedInventoryItem[supplier]
-        val result = func!!.invoke(values, input, db, cell, context)
-        return result
+       // var func = AdapterHelper.getProcessedInventoryItem[supplier]
+       // val result = func!!.invoke(values, input, db, cell, context)
+        //return result
+        return  listOf()
     }
     return listOf()
 }
@@ -41,7 +43,7 @@ suspend fun processInputCell(
     viewModel: InventoryViewModel,
     context:Context
 ): List<IInventoryItem> {
-    val inventoryList : List<IInventoryItem> = listOf()
+    /*  val inventoryList : List<IInventoryItem> = listOf()
     var cell = HelperFunction.retryRequest(context){client.getCellByName(ip, input)}
 
     if(cell.length() == 0) {
@@ -54,7 +56,8 @@ suspend fun processInputCell(
         val func =  AdapterHelper.getListInventoryItem[viewModel.supplier]
         var list = func!!.invoke(db,Cell(id = cell["id"].toString().toInt(), cell["name"].toString()), context)
         return list
-    }
+    }*/
+    return  listOf()
 }
 @RequiresApi(Build.VERSION_CODES.O)
 suspend fun processSaveBtn(
@@ -83,13 +86,13 @@ suspend fun processSaveBtn(
                 result += newItem
             }
         } else {
-            var func = AdapterHelper.prepareNoneTypeInventoryItem[inventoryItem.supplierId]
+           /* var func = AdapterHelper.prepareNoneTypeInventoryItem[inventoryItem.supplierId]
             var item = func!!.invoke(inventoryItem, db, cellId, context)
             if (item != null) {
                 result += item
             } else {
                 return null
-            }
+            }*/
         }
     }
 
@@ -98,14 +101,15 @@ suspend fun processSaveBtn(
 // </editor-fold>
 // <editor-fold desc="helper Methods">
 suspend fun getCellId(db: MainDB, cell: String?, context: Context): Int? {
-    var cellId = -1
+  /*  var cellId = -1
     var cell =HelperFunction.retryRequest(context){client.getCellByName(ip, cell.toString())}
     if(cell.length() == 0){
         var newCell = HelperFunction.retryRequest(context) { client.sendCell(ip, cell.toString())}
     }else{
         cellId = cell["id"].toString().toInt()
     }
-    return  cellId
+    return  cellId*/
+    return 1
 }
 suspend fun changeInventoryItem(
     inventoryItem: IInventoryItem,
@@ -113,17 +117,18 @@ suspend fun changeInventoryItem(
     cell: String,
     context: Context
 ) : IInventoryItem? {
-    var func = AdapterHelper.changeInventoryItem[inventoryItem.supplierId]
-    var result = func!!.invoke(inventoryItem, db, cell, context)
-    return result
+   // var func = AdapterHelper.changeInventoryItem[inventoryItem.supplierId]
+    //var result = func!!.invoke(inventoryItem, db, cell, context)
+   // return result
+    return  null
 }
 suspend fun removeInventoryItem(
     inventoryItem: IInventoryItem,
     db: MainDB,
     context: Context
 ) : IInventoryItem? {
-    var func = AdapterHelper.removeInventoryItem[inventoryItem.supplierId]
-    func!!.invoke(inventoryItem, db, context)
+    //var func = AdapterHelper.removeInventoryItem[inventoryItem.supplierId]
+    //func!!.invoke(inventoryItem, db, context)
 
     return null
 }

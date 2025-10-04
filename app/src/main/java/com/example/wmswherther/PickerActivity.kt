@@ -42,7 +42,7 @@ class PickerActivity : AppCompatActivity() {
 
         with(binding) {
             etTe.requestFocus()
-            btnSave.setOnClickListener {
+           /* btnSave.setOnClickListener {
                 //TODO when scaning twicly in the cell field,a record is added in db and the fields are cleared
                 //TODO Validation for the cell field shoud be added
                 val te = binding.etTe.text.toString()
@@ -83,7 +83,7 @@ class PickerActivity : AppCompatActivity() {
                 }
 
 
-            }
+            }*/
 
 
             etTe.setOnFocusChangeListener { v, hasFocus ->
@@ -112,7 +112,7 @@ class PickerActivity : AppCompatActivity() {
 
     }
 
-    suspend fun getCatalogId(barcode: String, client: Request, ip: String): Int {
+   /* suspend fun getCatalogId(barcode: String, client: Request, ip: String): Int {
         var catalog = HelperFunction.retryRequest(this@PickerActivity) { client.getAtomyCatalogByBarcode(ip, barcode)}
         if(catalog.length() == 0){
             var catalogId = HelperFunction.retryRequest (this@PickerActivity){ client.sendAtomyCatalog(ip, CatalogAtomy(null, barcode, barcode, barcode))}
@@ -120,9 +120,9 @@ class PickerActivity : AppCompatActivity() {
         }else{
             return catalog["id"].toString().toInt()
         }
-    }
+    }*/
 
-    private suspend fun getCellId(cellName: String, client: Request, ip: String): Int {
+    /*private suspend fun getCellId(cellName: String, client: Request, ip: String): Int {
         var cell = HelperFunction.retryRequest(this@PickerActivity){client.getCellByName(ip, cellName)}
         var cellId : Int = -1
         if(cell.length() == 0){
@@ -132,7 +132,7 @@ class PickerActivity : AppCompatActivity() {
             cellId = cell["id"].toString().toInt()
         }
         return cellId
-    }
+    }*/
     private fun clearField(etTe: EditText, etBarcode: EditText, etTime: EditText, etCell: EditText) {
         etTe.setText("")
         etBarcode.setText("")

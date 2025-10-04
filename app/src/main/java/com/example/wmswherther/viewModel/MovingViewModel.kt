@@ -95,11 +95,11 @@ class MovingViewModel : ViewModel() {
                         binding.swipe.isRefreshing = true
                     }
                     withContext(Dispatchers.IO) {
-                        var cell = HelperFunction.retryRequest(context){client.getCellByName(ip, text)}
-                        if(cell.length() != 0) {
+                       // var cell = HelperFunction.retryRequest(context){client.getCellByName(ip, text)}
+                        /*if(cell.length() != 0) {
                             var func = AdapterHelper.getMoveItems[supplier]
                             result = func!!.invoke(db,supplier, cell, context)
-                        }
+                        }*/
                     }
                     withContext(Dispatchers.Main) {
                         binding.swipe.isRefreshing = false

@@ -1,7 +1,6 @@
 package com.example.wmswherther.data.db
 
 import com.example.wmsRemote.Classes.AssemblyItem
-import com.example.wmsRemote.data.db.AssemblySession
 import com.example.wmsRemote.models.client
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
@@ -17,7 +16,7 @@ import java.time.LocalDateTime
 
 class Request {
 
-    suspend fun updateAtomyGoods(ip:String, goodsAtomy: GoodsAtomy) : String {
+  /*  suspend fun updateAtomyGoods(ip:String, goodsAtomy: GoodsAtomy) : String {
         val json = JSONObject()
             .put("id", goodsAtomy.Id)
             .put("cellId", goodsAtomy.cellId)
@@ -517,6 +516,6 @@ class Request {
             }
         }
     }
-
+*/
 
 }

@@ -44,7 +44,7 @@ class MainActivity : AppCompatActivity() {
         _binding = ActivityMainBinding.inflate(layoutInflater)
         enableEdgeToEdge()
         setContentView(binding.root)
-        setNavigationBar()
+        //setNavigationBar()
 
 
         with(binding) {
@@ -99,7 +99,7 @@ class MainActivity : AppCompatActivity() {
             e.printStackTrace()
         }
     }*/
-    fun readBorkCatalog(db: MainDB){
+   /* fun readBorkCatalog(db: MainDB){
         lifecycleScope.launch {
             withContext(Dispatchers.IO) {
                 val fileContent = readTextFileFromInternalStoragee(this@MainActivity, "Bork.txt")
@@ -289,7 +289,7 @@ class MainActivity : AppCompatActivity() {
                 WindowManager.LayoutParams.FLAG_LAYOUT_NO_LIMITS
             )
         }
-    }
+    }*/
     private fun isCell(cell: String): Boolean {
         if (cell.length == 4 && cell[0] in 'A' .. 'Z' && cell[1].isDigit() && cell[2].isDigit() && cell[3].isDigit()){
             return true

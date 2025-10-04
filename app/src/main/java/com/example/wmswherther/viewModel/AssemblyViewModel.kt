@@ -9,7 +9,6 @@ import androidx.lifecycle.viewModelScope
 import com.example.wmsRemote.Adapters.AdapterHelper
 import com.example.wmsRemote.AssemblyActivity
 import com.example.wmsRemote.Classes.AssemblyItem
-import com.example.wmsRemote.data.db.AssemblySession
 import com.example.wmsRemote.data.db.MainDB
 import com.example.wmsRemote.data.enums.StatusType
 import com.example.wmsRemote.models.client
@@ -21,7 +20,7 @@ import org.json.JSONObject
 
 class AssemblyViewModel : ViewModel() {
 
-    private val ip = "192.168.6.208"
+/*    private val ip = "192.168.6.208"
     private val _sessions = MutableLiveData<List<AssemblySession>>()
     private val _menuStatus = MutableLiveData<Int>()
     private val _assemblyStatus = MutableLiveData<Int>()
@@ -195,5 +194,5 @@ class AssemblyViewModel : ViewModel() {
                }
            }
         }
-    }
+    }*/
 }

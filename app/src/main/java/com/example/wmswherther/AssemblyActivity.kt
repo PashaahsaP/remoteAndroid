@@ -23,7 +23,6 @@ import com.example.wmsRemote.databinding.ActivityAssemblyBinding
 import com.example.wmsRemote.Adapters.MoveAdapter
 import com.example.wmsRemote.Classes.AssemblyItem
 import com.example.wmsRemote.ControlsClasses.AssemblyMenu
-import com.example.wmsRemote.data.db.AssemblySession
 import com.example.wmsRemote.data.db.MainDB
 import com.example.wmsRemote.data.enums.StatusType
 import com.example.wmsRemote.data.enums.SupplierType
@@ -48,22 +47,21 @@ class AssemblyActivity : AppCompatActivity() {
         _binding = ActivityAssemblyBinding.inflate(layoutInflater)
         setContentView(binding.root)
         viewModel = ViewModelProvider(this).get(AssemblyViewModel::class.java)
-        var adapter = AssemblyAdapter(this, lifecycleScope,viewModel, listOf())
-        var recyclerView : RecyclerView = binding.rwListItem
+        var adapter = AssemblyAdapter(this, lifecycleScope, viewModel, listOf())
+        var recyclerView: RecyclerView = binding.rwListItem
         recyclerView.layoutManager = LinearLayoutManager(this)
         recyclerView.adapter = adapter
 
 
-
-        viewModel.sessions.observe(this, Observer { newCollection ->
+        /* viewModel.sessions.observe(this, Observer { newCollection ->
             lifecycleScope.launch {
                 withContext(Dispatchers.Main) {
                     updateMenu(newCollection, db)
                 }
             }
 
-        })
-        viewModel.activeElement.observe(this, Observer{newItem ->
+        })*/
+        /* viewModel.activeElement.observe(this, Observer{newItem ->
             lifecycleScope.launch {
                 withContext(Dispatchers.Main){
                     updateActiveElement(newItem)
@@ -125,9 +123,9 @@ class AssemblyActivity : AppCompatActivity() {
             }
             }
 
-        }
+        }*/
 
-    private fun updateMenuStyle(status: Int?) {
+        /* private fun updateMenuStyle(status: Int?) {
         if(status == 0){
             binding.llMenuContainer.visibility = View.VISIBLE
             binding.llAssemblyContainer.visibility = View.GONE
@@ -161,8 +159,8 @@ class AssemblyActivity : AppCompatActivity() {
                 etCount.requestFocus()
             }
         }
-    }
-    /*private fun updateListItems(items: List<AssemblyItem>?, ) {
+    }*/
+        /*private fun updateListItems(items: List<AssemblyItem>?, ) {
         val paint = binding.tvListNames.paint
         val maxWidth = binding.tvListNames.width
         val text = "A".repeat(200) // Можно любой длинный текст
@@ -182,15 +180,15 @@ class AssemblyActivity : AppCompatActivity() {
         }
 
     }*/
-    private fun updateActiveElement(newItem: AssemblyItem?) {
+        /*  private fun updateActiveElement(newItem: AssemblyItem?) {
         with(binding){
             tvCell.text = newItem!!.cell
             //tvBarcode.text = newItem.barcode
             tvGoodsName.text = newItem.name
             etCount.setText(newItem.amount.toString())
         }
-    }
-    private fun updateMenu(sessions: List<AssemblySession>, db: MainDB) {
+    }*/
+        /*private fun updateMenu(sessions: List<AssemblySession>, db: MainDB) {
         viewModel.changeAssemblyStatus(StatusType.EnterCell.ordinal)
         binding.llMenuContainer.removeAllViews()
         for (session in sessions){
@@ -214,21 +212,21 @@ class AssemblyActivity : AppCompatActivity() {
         }
 
 
-}
-    private fun getSupplier(supplier: Int): String {
+}*/
+        /* private fun getSupplier(supplier: Int): String {
         if(SupplierType.Bork.ordinal == supplier)
             return SupplierType.Bork.name
         else if(SupplierType.Atomy.ordinal == supplier)
             return SupplierType.Atomy.name
         else
             return SupplierType.FeedConsalt.name
-    }
-    /*private fun handleTextChange(text: String) {
+    }*/
+        /*private fun handleTextChange(text: String) {
         binding.btnSearch.performClick()
         binding.etCell.text.clear()
         binding.etCell.requestFocus()
     }*/
-   /* private fun requestFocusAndHideKeyboard() {
+        /* private fun requestFocusAndHideKeyboard() {
         currentFocus?.clearFocus()
         binding.etCell.requestFocus() // Request focus
 
@@ -240,7 +238,7 @@ class AssemblyActivity : AppCompatActivity() {
             }
         }, 100) // Delay for 100ms
     }*/
-    fun convertToInt(nullableInt: Int?): Int {
+        /*fun convertToInt(nullableInt: Int?): Int {
         return nullableInt ?: 0  // If nullableInt is null, use 0 as default
     }
     fun handleTextChange(
@@ -266,5 +264,6 @@ class AssemblyActivity : AppCompatActivity() {
             binding.etCount.text.clear()
             binding.etInput.requestFocus()
         }
+    }*/
     }
 }

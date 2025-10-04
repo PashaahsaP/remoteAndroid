@@ -44,7 +44,7 @@ object AdapterHelper {
     var ip = "192.168.6.208"
     // <editor-fold desc="assembly code">
     val getAssemblyItems: Map<Int, suspend (sessionId: Int, db: MainDB) -> List<AssemblyItem>> = mapOf(
-        1 to { sessionId, db ->
+        /*1 to { sessionId, db ->
             var data = client.getAllAssemblyBorkItemBySessionId(ip, sessionId)
                 .filter { item -> item["status"] == "created" }
                 .map { newItem->
@@ -76,11 +76,11 @@ object AdapterHelper {
 
                 }
             data.filter { item-> item.status == 0 }.sortedBy { item -> item.cell }
-        }
+        }*/
    )
 // </editor-fold>
     // <editor-fold desc="inventory code">
-    val prepareNoneTypeInventoryItem: Map<Int, suspend (inventoryItem: IInventoryItem, db: MainDB, cellId: Int?, context:Context ) -> IInventoryItem?> = mapOf(
+   /* val prepareNoneTypeInventoryItem: Map<Int, suspend (inventoryItem: IInventoryItem, db: MainDB, cellId: Int?, context:Context ) -> IInventoryItem?> = mapOf(
         0 to { inventoryItem, db, cellId, context ->
             var result : AtomyInventoryItem? = null
             var newCatalog : CatalogAtomy = CatalogAtomy(null, "", "", null)
@@ -298,8 +298,8 @@ object AdapterHelper {
             }
             result
         }
-    )
-    val getProcessedInventoryItem: Map<Int,suspend (values:List<IInventoryItem>, input: String, db: MainDB, cell: String, context:Context)-> List<IInventoryItem>> = mapOf(
+    )*/
+    /*val getProcessedInventoryItem: Map<Int,suspend (values:List<IInventoryItem>, input: String, db: MainDB, cell: String, context:Context)-> List<IInventoryItem>> = mapOf(
         0 to {values, input, db, cell, context->
             var cell = HelperFunction.retryRequest(context) { client.getCellByName(ip, cell)}
             var cellId = cell["id"].toString().toInt()
@@ -378,7 +378,7 @@ object AdapterHelper {
             result
         }
 
-    )
+    )*/
     val getInventoryDialog: Map<Int, (dynamicContainer: LinearLayout, dialog: AlertDialog, position: Int, item: IInventoryItem, context: Context, viewModel: InventoryViewModel, catalogs: MutableList<CatalogItem>)-> Unit> = mapOf(
         0 to { dynamicContainer, dialog, position, item, context, viewModel, catalogs ->
             // <editor-fold desc="init dialog">
@@ -554,7 +554,7 @@ object AdapterHelper {
             }
         }
     )
-    val getListInventoryItem: Map<Int,suspend (db: MainDB, cell: Cell, context:Context)-> List<IInventoryItem>> = mapOf(
+/*    val getListInventoryItem: Map<Int,suspend (db: MainDB, cell: Cell, context:Context)-> List<IInventoryItem>> = mapOf(
         0 to{ db, cell, context ->
             var listJson = HelperFunction.retryRequest(context){client.getAllAtomyGoodsByCellId(ip, cell.id.toString())}
             var list  = getGoodsAtomyFromJsonArray(listJson)
@@ -602,7 +602,7 @@ object AdapterHelper {
             }
             newList
         }
-    )
+    )*/
     // </editor-fold>
     // <editor-fold desc="ui code">
     val getDialogForDefaultGoods: Map<Int, (context: Context, inventoryItem: IInventoryItem,  position: Int, viewModel :InventoryViewModel)-> AlertDialog.Builder> = mapOf(
@@ -778,7 +778,7 @@ object AdapterHelper {
        }
     )
     val getMoveItems: Map<Int,suspend (db: MainDB, supplier: Int, cell:JSONObject, context:Context) -> List<MoveItem>> = mapOf(
-        0 to { db, supplier, cell, context ->
+       /* 0 to { db, supplier, cell, context ->
             var cellId = cell["id"].toString()
             var listOfItems :MutableList<MoveItem> = mutableListOf()
             var result =HelperFunction.retryRequest(context){client.getAllAtomyGoodsByCellId(ip, cellId)}
@@ -792,8 +792,8 @@ object AdapterHelper {
             }
                 //TODO make after creating session and moveElement
             listOfItems.toList()
-        },
-        1 to { db, supplier, cell, context ->
+        },*/
+      /*  1 to { db, supplier, cell, context ->
             var cellId = cell["id"].toString()
             var listOfItems :MutableList<MoveItem> = mutableListOf()
             var result = HelperFunction.retryRequest(context){client.getAllBorkGoodsByCellId(ip, cellId)}
@@ -808,10 +808,10 @@ object AdapterHelper {
             }
             //TODO make after creating session and moveElement
             listOfItems.toList()
-        }
+        }*/
     )
     val getUpdatedMoveItems: Map<Int, suspend (db: MainDB, supplier: Int, list: MutableList<MoveItem>?, text: String, context:Context) -> List<MoveItem>> = mapOf(
-        0 to {db, supplier, list, text, context ->
+       /* 0 to {db, supplier, list, text, context ->
             val listNew = list!!.map { item ->
                 //var goods = db.getDao().getGoodsAtomy(item.item.first)
                 var updatedMoveItem = getUpdatedAtomyMoveItem(item.item.first, text,item.item.second, item)
@@ -827,9 +827,9 @@ object AdapterHelper {
                 updatedMoveItem
             }
             list
-        }
+        }*/
     )
-    val MoveItems: Map<Int, suspend (movingItem: List<MoveItem>, db: MainDB, text: String, context: Context) -> List<MoveItem>> = mapOf(
+/*    val MoveItems: Map<Int, suspend (movingItem: List<MoveItem>, db: MainDB, text: String, context: Context) -> List<MoveItem>> = mapOf(
         0 to { moveItem, db, text, context ->
             val result: MutableList<MoveItem> = mutableListOf()
             var cell = HelperFunction.retryRequest (context){ client.getCellByName(ip, text)}
@@ -906,7 +906,7 @@ object AdapterHelper {
             }
              result
         }
-    )
+    )*/
     // </editor-fold>
     // <editor-fold desc="commented code">
     /*val getDisplayedGoods: Map <Int, (Catalog, Goods)-> Triple<String, String, Pair<Int, Int>>> = mapOf(
@@ -1098,7 +1098,7 @@ fun getUpdatedBorkMoveItem(id: Int?, left: String, catalogName: String,  moveIte
         return MoveItem(Triple(id ?: 0, left, Pair(moveItem.item.third.first, moveItem.item.third.second)), false)
     }
 }
-fun getGoodsBorkFromJsonArray(list: JSONArray) : List<GoodsBork>{
+/*fun getGoodsBorkFromJsonArray(list: JSONArray) : List<GoodsBork>{
     var result: MutableList<GoodsBork> = mutableListOf()
     for(i in 0 until list.length()){
         var obj = list.getJSONObject(i)
@@ -1163,5 +1163,5 @@ fun getBarcodeBorkFromJsonObj(obj: JSONObject) : BarcodeBork{
         type = "master",
         catalogId = obj["catalogId"].toString().toInt()
     )
-}
+}*/
 // </editor-fold>
