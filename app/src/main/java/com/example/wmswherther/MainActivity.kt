@@ -12,6 +12,7 @@ import androidx.lifecycle.lifecycleScope
 import com.example.wmsRemote.databinding.ActivityMainBinding
 import com.example.wmsRemote.data.db.Cell
 import com.example.wmsRemote.data.db.MainDB
+import com.example.wmswherther.Fragments.MainFragment
 import com.example.wmswherther.LogActivity
 import kotlinx.coroutines.*
 import java.io.File
@@ -43,40 +44,16 @@ class MainActivity : AppCompatActivity() {
         val db = MainDB.getDB(this)
         _binding = ActivityMainBinding.inflate(layoutInflater)
         enableEdgeToEdge()
-        setContentView(binding.root)
-        //setNavigationBar()
+        setContentView(R.layout.activity_main)
+        setNavigationBar()
 
-
-        with(binding) {
-            btnAdd.setOnClickListener {
-                val intent = Intent(this@MainActivity, PickerActivity::class.java)
-                startActivity(intent)
-            }
-            btnLog.setOnClickListener {
-                val intent = Intent(this@MainActivity, LogActivity::class.java)
-                startActivity(intent)
-            }//
-            btnMove.setOnClickListener {
-                val intent = Intent(this@MainActivity, MoveActivity::class.java)
-                startActivity(intent)
-            }
-            btnSearch.setOnClickListener {
-                val intent = Intent(this@MainActivity, SearchActivity::class.java)
-                startActivity(intent)
-
-                //readBorkCatalog(db)
-                //readBorkCatalogAndGoodsFromTxt(db, this@MainActivity)
-                //readAtomyCatalogAndGoodsFromTxt(db, this@MainActivity)
-            }
-            btnInventory.setOnClickListener {
-                var intent = Intent(this@MainActivity, InventoryActivity::class.java)
-                startActivity(intent)
-            }
-            btnAssembly.setOnClickListener {
-                var intent = Intent(this@MainActivity, AssemblyActivity::class.java)
-                startActivity(intent)
-            }
+        if(savedInstanceState == null){
+            supportFragmentManager.beginTransaction()
+                .replace(R.id.fragmentContainer, MainFragment())
+                .commit()
         }
+
+
     }
 
     fun readTextFileFromInternalStorage(context: Context, fileName: String): String {
@@ -280,6 +257,7 @@ class MainActivity : AppCompatActivity() {
         reader.close()
         return items
     }
+    */
     private fun setNavigationBar() {
         val window = window
         // Устанавливаем флаги для скрытия навигационных кнопок
@@ -289,7 +267,7 @@ class MainActivity : AppCompatActivity() {
                 WindowManager.LayoutParams.FLAG_LAYOUT_NO_LIMITS
             )
         }
-    }*/
+    }
     private fun isCell(cell: String): Boolean {
         if (cell.length == 4 && cell[0] in 'A' .. 'Z' && cell[1].isDigit() && cell[2].isDigit() && cell[3].isDigit()){
             return true

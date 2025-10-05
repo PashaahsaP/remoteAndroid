@@ -2,6 +2,7 @@
     <string name="app_name">remote</string>
     <string name="Assembly">Сборка</string>
     <string name="Shipment">Отгрузка</string>
+    <string name="Income">Приемка</string>
     <string name="Move">Перемещение</string>
     <string name="Search">Поиск</string>
     <string name="Inventory">Инвентаризация</string>

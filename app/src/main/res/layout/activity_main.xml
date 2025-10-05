@@ -11,72 +11,15 @@
     <include android:id="@+id/topPanel" layout="@layout/activity_top"
         />
 
-    <Button
-        android:id="@+id/btnAdd"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:width="180dp"
-        android:layout_marginTop="30dp"
-        android:backgroundTint="#0080fe"
-        android:text="@string/Add"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
+
+    <FrameLayout
+        android:id="@+id/fragmentContainer"
+        android:layout_width="match_parent"
+        android:paddingTop="85dp"
+        android:layout_height="match_parent"
         app:layout_constraintTop_toBottomOf="@+id/topPanel" />
 
 
-    <Button
-        android:id="@+id/btnSearch"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:width="180dp"
-        android:backgroundTint="#0080fe"
-        android:text="@string/Search"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/btnMove" />
-
-    <Button
-        android:id="@+id/btnMove"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:width="180dp"
-        android:backgroundTint="#0080fe"
-        android:text="@string/Move"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/btnAdd" />
-
-    <Button
-        android:id="@+id/btnInventory"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:width="180dp"
-        android:backgroundTint="#0080fe"
-        android:text="@string/Inventory"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/btnSearch" />
-
-    <Button
-        android:id="@+id/btnAssembly"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:width="180dp"
-        android:backgroundTint="#0080fe"
-        android:text="@string/Assembly"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/btnInventory" />
-    <Button
-        android:id="@+id/btnLog"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:width="180dp"
-        android:backgroundTint="#0080fe"
-        android:text="@string/Log"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/btnAssembly" />
 
 
 
