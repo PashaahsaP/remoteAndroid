@@ -20,21 +20,17 @@ import org.json.JSONObject
 
 class AssemblyViewModel : ViewModel() {
 
-/*    private val ip = "192.168.6.208"
-    private val _sessions = MutableLiveData<List<AssemblySession>>()
-    private val _menuStatus = MutableLiveData<Int>()
-    private val _assemblyStatus = MutableLiveData<Int>()
-    private val _activeElement = MutableLiveData<AssemblyItem>()
-    private val _items = MutableLiveData<List<AssemblyItem>>()
+  /*  private val ip = "192.168.6.208"
+    private val is
     private val _count = MutableLiveData<Int>()
     val sessions: LiveData<List<AssemblySession>> get() = _sessions
     val menuStatus: LiveData<Int> get() = _menuStatus
     val assemblyStatus: LiveData<Int> get() = _assemblyStatus
     val activeElement: LiveData<AssemblyItem> get() = _activeElement
     val items: LiveData<List<AssemblyItem>> get() = _items
-    val count: LiveData<Int>get() = _count
+    val count: LiveData<Int>get() = _count*/
 
-
+/*
     fun loadCollection(db: MainDB): Unit
     {
         var client: Request = Request()

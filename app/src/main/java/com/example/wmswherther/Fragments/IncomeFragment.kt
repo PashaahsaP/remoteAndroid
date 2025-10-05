@@ -21,7 +21,7 @@ class IncomeFragment : Fragment() {
     ): View? {
         _binding = FragmentIncomeBinding.inflate(inflater)
         with(binding){
-            btnBack.setOnClickListener {
+            btnExit.setOnClickListener {
                 parentFragmentManager.popBackStack()
             }
         }

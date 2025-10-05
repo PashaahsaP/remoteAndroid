@@ -7,6 +7,7 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.Toast
 import androidx.fragment.app.Fragment
+import androidx.fragment.app.activityViewModels
 import com.example.wmsRemote.AssemblyActivity
 import com.example.wmsRemote.InventoryActivity
 import com.example.wmsRemote.MainActivity
@@ -17,13 +18,14 @@ import com.example.wmsRemote.SearchActivity
 import com.example.wmsRemote.databinding.ActivityMainBinding
 import com.example.wmsRemote.databinding.FragmentMainBinding
 import com.example.wmswherther.LogActivity
+import com.example.wmswherther.viewModel.MainViewModel
 
-class MainFragment : Fragment() {
+class MainFragment : Fragment(R.layout.fragment_main) {
 
     private var _binding: FragmentMainBinding? = null
     private val binding
         get() = _binding ?: throw IllegalStateException("Binding for FragmentMain")
-
+    private val viewModel: MainViewModel by activityViewModels()
     override fun onCreateView(
         inflater: LayoutInflater,
         container: ViewGroup?,
@@ -36,6 +38,8 @@ class MainFragment : Fragment() {
                     .replace(R.id.fragmentContainer, IncomeFragment())
                     .addToBackStack(null)
                     .commit()
+
+                viewModel.changeMenuStatus(false)
             }
         }
         return binding.root
