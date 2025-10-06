@@ -8,6 +8,8 @@ import android.view.ViewGroup
 import android.widget.Toast
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
+import androidx.fragment.app.commit
+import androidx.fragment.app.replace
 import com.example.wmsRemote.AssemblyActivity
 import com.example.wmsRemote.InventoryActivity
 import com.example.wmsRemote.MainActivity
@@ -34,10 +36,16 @@ class MainFragment : Fragment(R.layout.fragment_main) {
         _binding = FragmentMainBinding.inflate(inflater, container, false)
         with(binding){
             btnIncome.setOnClickListener {
-                parentFragmentManager.beginTransaction()
-                    .replace(R.id.fragmentContainer, IncomeFragment())
-                    .addToBackStack(null)
-                    .commit()
+                parentFragmentManager.commit {
+                    setCustomAnimations(
+                        R.anim.slide_in_right, // enter
+                        R.anim.slide_out_left,  // exit
+                        R.anim.slide_in_left,   // popEnter
+                        R.anim.slide_out_right  // popExit
+                    )
+                    replace<IncomeFragment>(R.id.fragmentContainer)
+                    addToBackStack(null)
+                }
 
                 viewModel.changeMenuStatus(false)
             }

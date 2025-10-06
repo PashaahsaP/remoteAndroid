@@ -14,6 +14,7 @@ import androidx.activity.viewModels
 import androidx.annotation.RequiresApi
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.doOnPreDraw
+import androidx.fragment.app.commit
 import androidx.lifecycle.Observer
 import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.viewModelScope
@@ -53,24 +54,27 @@ class MainActivity : AppCompatActivity() {
         enableEdgeToEdge()
         setContentView(R.layout.activity_main)
         setNavigationBar()
-        val topBinding = binding.topPanel.root
-        val btnTest = topBinding.findViewById<Button>(R.id.btnTest)
-        val btnBack = topBinding.findViewById<Button>(R.id.btnBack)
-        Log.d("DEBUG_UI", "ON_CREATE: attached=${btnTest.isAttachedToWindow}, vis=${btnTest.visibility}, w=${btnTest.width}, h=${btnTest.height}, parentH=${(btnTest.parent as? View)?.height}")
-        binding.root.doOnPreDraw {
-            btnBack.visibility = if (viewModel.IsMenuActive.value == true) View.GONE else View.VISIBLE
-        }
 
         viewModel.IsMenuActive.observe(this) { isActive ->
-            binding.root.post {
-                btnBack.visibility = if (isActive) View.GONE else View.VISIBLE
-            }
+                binding.topPanel.btnBack.visibility = if (isActive) View.GONE else View.VISIBLE
         }
 
         if(savedInstanceState == null){
-            supportFragmentManager.beginTransaction()
+            /*supportFragmentManager.beginTransaction()
                 .replace(R.id.fragmentContainer, MainFragment())
-                .commit()
+                .commit()*/
+            supportFragmentManager.commit {
+                setCustomAnimations(
+                    R.anim.slide_in_right, // enter
+                    R.anim.slide_out_left,  // exit
+                    R.anim.slide_in_left,   // popEnter
+                    R.anim.slide_out_right
+                )
+                replace(R.id.fragmentContainer, MainFragment())
+                addToBackStack(null)
+
+
+            }
         }
 
         with(binding){
@@ -81,12 +85,6 @@ class MainActivity : AppCompatActivity() {
 
     }
 
-    override fun onResume() {
-        super.onResume()
-        val topBinding = binding.topPanel
-        val btnBack = topBinding.btnBack
-        Log.d("DEBUG_UI", "ON_CREATE: attached=${btnBack.isAttachedToWindow}, vis=${btnBack.visibility}, w=${btnBack.width}, h=${btnBack.height}, parentH=${(btnBack.parent as? View)?.height}")
-    }
     fun readTextFileFromInternalStorage(context: Context, fileName: String): String {
         val file = File(context.filesDir, fileName)
         val reader = BufferedReader(InputStreamReader(file.inputStream(), Charset.forName("Windows-1251")))
@@ -305,9 +303,6 @@ class MainActivity : AppCompatActivity() {
         }
         return false
     }
-
-
-
 
 }
 

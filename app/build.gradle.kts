@@ -61,4 +61,5 @@ dependencies {
     implementation("androidx.camera:camera-view:1.4.1")
     implementation("com.google.mlkit:barcode-scanning:17.3.0")
     implementation("com.opencsv:opencsv:5.9")
+    implementation("androidx.fragment:fragment-ktx:1.6.2")
 }
