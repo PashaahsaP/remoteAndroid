@@ -24,12 +24,7 @@ class IncomeFragment : Fragment() {
         savedInstanceState: Bundle?
     ): View? {
         _binding = FragmentIncomeBinding.inflate(inflater)
-        with(binding){
-            btnExit.setOnClickListener {
-                viewModel.changeMenuStatus(true)
-                parentFragmentManager.popBackStack()
-            }
-        }
+
         return  binding.root
     }
 }

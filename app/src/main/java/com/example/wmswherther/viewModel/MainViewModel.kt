@@ -8,7 +8,13 @@ class MainViewModel : ViewModel() {
     private val _isMenuActive = MutableLiveData<Boolean>(true)
     val IsMenuActive: LiveData<Boolean> get() = _isMenuActive
 
-    fun changeMenuStatus (status: Boolean){
-        _isMenuActive.value = status
+    fun showMenu()
+    {
+        _isMenuActive.value = true
     }
+    fun closeMenu()
+    {
+        _isMenuActive.value = false
+    }
+
 }

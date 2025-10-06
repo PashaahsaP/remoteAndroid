@@ -13,6 +13,7 @@ import androidx.activity.enableEdgeToEdge
 import androidx.activity.result.ActivityResultLauncher
 import androidx.activity.viewModels
 import androidx.annotation.RequiresApi
+import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.doOnPreDraw
 import androidx.fragment.app.commit
@@ -80,7 +81,29 @@ class MainActivity : AppCompatActivity() {
             }
         }
         with(binding){
+            btnBack.setOnClickListener{
+                val count = supportFragmentManager.backStackEntryCount
 
+                super.onBackPressed()
+                viewModel.showMenu()
+
+               /* if (count > 0) {
+                    // Если есть фрагменты в стеке
+                    val dialog = AlertDialog.Builder(this@MainActivity)
+                        .setTitle("Выход")
+                        .setMessage("Точно закрыть текущий экран?")
+                        .setPositiveButton("Да") { _, _ ->
+                            super.onBackPressed()
+                            val count = supportFragmentManager.backStackEntryCount
+                            if (count == 1){
+                                viewModel.showMenu()
+                            }
+                        }
+                        .setNegativeButton("Нет", null)
+                        .create()
+                    dialog.show()
+                }*/
+            }
         }
 
 
