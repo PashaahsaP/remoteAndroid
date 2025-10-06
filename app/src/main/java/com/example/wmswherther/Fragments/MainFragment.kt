@@ -23,7 +23,6 @@ import com.example.wmswherther.LogActivity
 import com.example.wmswherther.viewModel.MainViewModel
 
 class MainFragment : Fragment(R.layout.fragment_main) {
-
     private var _binding: FragmentMainBinding? = null
     private val binding
         get() = _binding ?: throw IllegalStateException("Binding for FragmentMain")

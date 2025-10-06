@@ -56,14 +56,14 @@ class MainActivity : AppCompatActivity() {
         setNavigationBar()
 
         viewModel.IsMenuActive.observe(this) { isActive ->
-            binding.btnBack.visibility = if (isActive) View.GONE else View.VISIBLE
-            binding.btnBack.visibility = if (isActive) View.GONE else View.VISIBLE
+            if(isActive){
+                binding.btnBack.visibility = View.GONE
+            }else{
+                binding.btnBack.visibility = View.VISIBLE
+            }
         }
 
         if(savedInstanceState == null){
-            /*supportFragmentManager.beginTransaction()
-                .replace(R.id.fragmentContainer, MainFragment())
-                .commit()*/
             supportFragmentManager.commit {
                 setCustomAnimations(
                     R.anim.slide_in_right, // enter

@@ -5,7 +5,7 @@ import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 
 class MainViewModel : ViewModel() {
-    private val _isMenuActive = MutableLiveData<Boolean>()
+    private val _isMenuActive = MutableLiveData<Boolean>(true)
     val IsMenuActive: LiveData<Boolean> get() = _isMenuActive
 
     fun changeMenuStatus (status: Boolean){
