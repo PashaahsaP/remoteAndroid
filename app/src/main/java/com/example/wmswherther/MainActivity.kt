@@ -56,7 +56,8 @@ class MainActivity : AppCompatActivity() {
         setNavigationBar()
 
         viewModel.IsMenuActive.observe(this) { isActive ->
-                binding.topPanel.btnBack.visibility = if (isActive) View.GONE else View.VISIBLE
+            binding.btnBack.visibility = if (isActive) View.GONE else View.VISIBLE
+            binding.btnBack.visibility = if (isActive) View.GONE else View.VISIBLE
         }
 
         if(savedInstanceState == null){
@@ -70,6 +71,7 @@ class MainActivity : AppCompatActivity() {
                     R.anim.slide_in_left,   // popEnter
                     R.anim.slide_out_right
                 )
+                setReorderingAllowed(true)
                 replace(R.id.fragmentContainer, MainFragment())
                 addToBackStack(null)
 
@@ -78,7 +80,7 @@ class MainActivity : AppCompatActivity() {
         }
 
         with(binding){
-            topPanel.btnBack.setOnClickListener {
+            btnBack.setOnClickListener {
                 viewModel.changeMenuStatus(true)
             }
         }
