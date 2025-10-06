@@ -45,8 +45,8 @@ class MainFragment : Fragment(R.layout.fragment_main) {
                     replace<IncomeFragment>(R.id.fragmentContainer)
                     addToBackStack(null)
                 }
-
                 viewModel.changeMenuStatus(false)
+
             }
         }
         return binding.root

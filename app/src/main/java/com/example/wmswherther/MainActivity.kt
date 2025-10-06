@@ -8,6 +8,7 @@ import android.util.Log
 import android.view.View
 import android.view.WindowManager
 import android.widget.Button
+import android.widget.Toast
 import androidx.activity.enableEdgeToEdge
 import androidx.activity.result.ActivityResultLauncher
 import androidx.activity.viewModels
@@ -52,7 +53,7 @@ class MainActivity : AppCompatActivity() {
         val db = MainDB.getDB(this)
         _binding = ActivityMainBinding.inflate(layoutInflater)
         enableEdgeToEdge()
-        setContentView(R.layout.activity_main)
+        setContentView(binding.root)
         setNavigationBar()
 
         viewModel.IsMenuActive.observe(this) { isActive ->
@@ -79,11 +80,8 @@ class MainActivity : AppCompatActivity() {
             }
         }
 
-        with(binding){
-            btnBack.setOnClickListener {
-                viewModel.changeMenuStatus(true)
-            }
-        }
+
+
 
     }
 
