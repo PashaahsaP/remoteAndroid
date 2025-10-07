@@ -5,14 +5,15 @@ import android.view.LayoutInflater
 import android.view.ViewGroup
 import androidx.recyclerview.widget.RecyclerView
 import com.example.wmsRemote.R
+import com.example.wmswherther.Classes.TaskMenuItem
 
-class IncomeMenuAdapter(var data: List<String>): RecyclerView.Adapter<IncomeMenuViewHolder>() {
+class IncomeMenuAdapter(var data: List<TaskMenuItem>): RecyclerView.Adapter<IncomeMenuViewHolder>() {
     override fun onCreateViewHolder(
         parent: ViewGroup,
         viewType: Int
     ): IncomeMenuViewHolder {
         val inventoryView = LayoutInflater.from(parent.context)
-            .inflate(R.layout.supplier_menu_item,parent,false)
+            .inflate(R.layout.tasks_menu,parent,false)
 
         return IncomeMenuViewHolder(inventoryView)
     }
@@ -22,8 +23,10 @@ class IncomeMenuAdapter(var data: List<String>): RecyclerView.Adapter<IncomeMenu
         position: Int
     ) {
         var item = data[position]
-        holder.btnSupplier.text = item
-        Log.d("Adapter", "Binding item: $item at position $position")
+        holder.tvDate.text = item.date
+        holder.tvNumber.text = item.number
+        holder.tvProgress.text = item.progress
+        holder.tvSupplier.text = item.supplier
     }
 
     override fun getItemCount(): Int {

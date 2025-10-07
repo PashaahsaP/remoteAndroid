@@ -14,6 +14,6 @@ class AssemblyMenu @JvmOverloads constructor(
 
     init {
         // Подключаем layout внутрь вью
-        LayoutInflater.from(context).inflate(R.layout.assembly_menu, this, true)
+        LayoutInflater.from(context).inflate(R.layout.tasks_menu, this, true)
     }
 }

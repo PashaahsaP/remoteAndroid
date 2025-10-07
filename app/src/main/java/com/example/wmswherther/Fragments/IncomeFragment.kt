@@ -12,6 +12,7 @@ import androidx.recyclerview.widget.RecyclerView
 import com.example.wmsRemote.databinding.FragmentIncomeBinding
 import com.example.wmsRemote.databinding.FragmentMainBinding
 import com.example.wmswherther.Adapters.IncomeMenuAdapter
+import com.example.wmswherther.Classes.TaskMenuItem
 import com.example.wmswherther.viewModel.MainViewModel
 import kotlin.getValue
 
@@ -28,7 +29,60 @@ class IncomeFragment : Fragment() {
         savedInstanceState: Bundle?
     ): View? {
         _binding = FragmentIncomeBinding.inflate(inflater)
-        var data : List<String> = listOf("Str", "asdg")
+        var data : List<TaskMenuItem> = listOf(TaskMenuItem(
+            supplier = "Bork",
+            date = "22.12.2025",
+            number = "5",
+            progress = "0/34"
+        ),
+            TaskMenuItem(
+                supplier = "Bork",
+                date = "22.12.2025",
+                number = "5",
+                progress = "0/34"
+            ),
+            TaskMenuItem(
+                supplier = "Bork",
+                date = "22.12.2025",
+                number = "5",
+                progress = "0/34"
+            ),
+            TaskMenuItem(
+                supplier = "Bork",
+                date = "22.12.2025",
+                number = "5",
+                progress = "0/34"
+            ),
+            TaskMenuItem(
+                supplier = "Bork",
+                date = "22.12.2025",
+                number = "5",
+                progress = "0/34"
+            ),
+            TaskMenuItem(
+                supplier = "Bork",
+                date = "22.12.2025",
+                number = "5",
+                progress = "0/34"
+            ),
+            TaskMenuItem(
+                supplier = "Bork",
+                date = "22.12.2025",
+                number = "5",
+                progress = "0/34"
+            ),
+            TaskMenuItem(
+                supplier = "Bork",
+                date = "22.12.2025",
+                number = "5",
+                progress = "0/34"
+            ),
+            TaskMenuItem(
+                supplier = "Bork",
+                date = "22.12.2025",
+                number = "5",
+                progress = "0/34"
+            ))
         var adapter = IncomeMenuAdapter(data)
         var recyclerView: RecyclerView = binding.rwIncomeMenu
         recyclerView.layoutManager = LinearLayoutManager(requireActivity())
