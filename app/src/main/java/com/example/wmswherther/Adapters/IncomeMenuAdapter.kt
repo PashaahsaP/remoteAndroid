@@ -32,4 +32,9 @@ class IncomeMenuAdapter(var data: List<TaskMenuItem>): RecyclerView.Adapter<Inco
     override fun getItemCount(): Int {
         return data.count()
     }
+
+    fun updateMenuItems(newData: List<TaskMenuItem>){
+        data = newData
+    }
+
 }
