@@ -13,6 +13,6 @@ data class IncomeItem(
     @PrimaryKey(autoGenerate = false) val id: String,
     val sessionId: String,
     val goodsId: String,
-    val status: String,
+    val status: Int,
     val other: String? // JSON
 )

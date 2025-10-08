@@ -22,17 +22,25 @@ import com.example.wmsRemote.MoveActivity
 import com.example.wmsRemote.PickerActivity
 import com.example.wmsRemote.R
 import com.example.wmsRemote.SearchActivity
+import com.example.wmsRemote.data.db.Cell
 import com.example.wmsRemote.data.db.MainDB
+import com.example.wmsRemote.data.enums.StatusType
 import com.example.wmsRemote.databinding.ActivityMainBinding
 import com.example.wmsRemote.databinding.FragmentMainBinding
 import com.example.wmswherther.Adapters.IncomeMenuAdapter
 import com.example.wmswherther.LogActivity
+import com.example.wmswherther.data.db.Catalog
+import com.example.wmswherther.data.db.CellType
+import com.example.wmswherther.data.db.Goods
+import com.example.wmswherther.data.db.IncomeItem
+import com.example.wmswherther.data.db.SessionIncome
 import com.example.wmswherther.data.db.Supplier
 import com.example.wmswherther.viewModel.MainViewModel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import okhttp3.Dispatcher
+import java.time.LocalDateTime
 import java.util.UUID
 
 class MainFragment : Fragment(R.layout.fragment_main) {
@@ -47,13 +55,32 @@ class MainFragment : Fragment(R.layout.fragment_main) {
     ): View? {
         var mainContext : Context = requireActivity()
        /* lifecycleScope.launch {
-            withContext(Dispatchers.IO){
+            withContext(Dispatchers.IO){//for testing income ui
                 val db = MainDB.getDB(mainContext)
-                var feedConsaltSupplier = Supplier(UUID.randomUUID().toString(), "FeedConsalt", null)
-                db.getDao().insertSupplier(feedConsaltSupplier)
+                var dao = db.getDao()
+                var supplier = Supplier(UUID.randomUUID().toString(), "Bork", null)
+                dao.insertSupplier(supplier)
+                var pickerCellType = CellType(UUID.randomUUID().toString(), "Picker","####", null)
+                var inCellType = CellType(UUID.randomUUID().toString(), "Income","#####", null)
+                var firstCell = Cell(UUID.randomUUID().toString(), inCellType.id, "IN-01")
+                var incomeCell = Cell(UUID.randomUUID().toString(), pickerCellType.id, "Z000")
+                dao.insertCellType(pickerCellType)
+                dao.insertCellType(inCellType)
+                dao.insertCell(firstCell)
+                dao.insertCell(incomeCell)
+                var incomeSession = SessionIncome(UUID.randomUUID().toString(), supplier.id, null, firstCell.id, StatusType.Created.ordinal, System.currentTimeMillis(),null, null, null )
+                var catalog = Catalog(UUID.randomUUID().toString(), "Kettle k534", "2342343", supplier.id, null)
+                var goods = Goods(UUID.randomUUID().toString(), 3, incomeCell.id, catalog.id, System.currentTimeMillis(),null)
+                var incomeItem = IncomeItem(UUID.randomUUID().toString(), incomeSession.id, goods.id, StatusType.Created.ordinal, null)
+                dao.insertCatalog(catalog)
+                dao.insertGoods(goods)
+                dao.insertIncomeSession(incomeSession)
+                dao.insertIncomeItem(incomeItem)
             }
         }*/
         _binding = FragmentMainBinding.inflate(inflater, container, false)
+
+
 
 
 
