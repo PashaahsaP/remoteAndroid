@@ -5,9 +5,11 @@ import androidx.room.Delete
 import androidx.room.Insert
 import androidx.room.OnConflictStrategy
 import androidx.room.Query
+import androidx.room.Transaction
 import androidx.room.Update
 import com.example.wmswherther.data.db.Catalog
 import com.example.wmswherther.data.db.CellType
+import com.example.wmswherther.data.db.Change
 import com.example.wmswherther.data.db.Goods
 import com.example.wmswherther.data.db.IncomeItem
 import com.example.wmswherther.data.db.SessionIncome
@@ -20,27 +22,44 @@ interface Dao {
 
     // <editor-fold desc="Cell">
     @Insert
-    fun insertCell(cell: Cell) : Long
-    @Update
-    suspend fun updateCell(cell: Cell)
+    fun insertCell(cell: Cell)
+    @Transaction
+    fun insertCellSync(cell: Cell, change: Change) : Pair<Unit, Unit> {
+        val from = insertCell(cell)
+        var to = insertCellChanges(change)
+        return from to to
+    }
+   /* @Update
+    suspend fun updateCell(cell: Cell)*/
     @Query("SELECT * FROM cells")
     fun getAllCells(): List<Cell>
     @Query("SELECT * FROM cells WHERE id =:cellId")
     suspend fun getCellById(cellId: Int): Cell
     @Query("SELECT * FROM cells WHERE name =:cellName")
     suspend fun getCellByName(cellName: String): Cell
-    @Delete
-    suspend fun deleteCell(cell: Cell)
+    /*@Delete
+    suspend fun deleteCell(cell: Cell)*/
     // </editor-fold>
     // <editor-fold desc="IncomeSession">
     @Insert
     fun insertIncomeSession(incomeSession: SessionIncome)
+    @Insert
+    fun insertIncomeSessionAsync(incomeSession: SessionIncome, change: Change) : Pair<Unit, Unit>{
+        val from = insertIncomeSession(incomeSession)
+        val to = insertIncomeSessionChanges(change)
+        return from to to
+    }
     @Query("SELECT * FROM sessions_income")
     fun getAllIncomeSession(): List<SessionIncome>
     // </editor-fold>
     // <editor-fold desc="IncomeItem">
     @Insert
     fun insertIncomeItem(incomeItem: IncomeItem)
+    @Insert
+    fun insertIncomeItemSync(incomeItem: IncomeItem, change: Change){
+        val from = insertIncomeItem(incomeItem)
+        val to = insertIncomeItemChanges(change)
+    }
     @Query("SELECT * FROM income_items")
     fun getAllIncomeItem(): List<IncomeItem>
     @Query("SELECT * FROM income_items WHERE sessionId =:incomeSessionId")
@@ -49,22 +68,56 @@ interface Dao {
     // <editor-fold desc="CellTypes">
     @Insert
     fun insertCellType(cellType: CellType)
+    @Insert
+    fun insertCellTypeSync(cellType: CellType, change: Change):Pair<Unit, Unit>{
+        val from = insertCellType(cellType)
+        val to = insertCellTypeChanges(change)
+        return from to to
+    }
     @Query("SELECT * FROM cell_types WHERE type =:cellTypeName")
     suspend fun getCellTypeByName(cellTypeName: String): List<CellType>
     // </editor-fold>
     // <editor-fold desc="Supplier">
     @Insert
     fun insertSupplier(supplier: Supplier)
+    @Insert
+    fun insertSupplierSync(supplier: Supplier, change: Change) : Pair<Unit, Unit> {
+        val from = insertSupplier(supplier)
+        val  to = insertSupplierChanges(change)
+        return from to to
+    }
     @Query("SELECT * FROM suppliers")
     fun getAllSuppliers(): List<Supplier>
     // </editor-fold>
     // <editor-fold desc="Catalog">
-        @Insert
-        fun insertCatalog(catalog: Catalog)
+    @Insert
+    fun insertCatalog(catalog: Catalog)
+    @Transaction
+    fun insertCatalogSync(catalog: Catalog, change: Change) : Pair<Unit, Unit>{
+        val from = insertCatalog(catalog)
+        val to = insertCatalogChanges(change)
+        return from to to
+    }
     // </editor-fold>
     // <editor-fold desc="Goods">
         @Insert
         fun insertGoods(goods: Goods)
+    // </editor-fold>
+    // <editor-fold desc="Changes">
+    @Insert
+    fun insertCellChanges(change: Change)
+    @Insert
+    fun insertIncomeSessionChanges(change: Change)
+    @Insert
+    fun insertIncomeItemChanges(change: Change)
+    @Insert
+    fun insertCellTypeChanges(change: Change)
+    @Insert
+    fun insertSupplierChanges(change: Change)
+    @Insert
+    fun insertCatalogChanges(change: Change)
+
+
     // </editor-fold>
 
 }

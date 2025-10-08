@@ -12,9 +12,8 @@ import com.example.wmsRemote.data.db.Cell
         ForeignKey(entity = Cell::class, parentColumns = ["id"], childColumns = ["cellFromId"]),
         ForeignKey(entity = Cell::class, parentColumns = ["id"], childColumns = ["cellToId"]),
         ForeignKey(entity = User::class, parentColumns = ["id"], childColumns = ["userId"]),
-        ForeignKey(entity = OperationType::class, parentColumns = ["id"], childColumns = ["operationTypeId"])
     ],
-    indices = [Index("cellFromId"), Index("cellToId"), Index("userId"), Index("operationTypeId")]
+    indices = [Index("cellFromId"), Index("cellToId"), Index("userId")]
 )
 data class Movement(
     @PrimaryKey(autoGenerate = false) val id: String,
@@ -22,5 +21,5 @@ data class Movement(
     val cellToId: String,
     val userId: String?,
     val executedAt: Long,
-    val operationTypeId: Long
+    val operationType: Int
 )

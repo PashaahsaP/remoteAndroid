@@ -14,7 +14,6 @@ import com.example.wmswherther.data.db.Credential
 import com.example.wmswherther.data.db.Goods
 import com.example.wmswherther.data.db.IncomeItem
 import com.example.wmswherther.data.db.Movement
-import com.example.wmswherther.data.db.OperationType
 import com.example.wmswherther.data.db.OutcomeItem
 import com.example.wmswherther.data.db.PackageEntity
 import com.example.wmswherther.data.db.PickerItem
@@ -37,7 +36,6 @@ import com.example.wmswherther.data.db.User
     Goods::class,
     IncomeItem::class,
     Movement::class,
-    OperationType::class,
     OutcomeItem::class,
     PackageEntity::class,
     PickerItem::class,
@@ -134,15 +132,14 @@ val MIGRATION_1_2 = object : Migration(1, 2) {
             CREATE TABLE IF NOT EXISTS changes (
                 id TEXT NOT NULL PRIMARY KEY,
                 entityId TEXT NOT NULL,
-                operationTypeId TEXT NOT NULL,
+                operationType INTEGER NOT NULL,
                 status INTEGER NOT NULL,
                 supplierId TEXT,
                 other TEXT,
-                FOREIGN KEY(operationTypeId) REFERENCES OperationType(id) ON DELETE CASCADE,
                 FOREIGN KEY(supplierId) REFERENCES Supplier(id) ON DELETE CASCADE
             )
         """)
-        database.execSQL("CREATE INDEX IF NOT EXISTS index_changes_operationTypeId ON changes(operationTypeId)")
+        database.execSQL("CREATE INDEX IF NOT EXISTS index_changes_operationType ON changes(operationType)")
         database.execSQL("CREATE INDEX IF NOT EXISTS index_changes_supplierId ON changes(supplierId)")
         // </editor-fold>
         // <editor-fold desc="Credential">
@@ -192,31 +189,19 @@ val MIGRATION_1_2 = object : Migration(1, 2) {
                 cellToId TEXT NOT NULL,
                 userId TEXT,
                 executedAt INTEGER NOT NULL,
-                operationTypeId INTEGER NOT NULL,
+                operationType INTEGER NOT NULL,
                 FOREIGN KEY(cellFromId) REFERENCES Cell(id),
                 FOREIGN KEY(cellToId) REFERENCES Cell(id),
                 FOREIGN KEY(userId) REFERENCES User(id),
-                FOREIGN KEY(operationTypeId) REFERENCES OperationType(id)
             )
         """)
 
         database.execSQL("CREATE INDEX IF NOT EXISTS index_movements_cellFromId ON movements(cellFromId)")
         database.execSQL("CREATE INDEX IF NOT EXISTS index_movements_cellToId ON movements(cellToId)")
         database.execSQL("CREATE INDEX IF NOT EXISTS index_movements_userId ON movements(userId)")
-        database.execSQL("CREATE INDEX IF NOT EXISTS index_movements_operationTypeId ON movements(operationTypeId)")
+        database.execSQL("CREATE INDEX IF NOT EXISTS index_movements_operationType ON movements(operationType)")
         // </editor-fold>
-        // <editor-fold desc="OperationTypes">
-        database.execSQL("""
-            CREATE TABLE IF NOT EXISTS operation_types (
-                id TEXT NOT NULL PRIMARY KEY,
-                name TEXT NOT NULL,
-                supplierId TEXT,
-                FOREIGN KEY(supplierId) REFERENCES Supplier(id) ON DELETE CASCADE
-            )
-        """)
 
-        database.execSQL("CREATE INDEX IF NOT EXISTS index_operation_types_supplierId ON operation_types(supplierId)")
-        // </editor-fold>
         // <editor-fold desc="OutcomeItems">
         database.execSQL("""
             CREATE TABLE IF NOT EXISTS outcome_items (
