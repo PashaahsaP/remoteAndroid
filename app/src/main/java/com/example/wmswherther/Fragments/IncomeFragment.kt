@@ -20,6 +20,7 @@ import com.example.wmsRemote.databinding.FragmentIncomeBinding
 import com.example.wmsRemote.databinding.FragmentMainBinding
 import com.example.wmswherther.Adapters.IncomeMenuAdapter
 import com.example.wmswherther.Classes.TaskMenuItem
+import com.example.wmswherther.data.db.Barcode
 import com.example.wmswherther.data.db.Catalog
 import com.example.wmswherther.data.db.CellType
 import com.example.wmswherther.data.db.Change
@@ -49,6 +50,12 @@ class IncomeFragment : Fragment() {
         container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View? {
+       /* lifecycleScope.launch {
+            withContext(Dispatchers.IO){
+                appendDummyData(MainDB.getDB(requireActivity()))
+            }
+        }*/
+
         val localViewModel = ViewModelProvider(requireActivity()).get(IncomeSessionViewModel::class)
         _binding = FragmentIncomeBinding.inflate(inflater)
         var adapter = IncomeMenuAdapter(listOf())
@@ -111,56 +118,6 @@ fun appendDummyData(db: MainDB){
     )
     dao.insertCellType(pickerType)
 
-    var A111 = Cell(
-        UUID.randomUUID().toString(),
-        pickerType.id,
-        "A111"
-    )
-    var cellChangeSecond = Change(
-        UUID.randomUUID().toString(),
-        A111.id,
-        OperationType.InsertCell.ordinal,
-        StatusType.Created.ordinal,
-        null,
-        null
-    )
-    dao.insertCellSync(IN01, cellChange)
-
-    var catalog = Catalog(
-        UUID.randomUUID().toString(),
-        "Kettle k515",
-        "3241223",
-        borkSupplier.id,
-        null
-    )
-    var catalogChange = Change(
-        UUID.randomUUID().toString(),
-        catalog.id,
-        OperationType.InsertCatalog.ordinal,
-        StatusType.Created.ordinal,
-        borkSupplier.id,
-        null
-    )
-
-    dao.insertCatalogSync(catalog, catalogChange)
-
-    var goods = Goods(
-        UUID.randomUUID().toString(),
-        3,
-        A111.id,
-        catalog.id,
-        System.currentTimeMillis(),
-        null
-    )
-    var goodsChange = Change(
-        UUID.randomUUID().toString(),
-        goods.id,
-        OperationType.InsertGoods.ordinal,
-        status = StatusType.Created.ordinal,
-        borkSupplier.id,
-        null
-    )
-
     var session = SessionIncome(
         UUID.randomUUID().toString(),
         borkSupplier.id,
@@ -180,25 +137,92 @@ fun appendDummyData(db: MainDB){
         borkSupplier.id,
         null
     )
-
     dao.insertIncomeSessionAsync(session, sessionChange)
 
-    var incomeItem = IncomeItem(
-        UUID.randomUUID().toString(),
-        session.id,
-        goods.id,
-        StatusType.Created.ordinal,
-        null
-    )
-    var incomeItemChange = Change(
-        UUID.randomUUID().toString(),
-        incomeItem.id,
-        OperationType.InsertIncomeItem.ordinal,
-        StatusType.Created.ordinal,
-        borkSupplier.id,
-        null
-    )
+    for (enum in 0 .. 9){
+        var A111 = Cell(
+            UUID.randomUUID().toString(),
+            pickerType.id,
+            "A11${enum}"
+        )
+        var cellChangeSecond = Change(
+            UUID.randomUUID().toString(),
+            A111.id,
+            OperationType.InsertCell.ordinal,
+            StatusType.Created.ordinal,
+            null,
+            null
+        )
+        dao.insertCellSync(A111, cellChangeSecond)
+        var catalog = Catalog(
+            UUID.randomUUID().toString(),
+            "Kettle k51${enum}",
+            "3241223",
+            borkSupplier.id,
+            null
+        )
+        var catalogChange = Change(
+            UUID.randomUUID().toString(),
+            catalog.id,
+            OperationType.InsertCatalog.ordinal,
+            StatusType.Created.ordinal,
+            borkSupplier.id,
+            null
+        )
 
-    dao.insertIncomeItemSync(incomeItem, incomeItemChange)
+        var barcode = Barcode(
+            UUID.randomUUID().toString(),
+            "466545377645${enum}",
+            catalog.id,
+            borkSupplier.id,
+            null
+        )
+        var barcodeChanges = Change(
+            UUID.randomUUID().toString(),
+            barcode.id,
+            OperationType.InsertBarcode.ordinal,
+            StatusType.Created.ordinal,
+            borkSupplier.id,
+            null
+        )
+        dao.insertCatalogSync(catalog, catalogChange)
+        dao.insertBarcodeAsync(barcode, barcodeChanges)
 
+
+        var goods = Goods(
+            UUID.randomUUID().toString(),
+            3 + enum,
+            A111.id,
+            catalog.id,
+            System.currentTimeMillis(),
+            null
+        )
+        var goodsChange = Change(
+            UUID.randomUUID().toString(),
+            goods.id,
+            OperationType.InsertGoods.ordinal,
+            status = StatusType.Created.ordinal,
+            borkSupplier.id,
+            null
+        )
+        dao.insertGoodsAsync(goods, goodsChange)
+
+        var incomeItem = IncomeItem(
+            UUID.randomUUID().toString(),
+            session.id,
+            goods.id,
+            StatusType.Created.ordinal,
+            null
+        )
+        var incomeItemChange = Change(
+            UUID.randomUUID().toString(),
+            incomeItem.id,
+            OperationType.InsertIncomeItem.ordinal,
+            StatusType.Created.ordinal,
+            borkSupplier.id,
+            null
+        )
+        dao.insertIncomeItemSync(incomeItem, incomeItemChange)
+
+    }
 }

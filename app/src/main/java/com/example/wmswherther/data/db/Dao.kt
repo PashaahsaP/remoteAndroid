@@ -7,6 +7,7 @@ import androidx.room.OnConflictStrategy
 import androidx.room.Query
 import androidx.room.Transaction
 import androidx.room.Update
+import com.example.wmswherther.data.db.Barcode
 import com.example.wmswherther.data.db.Catalog
 import com.example.wmswherther.data.db.CellType
 import com.example.wmswherther.data.db.Change
@@ -102,6 +103,22 @@ interface Dao {
     // <editor-fold desc="Goods">
         @Insert
         fun insertGoods(goods: Goods)
+        @Transaction
+        fun insertGoodsAsync(goods: Goods, change: Change) : Pair<Unit, Unit>{
+            val from = insertGoods(goods)
+            val to = insertGoodsChanges(change)
+            return from to to
+        }
+    // </editor-fold>
+    // <editor-fold desc="Barcodes">
+    @Insert
+    fun insertBarcode(barcode: Barcode)
+    @Transaction
+    fun insertBarcodeAsync(barcode:Barcode, change: Change) : Pair<Unit, Unit>{
+        val from = insertBarcode(barcode)
+        var to = insertBarcodeChanges(change)
+        return from to to
+    }
     // </editor-fold>
     // <editor-fold desc="Changes">
     @Insert
@@ -116,6 +133,11 @@ interface Dao {
     fun insertSupplierChanges(change: Change)
     @Insert
     fun insertCatalogChanges(change: Change)
+    @Insert
+    fun insertGoodsChanges(change: Change)
+    @Insert
+    fun insertBarcodeChanges(change: Change)
+
 
 
     // </editor-fold>

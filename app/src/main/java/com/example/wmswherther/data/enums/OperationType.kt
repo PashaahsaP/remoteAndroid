@@ -5,5 +5,6 @@ enum class OperationType {
     InsertCatalog,
     InsertGoods,
     InsertIncomeSession,
-    InsertIncomeItem
+    InsertIncomeItem,
+    InsertBarcode
 }
