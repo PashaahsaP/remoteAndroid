@@ -17,10 +17,12 @@ class IncomeSessionViewModel : ViewModel() {
     private val _tasksList =  MutableLiveData<List<TaskMenuItem>>()
     var tasksList: LiveData<List<TaskMenuItem>> = _tasksList
 
-    fun updateSupplierList(db : MainDB){
-        viewModelScope.launch {
+    fun setTaskCollection(list: List<TaskMenuItem>){
+        _tasksList.value = list
+    }
+
+    fun updateSupplierList(db : MainDB) : List<TaskMenuItem>{
             var data: List<TaskMenuItem> = listOf()
-            withContext(Dispatchers.IO) {
                 var dao = db.getDao()
                 var suppliers = dao.getAllSuppliers()
                 dao.getAllIncomeSession().forEach { item ->
@@ -31,12 +33,7 @@ class IncomeSessionViewModel : ViewModel() {
                         date = LocalDate.now().toString()
                     )
                 }
-            }
-            withContext(Dispatchers.Main)
-            {
-                _tasksList.value = data
-            }
-        }
+        return data
     }
 
 

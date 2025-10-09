@@ -62,11 +62,20 @@ class IncomeFragment : Fragment() {
         var recyclerView: RecyclerView = binding.rwIncomeMenu
         recyclerView.layoutManager = LinearLayoutManager(requireActivity())
         recyclerView.adapter = adapter
-        localViewModel.updateSupplierList(MainDB.getDB(requireActivity()))
-        localViewModel.tasksList.observe(requireActivity(), Observer{ items ->
+
+        localViewModel.tasksList.observe(requireActivity(), Observer { items ->
             adapter.updateMenuItems(items)
         })
 
+        lifecycleScope.launch {
+            var data : List<TaskMenuItem> = listOf()
+            withContext(Dispatchers.IO) {
+                data = localViewModel.updateSupplierList(MainDB.getDB(requireActivity()))
+            }
+            withContext(Dispatchers.Main) {
+                localViewModel.setTaskCollection(data)
+            }
+        }
 
 
 

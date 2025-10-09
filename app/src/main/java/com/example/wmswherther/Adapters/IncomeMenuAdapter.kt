@@ -35,6 +35,8 @@ class IncomeMenuAdapter(var data: List<TaskMenuItem>): RecyclerView.Adapter<Inco
 
     fun updateMenuItems(newData: List<TaskMenuItem>){
         data = newData
+        notifyDataSetChanged()
+
     }
 
 }
