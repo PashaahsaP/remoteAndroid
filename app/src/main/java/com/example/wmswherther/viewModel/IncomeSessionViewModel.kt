@@ -21,16 +21,16 @@ class IncomeSessionViewModel : ViewModel() {
         viewModelScope.launch {
             var data: List<TaskMenuItem> = listOf()
             withContext(Dispatchers.IO) {
-            var dao = db.getDao()
-            var suppliers = dao.getAllSuppliers()
-            dao.getAllIncomeSession().forEach { item ->
-                data += TaskMenuItem(
-                    supplier = suppliers.firstOrNull { inner -> inner.id == item.supplierId }!!.name,
-                    progress = "0/1",
-                    number = "",
-                    date = LocalDate.now().toString()
-                )
-            }
+                var dao = db.getDao()
+                var suppliers = dao.getAllSuppliers()
+                dao.getAllIncomeSession().forEach { item ->
+                    data += TaskMenuItem(
+                        supplier = suppliers.firstOrNull { inner -> inner.id == item.supplierId }!!.name,
+                        progress = "0/1",
+                        number = "",
+                        date = LocalDate.now().toString()
+                    )
+                }
             }
             withContext(Dispatchers.Main)
             {
