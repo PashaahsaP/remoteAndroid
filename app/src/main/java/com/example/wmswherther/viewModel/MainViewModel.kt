@@ -6,7 +6,9 @@ import androidx.lifecycle.ViewModel
 
 class MainViewModel : ViewModel() {
     private val _isMenuActive = MutableLiveData<Boolean>(true)
+    private val _isIncomeSessionActive = MutableLiveData<Boolean>(false)
     val IsMenuActive: LiveData<Boolean> get() = _isMenuActive
+    val IsIncomeSessionActive: LiveData<Boolean> get() = _isIncomeSessionActive
 
     fun showMenu()
     {
@@ -15,6 +17,14 @@ class MainViewModel : ViewModel() {
     fun closeMenu()
     {
         _isMenuActive.value = false
+    }
+    fun startIncomeSession()
+    {
+        _isIncomeSessionActive.value = true
+    }
+    fun finishIncomeSession()
+    {
+        _isIncomeSessionActive.value = false
     }
 
 }

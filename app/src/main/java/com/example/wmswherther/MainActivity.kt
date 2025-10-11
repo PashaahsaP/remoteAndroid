@@ -84,25 +84,25 @@ class MainActivity : AppCompatActivity() {
             btnBack.setOnClickListener{
                 val count = supportFragmentManager.backStackEntryCount
 
-                super.onBackPressed()
-                viewModel.showMenu()
 
-               /* if (count > 0) {
+                if (count == 2) {
+                    viewModel.showMenu()
+                    super.onBackPressed()
+                }
+
+                if (viewModel.IsIncomeSessionActive.value == true) {
                     // Если есть фрагменты в стеке
                     val dialog = AlertDialog.Builder(this@MainActivity)
                         .setTitle("Выход")
                         .setMessage("Точно закрыть текущий экран?")
                         .setPositiveButton("Да") { _, _ ->
+                            viewModel.finishIncomeSession()
                             super.onBackPressed()
-                            val count = supportFragmentManager.backStackEntryCount
-                            if (count == 1){
-                                viewModel.showMenu()
-                            }
                         }
                         .setNegativeButton("Нет", null)
                         .create()
                     dialog.show()
-                }*/
+                }
             }
         }
 

@@ -3,11 +3,18 @@ package com.example.wmswherther.Adapters
 import android.util.Log
 import android.view.LayoutInflater
 import android.view.ViewGroup
+import androidx.fragment.app.Fragment
+import androidx.fragment.app.add
+import androidx.fragment.app.commit
+import androidx.fragment.app.replace
 import androidx.recyclerview.widget.RecyclerView
 import com.example.wmsRemote.R
 import com.example.wmswherther.Classes.TaskMenuItem
+import com.example.wmswherther.Fragments.IncomeFragment
+import com.example.wmswherther.Fragments.IncomeSessionFragment
+import com.example.wmswherther.viewModel.MainViewModel
 
-class IncomeMenuAdapter(var data: List<TaskMenuItem>): RecyclerView.Adapter<IncomeMenuViewHolder>() {
+class IncomeMenuAdapter(var data: List<TaskMenuItem>,var fragment: Fragment, var viewModel: MainViewModel): RecyclerView.Adapter<IncomeMenuViewHolder>() {
     override fun onCreateViewHolder(
         parent: ViewGroup,
         viewType: Int
@@ -22,6 +29,19 @@ class IncomeMenuAdapter(var data: List<TaskMenuItem>): RecyclerView.Adapter<Inco
         holder: IncomeMenuViewHolder,
         position: Int
     ) {
+        holder.container.setOnClickListener {
+            fragment.parentFragmentManager.commit {
+                setCustomAnimations(
+                    R.anim.slide_in_right, // enter
+                    R.anim.slide_out_left,  // exit
+                    R.anim.slide_in_left,   // popEnter
+                    R.anim.slide_out_right  // popExit
+                )
+                replace<IncomeSessionFragment>(R.id.fragmentContainer)
+                addToBackStack(null)
+            }
+            viewModel.startIncomeSession()
+        }
         var item = data[position]
         holder.tvDate.text = item.date
         holder.tvNumber.text = item.number

@@ -58,7 +58,7 @@ class IncomeFragment : Fragment() {
 
         val localViewModel = ViewModelProvider(requireActivity()).get(IncomeSessionViewModel::class)
         _binding = FragmentIncomeBinding.inflate(inflater)
-        var adapter = IncomeMenuAdapter(listOf())
+        var adapter = IncomeMenuAdapter(listOf(), this, viewModel)
         var recyclerView: RecyclerView = binding.rwIncomeMenu
         recyclerView.layoutManager = LinearLayoutManager(requireActivity())
         recyclerView.adapter = adapter
