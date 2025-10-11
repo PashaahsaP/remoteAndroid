@@ -6,3 +6,8 @@ data class TaskMenuItem(
     var number: String,
     var date: String,
 )
+data class IncomeItem(
+    var name: String,
+    var haveCount: Int,
+    var allCount: Int
+    )

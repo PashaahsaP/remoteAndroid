@@ -1,5 +1,6 @@
 package com.example.wmswherther.Adapters
 
+import android.os.Bundle
 import android.util.Log
 import android.view.LayoutInflater
 import android.view.ViewGroup
@@ -30,6 +31,12 @@ class IncomeMenuAdapter(var data: List<TaskMenuItem>,var fragment: Fragment, var
         position: Int
     ) {
         holder.container.setOnClickListener {
+            var newFragment = IncomeSessionFragment()
+            val bundle = Bundle().apply {
+                putString("id", data[position].number.toString())//number contain sessionId
+            }
+            newFragment.arguments = bundle
+
             fragment.parentFragmentManager.commit {
                 setCustomAnimations(
                     R.anim.slide_in_right, // enter
@@ -37,14 +44,14 @@ class IncomeMenuAdapter(var data: List<TaskMenuItem>,var fragment: Fragment, var
                     R.anim.slide_in_left,   // popEnter
                     R.anim.slide_out_right  // popExit
                 )
-                replace<IncomeSessionFragment>(R.id.fragmentContainer)
+                replace(R.id.fragmentContainer, newFragment)
                 addToBackStack(null)
             }
             viewModel.startIncomeSession()
         }
         var item = data[position]
         holder.tvDate.text = item.date
-        holder.tvNumber.text = item.number
+        holder.tvNumber.text = ""
         holder.tvProgress.text = item.progress
         holder.tvSupplier.text = item.supplier
     }

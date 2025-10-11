@@ -1,6 +1,5 @@
 package com.example.wmswherther.Fragments
 
-import android.content.Context
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
@@ -17,7 +16,6 @@ import com.example.wmsRemote.data.db.MainDB
 import com.example.wmsRemote.data.enums.OperationType
 import com.example.wmsRemote.data.enums.StatusType
 import com.example.wmsRemote.databinding.FragmentIncomeBinding
-import com.example.wmsRemote.databinding.FragmentMainBinding
 import com.example.wmswherther.Adapters.IncomeMenuAdapter
 import com.example.wmswherther.Classes.TaskMenuItem
 import com.example.wmswherther.data.db.Barcode
@@ -28,12 +26,11 @@ import com.example.wmswherther.data.db.Goods
 import com.example.wmswherther.data.db.IncomeItem
 import com.example.wmswherther.data.db.SessionIncome
 import com.example.wmswherther.data.db.Supplier
-import com.example.wmswherther.viewModel.IncomeSessionViewModel
+import com.example.wmswherther.viewModel.IncomeMenuViewModel
 import com.example.wmswherther.viewModel.MainViewModel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
-import java.time.LocalDate
 import java.util.UUID
 import kotlin.getValue
 
@@ -56,7 +53,7 @@ class IncomeFragment : Fragment() {
             }
         }*/
 
-        val localViewModel = ViewModelProvider(requireActivity()).get(IncomeSessionViewModel::class)
+        val localViewModel = ViewModelProvider(requireActivity()).get(IncomeMenuViewModel::class)
         _binding = FragmentIncomeBinding.inflate(inflater)
         var adapter = IncomeMenuAdapter(listOf(), this, viewModel)
         var recyclerView: RecyclerView = binding.rwIncomeMenu

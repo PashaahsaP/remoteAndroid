@@ -99,6 +99,8 @@ interface Dao {
         val to = insertCatalogChanges(change)
         return from to to
     }
+    @Query("SELECT * FROM catalogs WHERE id =:catalogId")
+    suspend fun getCatalogById(catalogId: String): Catalog
     // </editor-fold>
     // <editor-fold desc="Goods">
         @Insert
@@ -109,6 +111,8 @@ interface Dao {
             val to = insertGoodsChanges(change)
             return from to to
         }
+        @Query("SELECT * FROM goods WHERE id =:goodsId")
+        suspend fun getGoodsById(goodsId: String): Goods
     // </editor-fold>
     // <editor-fold desc="Barcodes">
     @Insert
