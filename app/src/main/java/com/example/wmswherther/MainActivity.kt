@@ -9,6 +9,7 @@ import android.view.View
 import android.view.WindowManager
 import android.widget.Button
 import android.widget.Toast
+import android.window.OnBackInvokedDispatcher
 import androidx.activity.enableEdgeToEdge
 import androidx.activity.result.ActivityResultLauncher
 import androidx.activity.viewModels
@@ -47,7 +48,28 @@ class MainActivity : AppCompatActivity() {
     private lateinit var getContent: ActivityResultLauncher<String>
     val viewModel: MainViewModel by viewModels()
 
+    override fun onBackPressed() {
+        val count = supportFragmentManager.backStackEntryCount
 
+        if (count == 2) {
+            viewModel.showMenu()
+            super.onBackPressed()
+        }
+
+        if (viewModel.IsIncomeSessionActive.value == true) {
+            // Если есть фрагменты в стеке
+            val dialog = AlertDialog.Builder(this@MainActivity)
+                .setTitle("Выход")
+                .setMessage("Точно закрыть текущий экран?")
+                .setPositiveButton("Да") { _, _ ->
+                    viewModel.finishIncomeSession()
+                    super.onBackPressed()
+                }
+                .setNegativeButton("Нет", null)
+                .create()
+            dialog.show()
+        }
+    }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
