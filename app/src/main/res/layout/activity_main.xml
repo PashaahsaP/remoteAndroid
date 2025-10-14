@@ -41,6 +41,17 @@
             app:layout_constraintEnd_toStartOf="@+id/btnThreeDots" />
 
         <ImageButton
+            android:id="@+id/btnBarcode"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:background="@drawable/selector_background"
+            android:src="@drawable/barcode"
+            android:padding="5dp"
+            android:layout_marginBottom="3dp"
+            app:layout_constraintRight_toLeftOf="@+id/btnSearch"
+            app:layout_constraintBottom_toBottomOf="parent" />
+
+        <ImageButton
             android:id="@+id/btnBack"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"

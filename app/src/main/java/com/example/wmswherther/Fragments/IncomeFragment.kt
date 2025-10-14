@@ -198,7 +198,7 @@ fun appendDummyData(db: MainDB){
         var goods = Goods(
             UUID.randomUUID().toString(),
             3 + enum,
-            A111.id,
+            IN01.id,
             catalog.id,
             System.currentTimeMillis(),
             null

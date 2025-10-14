@@ -1,6 +1,7 @@
 package com.example.wmsRemote
 import android.content.Context
 import android.content.Intent
+import android.graphics.Color
 import android.opengl.Visibility
 import android.os.Build
 import android.os.Bundle
@@ -56,13 +57,13 @@ class MainActivity : AppCompatActivity() {
             super.onBackPressed()
         }
 
-        if (viewModel.IsIncomeSessionActive.value == true) {
+        if (viewModel.IsIncomeMenuActive.value == true) {
             // Если есть фрагменты в стеке
             val dialog = AlertDialog.Builder(this@MainActivity)
                 .setTitle("Выход")
                 .setMessage("Точно закрыть текущий экран?")
                 .setPositiveButton("Да") { _, _ ->
-                    viewModel.finishIncomeSession()
+                    viewModel.finishIncomeMenu()
                     super.onBackPressed()
                 }
                 .setNegativeButton("Нет", null)
@@ -86,6 +87,20 @@ class MainActivity : AppCompatActivity() {
                 binding.btnBack.visibility = View.VISIBLE
             }
         }
+        viewModel.IsIncomeSessionActive.observe(this) { isActive ->
+            if(isActive){
+                binding.btnBarcode.visibility = View.VISIBLE
+            }else{
+                binding.btnBarcode.visibility = View.GONE
+            }
+        }
+        viewModel.IsIncomeSessionTEModeActive.observe(this) { isActive ->
+            if(isActive){
+                binding.btnBarcode.setImageResource(R.drawable.barcode_selected)
+            }else{
+                binding.btnBarcode.setImageResource(R.drawable.barcode)
+            }
+        }
 
         if(savedInstanceState == null){
             supportFragmentManager.commit {
@@ -107,11 +122,10 @@ class MainActivity : AppCompatActivity() {
                 val count = supportFragmentManager.backStackEntryCount
 
 
-                if (count == 2) {
+                /*if (count == 2) {
                     viewModel.showMenu()
                     super.onBackPressed()
-                }
-
+                }*/
                 if (viewModel.IsIncomeSessionActive.value == true) {
                     // Если есть фрагменты в стеке
                     val dialog = AlertDialog.Builder(this@MainActivity)
@@ -119,12 +133,21 @@ class MainActivity : AppCompatActivity() {
                         .setMessage("Точно закрыть текущий экран?")
                         .setPositiveButton("Да") { _, _ ->
                             viewModel.finishIncomeSession()
+                            viewModel.turnOffTeMode()
                             super.onBackPressed()
                         }
                         .setNegativeButton("Нет", null)
                         .create()
                     dialog.show()
                 }
+                else if (viewModel.IsIncomeMenuActive.value == true) {
+                    super.onBackPressed()
+                    viewModel.finishIncomeMenu()
+                    viewModel.showMenu()
+                }
+            }
+            btnBarcode.setOnClickListener {
+                viewModel.turnOnTeMode()
             }
         }
 

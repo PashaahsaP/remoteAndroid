@@ -97,7 +97,7 @@ class MainFragment : Fragment(R.layout.fragment_main) {
                     addToBackStack(null)
                 }
                 viewModel.closeMenu()
-
+                viewModel.startIncomeMenu()
             }
         }
         return binding.root
