@@ -7,9 +7,13 @@ import android.opengl.Visibility
 import android.os.Build
 import android.os.Bundle
 import android.util.Log
+import android.view.LayoutInflater
 import android.view.View
 import android.view.WindowManager
 import android.widget.Button
+import android.widget.EditText
+import android.widget.LinearLayout
+import android.widget.ScrollView
 import android.widget.Toast
 import android.window.OnBackInvokedDispatcher
 import androidx.activity.enableEdgeToEdge
@@ -19,6 +23,7 @@ import androidx.annotation.RequiresApi
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.doOnPreDraw
+import androidx.core.view.setPadding
 import androidx.fragment.app.commit
 import androidx.lifecycle.Observer
 import androidx.lifecycle.lifecycleScope
@@ -100,6 +105,33 @@ class MainActivity : AppCompatActivity() {
                 binding.btnBarcode.setImageResource(R.drawable.barcode_selected)
             }else{
                 binding.btnBarcode.setImageResource(R.drawable.barcode)
+                if(viewModel.IsWorkableTE.value == true){
+                    var dialog = android.app.AlertDialog.Builder(this@MainActivity)
+                        .create()
+                    var text = EditText(this)
+                    text.width = 100
+                    text.setPadding(30)
+                    text.isSingleLine = true
+                    text.requestFocus()
+                    dialog.setButton(android.app.AlertDialog.BUTTON_POSITIVE, "Сохранить") { _, _ ->
+                        viewModel.unworkTe()
+                        viewModel.setTE(text.text.toString())
+                    }
+                    dialog.setButton(android.app.AlertDialog.BUTTON_NEGATIVE, "Отмена") { dialogInterface, _ ->
+                        viewModel.turnOnTeMode()
+                        viewModel.workTe()
+                        dialogInterface.dismiss()
+                    }
+                    dialog.setOnCancelListener {
+                        viewModel.turnOnTeMode()
+                        viewModel.workTe()
+                    }
+
+                    dialog.setView(text)
+                    dialog.show()
+                   /* dialog.window?.clearFlags(WindowManager.LayoutParams.FLAG_ALT_FOCUSABLE_IM)// after that two line work keyboard when click update line
+                    dialog.window?.setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_STATE_ALWAYS_VISIBLE)*/
+                }
             }
         }
 
@@ -152,6 +184,7 @@ class MainActivity : AppCompatActivity() {
                     viewModel.turnOffTeMode()
                 }else{
                     viewModel.turnOnTeMode()
+                    viewModel.workTe()
                 }
             }
         }
