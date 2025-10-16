@@ -10,6 +10,7 @@ import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.WindowManager
+import android.view.inputmethod.EditorInfo
 import android.widget.Button
 import android.widget.EditText
 import android.widget.LinearLayout
@@ -96,8 +97,11 @@ class MainActivity : AppCompatActivity() {
         viewModel.IsIncomeSessionActive.observe(this) { isActive ->
             if(isActive){
                 binding.btnBarcode.visibility = View.VISIBLE
+                binding.etIncomeBarcode.visibility = View.VISIBLE
+                binding.etIncomeBarcode.requestFocus()
             }else{
                 binding.btnBarcode.visibility = View.GONE
+                binding.etIncomeBarcode.visibility = View.GONE
             }
         }
         viewModel.IsIncomeSessionTEModeActive.observe(this) { isActive ->
@@ -187,6 +191,20 @@ class MainActivity : AppCompatActivity() {
                     viewModel.workTe()
                 }
             }
+            etIncomeBarcode.setOnEditorActionListener { v, actionId, event ->
+                if (actionId == EditorInfo.IME_ACTION_DONE || actionId == EditorInfo.IME_ACTION_UNSPECIFIED) {
+                    // Выполнить действие
+                    val text = etIncomeBarcode.text.toString()
+                    if(text != "") {
+                       Toast.makeText(this@MainActivity, etIncomeBarcode.text, Toast.LENGTH_SHORT).show()
+                        etIncomeBarcode.setText("")
+                    }
+                    return@setOnEditorActionListener true
+                }
+                return@setOnEditorActionListener false
+
+            }
+
         }
 
 

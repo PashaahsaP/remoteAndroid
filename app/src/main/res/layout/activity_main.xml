@@ -66,6 +66,20 @@
 
         </ImageButton>
 
+        <EditText
+            android:id="@+id/etIncomeBarcode"
+            android:layout_width="150dp"
+            android:layout_height="wrap_content"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintStart_toEndOf="@+id/btnBack"
+            android:padding="10dp"
+            android:layout_marginBottom="5dp"
+            android:background="@drawable/menu_border"
+            android:singleLine="true"
+            >
+
+        </EditText>
+
 
     </androidx.constraintlayout.widget.ConstraintLayout>
 
@@ -75,7 +89,7 @@
         android:layout_height="match_parent"
         android:paddingTop="85dp"
         tools:layout_editor_absoluteX="0dp"
-        tools:layout_editor_absoluteY="0dp" />
+        tools:layout_editor_absoluteY="-16dp" />
 
 
 </androidx.constraintlayout.widget.ConstraintLayout>
