@@ -1,4 +1,5 @@
 package com.example.wmsRemote
+import android.app.Dialog
 import android.content.Context
 import android.content.Intent
 import android.graphics.Color
@@ -147,7 +148,11 @@ class MainActivity : AppCompatActivity() {
                 }
             }
             btnBarcode.setOnClickListener {
-                viewModel.turnOnTeMode()
+                if(viewModel.IsIncomeSessionTEModeActive.value == true){
+                    viewModel.turnOffTeMode()
+                }else{
+                    viewModel.turnOnTeMode()
+                }
             }
         }
 
