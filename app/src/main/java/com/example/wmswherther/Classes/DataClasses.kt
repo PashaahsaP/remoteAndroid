@@ -8,6 +8,7 @@ data class TaskMenuItem(
 )
 data class IncomeItem(
     var name: String,
+    var catalogId: String,
     var haveCount: Int,
     var allCount: Int
     )

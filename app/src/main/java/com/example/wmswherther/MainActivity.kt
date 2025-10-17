@@ -193,10 +193,10 @@ class MainActivity : AppCompatActivity() {
             }
             etIncomeBarcode.setOnEditorActionListener { v, actionId, event ->
                 if (actionId == EditorInfo.IME_ACTION_DONE || actionId == EditorInfo.IME_ACTION_UNSPECIFIED) {
-                    // Выполнить действие
                     val text = etIncomeBarcode.text.toString()
                     if(text != "") {
-                       Toast.makeText(this@MainActivity, etIncomeBarcode.text, Toast.LENGTH_SHORT).show()
+                        viewModel.setBarcode(text)
+                        viewModel.updateBarcode()
                         etIncomeBarcode.setText("")
                     }
                     return@setOnEditorActionListener true

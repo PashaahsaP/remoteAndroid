@@ -47,6 +47,14 @@ class IncomeSessionFragment : Fragment() {
             localViewModel.items.observe(requireActivity(),{ items ->
                 adapter.updateCollection(items)
             })
+            viewModel.IsNeedCheckBarcode.observe(requireActivity(),{item ->
+                if(item == true) {
+                    localViewModel.updateCollection(
+                        MainDB.getDB(requireActivity()),
+                        viewModel.getBarcode()
+                    )
+                }
+            })
 
             lifecycleScope.launch {
                 var data: List<IncomeItem> = listOf()

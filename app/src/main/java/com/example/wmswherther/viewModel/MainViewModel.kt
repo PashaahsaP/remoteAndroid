@@ -11,16 +11,31 @@ class MainViewModel : ViewModel() {
     private val _isIncomeSessionTEModeActive = MutableLiveData<Boolean>(false)
     private val _isWorkableTE= MutableLiveData<Boolean>(false)//нужен чтобы отображать диалоговое окно
     private val _TE= MutableLiveData<String>("")
+    private val _barcode= MutableLiveData<String>("")
+    private val _isNeedCheckBarcode= MutableLiveData<Boolean>(false)
 
     val IsMenuActive: LiveData<Boolean> get() = _isMenuActive
     val IsIncomeMenuActive: LiveData<Boolean> get() = _isIncomeMenuActive
     val IsIncomeSessionActive: LiveData<Boolean> get() = _isIncomeSessionActive
     val IsIncomeSessionTEModeActive: LiveData<Boolean> get() = _isIncomeSessionTEModeActive
     val IsWorkableTE: LiveData<Boolean> get() = _isWorkableTE
-    val TE: LiveData<String> get() = _TE
+    val Barcode: LiveData<String> get() = _barcode
+    val IsNeedCheckBarcode: LiveData<Boolean> get() = _isNeedCheckBarcode
 
+    fun updateBarcode(){
+        _isNeedCheckBarcode.value = true
+    }
+    fun removeBarcode(){
+        _isNeedCheckBarcode.value = false
+    }
     fun setTE(text: String){
         _TE.value = text
+    }
+    fun setBarcode(text: String){
+        _barcode.value = text
+    }
+    fun getBarcode() : String? {
+        return _barcode.value
     }
     fun showMenu()
     {

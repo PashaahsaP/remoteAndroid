@@ -123,6 +123,8 @@ interface Dao {
         var to = insertBarcodeChanges(change)
         return from to to
     }
+    @Query("SELECT * FROM barcodes WHERE name =:barcodeName")
+    suspend fun getBarcodeByName(barcodeName: String): Barcode
     // </editor-fold>
     // <editor-fold desc="Changes">
     @Insert
