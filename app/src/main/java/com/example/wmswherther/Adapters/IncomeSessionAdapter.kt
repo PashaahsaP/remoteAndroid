@@ -10,8 +10,13 @@ import android.view.inputmethod.InputMethodManager
 import androidx.recyclerview.widget.RecyclerView
 import com.example.wmsRemote.R
 import com.example.wmswherther.Classes.IncomeItem
+import com.example.wmswherther.viewModel.IncomeSessionViewModel
 
-class IncomeSessionAdapter(var data: List<IncomeItem>, var recyclerView: RecyclerView):  RecyclerView.Adapter<RecyclerView.ViewHolder>() {
+class IncomeSessionAdapter(
+    var data: List<IncomeItem>,
+    var recyclerView: RecyclerView,
+    var localViewModel: IncomeSessionViewModel
+):  RecyclerView.Adapter<RecyclerView.ViewHolder>() {
     private var barcodeBuffer = StringBuilder()
     private val barcodeHandler = Handler(Looper.getMainLooper())
     private val barcodeTimeout = 500L // мс, если сканер не успел — сбрасываем
@@ -38,10 +43,29 @@ class IncomeSessionAdapter(var data: List<IncomeItem>, var recyclerView: Recycle
     override fun onBindViewHolder(holder: RecyclerView.ViewHolder, position: Int) {
         val item = data[position]
         when (holder) {
-            is IncomeSessionViewHolder -> holder.bind(item)
+            is IncomeSessionViewHolder -> {
+                var counter = 0
+                var listIncome : List<IncomeItem> = listOf()
+                holder.container.setOnClickListener {
+
+                    localViewModel.items.value?.forEach{ item ->
+                        item.isSelected = false
+                        if(counter == position){
+                            item.isSelected = true
+                        }
+                        listIncome+= item
+                        counter = counter + 1
+                    }
+                    localViewModel.setSelectedItem(position)
+                    localViewModel.updateItems(listIncome)
+
+                }
+
+                holder.bind(item)
+            }
             is IncomeSessionSelectedViewHolder ->
             {
-                holder.etSelectedCount.setOnKeyListener{ _, keyCode, event ->
+                /*holder.etSelectedCount.setOnKeyListener{ _, keyCode, event ->
                     if (event.action == KeyEvent.ACTION_DOWN) {
                         val char = event.unicodeChar.toChar()
 
@@ -68,12 +92,12 @@ class IncomeSessionAdapter(var data: List<IncomeItem>, var recyclerView: Recycle
                         }
                     }
                     false
-                }
+                }*/
                 holder.bind(item)
             }
         }
 
-        4665453776417    }
+            }
 
     override fun getItemCount(): Int {
         return data.count()
