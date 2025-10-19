@@ -12,7 +12,6 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.example.wmsRemote.data.db.MainDB
 import com.example.wmsRemote.databinding.FragmentIncomeSessionBinding
-import com.example.wmswherther.Adapters.IncomeMenuAdapter
 import com.example.wmswherther.Adapters.IncomeSessionAdapter
 import com.example.wmswherther.Classes.IncomeItem
 import com.example.wmswherther.viewModel.IncomeSessionViewModel
@@ -37,14 +36,15 @@ class IncomeSessionFragment : Fragment() {
             val localViewModel = ViewModelProvider(requireActivity()).get(IncomeSessionViewModel::class)
             _binding = FragmentIncomeSessionBinding.inflate(inflater)
 
-            var adapter = IncomeSessionAdapter(listOf())
+
             var recyclerView: RecyclerView = binding.rwIncomeSessionList
+            var adapter = IncomeSessionAdapter(listOf(), recyclerView)
             recyclerView.layoutManager = LinearLayoutManager(requireActivity())
             recyclerView.adapter = adapter
             val sessionId = arguments?.getString("id")
 
             localViewModel.items.observe(viewLifecycleOwner,{ items ->
-                adapter.updateCollection(items)
+                adapter.updateCollection(items, localViewModel.getSelectedItem())
                 recyclerView.smoothScrollToPosition(localViewModel.getSelectedItem())
 
             })
@@ -67,6 +67,7 @@ class IncomeSessionFragment : Fragment() {
                     localViewModel.setSelectedItem(0)
                 }
             }
+
 
 
 
