@@ -65,7 +65,7 @@ class IncomeSessionAdapter(
             }
             is IncomeSessionSelectedViewHolder ->
             {
-                /*holder.etSelectedCount.setOnKeyListener{ _, keyCode, event ->
+                holder.etSelectedCount.setOnKeyListener{ _, keyCode, event ->
                     if (event.action == KeyEvent.ACTION_DOWN) {
                         val char = event.unicodeChar.toChar()
 
@@ -73,26 +73,22 @@ class IncomeSessionAdapter(
                             val scannedBarcode = barcodeBuffer.toString().trim()
                             barcodeBuffer.clear()
                             var t = holder.etSelectedCount.text.trim()
-                            if (scannedBarcode.isNotEmpty()) {
-                                println()
-                                //handleBarcode(scannedBarcode)
-                                // TODO делать когда буду использовать tsd т.к. когда через ctrl + v вставляю то получаю не те нажатые клавиши
-                                // todo надо сделать чтобы при повторном сканировании увеличивалось число на 1(а для этого надо получить все шк в коллекцию при первичной загрузке),
-                                // todo если левый шк то переключение на другое поле
+                            var counter = 0
+                            var listIncome : List<IncomeItem> = listOf()
+                            localViewModel.items.value?.forEach{ item ->
+                                item.isSelected = false
+                                if(counter == position){
+                                    item.haveCount = t.toString().toInt()
+                                }
+                                listIncome+= item
+                                counter = counter + 1
                             }
+                            localViewModel.updateItems(listIncome)
                             return@setOnKeyListener true
-                        }
-
-                        // Добавляем символ в буфер
-                        if (char.isLetterOrDigit()) {
-                            barcodeBuffer.append(char)
-                            // сбрасываем таймер на случай, если сканер медленный
-                            barcodeHandler.removeCallbacksAndMessages(null)
-                            barcodeHandler.postDelayed({ barcodeBuffer.clear() }, barcodeTimeout)
                         }
                     }
                     false
-                }*/
+                }
                 holder.bind(item)
             }
         }
