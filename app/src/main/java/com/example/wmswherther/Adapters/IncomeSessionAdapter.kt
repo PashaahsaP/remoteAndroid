@@ -7,22 +7,39 @@ import com.example.wmsRemote.R
 import com.example.wmswherther.Classes.IncomeItem
 import com.example.wmswherther.Classes.TaskMenuItem
 
-class IncomeSessionAdapter(var data: List<IncomeItem>): RecyclerView.Adapter<IncomeSessionViewHolder>() {
-    override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): IncomeSessionViewHolder {
-            val inventoryView = LayoutInflater.from(parent.context)
-                .inflate(R.layout.income_session,parent,false)
+class IncomeSessionAdapter(var data: List<IncomeItem>):  RecyclerView.Adapter<RecyclerView.ViewHolder>() {
+    override fun getItemViewType(position: Int): Int {
+        return if (data[position].isSelected) 1 else 0
+    }
+    override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): RecyclerView.ViewHolder {
+        val inflater = LayoutInflater.from(parent.context)
+        return when (viewType) {
+            0 -> {
+                val view = inflater.inflate(R.layout.income_session, parent, false)
+                IncomeSessionViewHolder(view)
+            }
 
-            return IncomeSessionViewHolder(inventoryView)
+            1 -> {
+                val view = inflater.inflate(R.layout.income_session_selected, parent, false)
+                IncomeSessionSelectedViewHolder(view)
+            }
+
+            else -> throw IllegalArgumentException("Invalid view type")
+        }
+    }
+
+    override fun onBindViewHolder(holder: RecyclerView.ViewHolder, position: Int) {
+        val item = data[position]
+        when (holder) {
+            is IncomeSessionViewHolder -> holder.bind(item)
+            is IncomeSessionSelectedViewHolder -> holder.bind(item)
+        }
     }
 
     override fun getItemCount(): Int {
         return data.count()
     }
 
-    override fun onBindViewHolder(holder: IncomeSessionViewHolder, position: Int) {
-        holder.tvLeft.text = data[position].name
-        holder.tvRight.text = "${data[position].haveCount}/${data[position].allCount}"
-    }
 
     fun updateCollection(items: List<IncomeItem>){
         data = items

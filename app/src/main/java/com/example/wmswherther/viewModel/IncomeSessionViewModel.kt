@@ -13,28 +13,49 @@ import kotlinx.coroutines.withContext
 
 class IncomeSessionViewModel : ViewModel() {
     private val _items = MutableLiveData<List<IncomeItem>>()
+    private val _selectedItem = MutableLiveData<Int>()
+
     val items: LiveData<List<IncomeItem>> get() = _items
+    val selectedItem: LiveData<Int> get() = _selectedItem
+
 
     fun updateItems(items: List<IncomeItem>){
         _items.value = items
+    }
+    fun getSelectedItem() : Int{
+        var isCorrect = _selectedItem.value
+        if (isCorrect != null)
+            return isCorrect
+        else
+            return  0
+    }
+    fun setSelectedItem(selectedItemCount: Int){
+        _selectedItem.value = selectedItemCount
     }
 
     fun updateCollection(db : MainDB, barcode: String?){
         var barcoded = Barcode("","","","","")
         viewModelScope.launch {
+            var result : List<IncomeItem> = mutableListOf()
             withContext(Dispatchers.IO) {
                 barcoded = getBarcode(db, if (barcode == null) "" else barcode)
 
             }
             withContext(Dispatchers.Main){
-                var result : List<IncomeItem> = mutableListOf()
-                _items.value?.forEach{ item ->
-                    if (item.catalogId == barcoded.catalogId){
-                        item.haveCount = item.haveCount + 1
+                if(barcoded != null) {
+                    var counter = 0
+                    _items.value?.forEach { item ->
+                        item.isSelected = false//чтобы не было несколько edit text
+                        if (item.catalogId == barcoded.catalogId) {
+                            item.haveCount = item.haveCount + 1
+                            item.isSelected = true
+                            setSelectedItem(counter)
+                        }
+                        counter = counter + 1
+                        result += item
                     }
-                    result += item
+                    updateItems(result)
                 }
-                updateItems(result)
             }
         }
     }

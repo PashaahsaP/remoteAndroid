@@ -41,13 +41,14 @@ class IncomeSessionFragment : Fragment() {
             var recyclerView: RecyclerView = binding.rwIncomeSessionList
             recyclerView.layoutManager = LinearLayoutManager(requireActivity())
             recyclerView.adapter = adapter
-
             val sessionId = arguments?.getString("id")
 
-            localViewModel.items.observe(requireActivity(),{ items ->
+            localViewModel.items.observe(viewLifecycleOwner,{ items ->
                 adapter.updateCollection(items)
+                recyclerView.smoothScrollToPosition(localViewModel.getSelectedItem())
+
             })
-            viewModel.IsNeedCheckBarcode.observe(requireActivity(),{item ->
+            viewModel.IsNeedCheckBarcode.observe(viewLifecycleOwner,{item ->
                 if(item == true) {
                     localViewModel.updateCollection(
                         MainDB.getDB(requireActivity()),
@@ -63,6 +64,7 @@ class IncomeSessionFragment : Fragment() {
                 }
                 withContext(Dispatchers.Main){
                     localViewModel.updateItems(data)
+                    localViewModel.setSelectedItem(0)
                 }
             }
 

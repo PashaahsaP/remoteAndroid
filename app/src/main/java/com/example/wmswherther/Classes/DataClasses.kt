@@ -10,5 +10,6 @@ data class IncomeItem(
     var name: String,
     var catalogId: String,
     var haveCount: Int,
-    var allCount: Int
+    var allCount: Int,
+    var isSelected: Boolean = false
     )

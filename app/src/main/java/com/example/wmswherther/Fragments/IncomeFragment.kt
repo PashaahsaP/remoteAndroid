@@ -46,8 +46,8 @@ class IncomeFragment : Fragment() {
         inflater: LayoutInflater,
         container: ViewGroup?,
         savedInstanceState: Bundle?
-    ): View? {
-       /* lifecycleScope.launch {
+    ): View? {/*
+        lifecycleScope.launch {
             withContext(Dispatchers.IO){
                 appendDummyData(MainDB.getDB(requireActivity()))
             }
@@ -145,11 +145,11 @@ fun appendDummyData(db: MainDB){
     )
     dao.insertIncomeSessionAsync(session, sessionChange)
 
-    for (enum in 0 .. 9){
+    for (enum in 10 .. 29){
         var A111 = Cell(
             UUID.randomUUID().toString(),
             pickerType.id,
-            "A11${enum}"
+            "A1${enum}"
         )
         var cellChangeSecond = Change(
             UUID.randomUUID().toString(),
@@ -162,7 +162,7 @@ fun appendDummyData(db: MainDB){
         dao.insertCellSync(A111, cellChangeSecond)
         var catalog = Catalog(
             UUID.randomUUID().toString(),
-            "Kettle k51${enum}",
+            "Kettle k5${enum}",
             "3241223",
             borkSupplier.id,
             null
@@ -178,7 +178,7 @@ fun appendDummyData(db: MainDB){
 
         var barcode = Barcode(
             UUID.randomUUID().toString(),
-            "466545377645${enum}",
+            "46654537764${enum}",
             catalog.id,
             borkSupplier.id,
             null
