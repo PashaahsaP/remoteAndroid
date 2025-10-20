@@ -8,6 +8,7 @@ import android.os.Build
 import android.os.Bundle
 import android.util.Log
 import android.view.Gravity
+import android.view.KeyEvent
 import android.view.LayoutInflater
 import android.view.View
 import android.view.WindowManager
@@ -89,7 +90,7 @@ class MainActivity : AppCompatActivity() {
         enableEdgeToEdge()
         setContentView(binding.root)
         setNavigationBar()
-
+        var barcodeBuffer: StringBuilder = StringBuilder()
 
         viewModel.IsMenuActive.observe(this) { isActive ->
             if(isActive){
@@ -147,6 +148,7 @@ class MainActivity : AppCompatActivity() {
                 binding.etIncomeBarcode.requestFocus()
             }else{
                 binding.etIncomeBarcode.visibility = View.GONE
+                binding.etIncomeBarcodeScan.requestFocus()
             }
         }
         viewModel.WidthScanningField.observe(this){ value ->
@@ -248,216 +250,27 @@ class MainActivity : AppCompatActivity() {
             }
 
         }
-
-
-
-
-    }
-
-
-
-    fun readTextFileFromInternalStorage(context: Context, fileName: String): String {
-        val file = File(context.filesDir, fileName)
-        val reader = BufferedReader(InputStreamReader(file.inputStream(), Charset.forName("Windows-1251")))
-        return reader.readText()
-
-    }
-    /*fun writeDataToFile(fileName: String, context: Context, db: MainDB){
-        var data = db.getDao().getAllItems()
-        var str = ""
-        for (element in data){
-            str += "${element.id} ${element.te} ${element.barcode} ${element.time} ${element.cell}\n"
-        }
-        try {
-            context.openFileOutput(fileName, Context.MODE_PRIVATE).use { outputStream ->
-                outputStream.write(str.toByteArray())
-            }
-        } catch (e: Exception) {
-            e.printStackTrace()
-        }
-    }*/
-   /* fun readBorkCatalog(db: MainDB){
-        lifecycleScope.launch {
-            withContext(Dispatchers.IO) {
-                val fileContent = readTextFileFromInternalStoragee(this@MainActivity, "Bork.txt")
-                val splittedData = fileContent.split("\r\n").dropLast(1)
-                try {
-                    for (line in splittedData) {
-                        val (id, name, barcode) = line.split(",")
-                            .map { element -> element.trim() }
-                        val item = CatalogBork(
-                            id.toInt(),
-                            name = name,
-                        )
-                        var catalogId: Long? = null
-                        var catalog = db.getDao().getCatalogBorkByName(name)
-                        if(catalog == null){
-                            catalogId = db.getDao().insertCatalogBork(item)
-                        }else{
-                            catalogId = catalog.id!!.toLong()
-                        }
-                        val barcodeBork = BarcodeBork(
-                            id = null,
-                            name = barcode,
-                            type = "master",
-                            catalogId = catalogId!!.toInt()
-                        )
-                        db.getDao().insertBorkBarcode(barcodeBork)
-
-                    }
-                } catch (e: IOException) {
-                    println("${e.message}")
-                }
-
-
+        binding.etIncomeBarcodeScan.setOnKeyListener {v, keyCode, event ->
+            val ch = event.unicodeChar.toChar()
+            if (keyCode == KeyEvent.KEYCODE_ENTER || ch == '\n' || ch == '\r') {
+                val scannedCode = barcodeBuffer.toString()
+                barcodeBuffer.clear()
+                viewModel.setBarcode(scannedCode)
+                true
+            } else {
+                barcodeBuffer.append(ch)
+                true
             }
         }
+        binding.etIncomeBarcodeScan.requestFocus()
     }
-    @RequiresApi(Build.VERSION_CODES.O)
-    fun readAtomyCatalogAndGoodsFromTxt(db: MainDB, mainActivity: MainActivity){
-        lifecycleScope.launch {
-            withContext(Dispatchers.IO) {
-                val fileContent = readTextFileFromInternalStorage(this@MainActivity, "Atomy.txt")
-                val splittedData = fileContent.split("\r\n").dropLast(1)
-                try {
-                    for (line in splittedData) {
-                        val (TrE, barcode, date, cell) = line.split(";")
-                            .map { element -> element.trim() }
-                        var newCell :Cell? = getCell(cell, db)
-                        var catalogId = getCatalogAtomyId(db, newCell, barcode)
-                        val item = GoodsAtomy(
-                            null,
-                            catalogId = catalogId,
-                            cellId = newCell!!.id ?: 0,
-                            amount = 1,
-                            TE = TrE.split(" ")[1],
-                            date = date,
-                            createdAt = LocalDateTime.now().toString()
-                        )
-                        db.getDao().insertGoodsAtomy(item)
-
-                    }
-                } catch (e: IOException) {
-                    println("${e.message}")
-                }
-
-
+    override fun onResume() {
+        super.onResume()
+        binding.etIncomeBarcodeScan.requestFocus()
+        binding.etIncomeBarcodeScan.post {
+            binding.etIncomeBarcodeScan.requestFocus()
             }
-        }
     }
-    fun readTextFileFromInternalStoragee(context: Context, fileName: String, charset: Charset = Charsets.UTF_8): String {
-        context.openFileInput(fileName).use { inputStream ->
-            return InputStreamReader(inputStream, charset).readText()
-        }
-    }
-    fun readBorkCatalogAndGoodsFromTxt(db: MainDB, mainActivity: MainActivity){
-        lifecycleScope.launch {
-            withContext(Dispatchers.IO) {
-                val fileContent = readTextFileFromInternalStoragee(this@MainActivity, "Bork.txt")
-                val splittedData = fileContent.split("\r\n").dropLast(1)
-                try {
-                    for (line in splittedData) {
-                        val (name, barcode, cell, count) = line.split(";")
-                            .map { element -> element.trim() }
-                        var newCell :Cell? = getCell(cell, db)
-                        var catalogId = getCatalogBorkId(db, newCell, barcode, name)
-                        val item = GoodsBork(
-                            null,
-                            catalogId = catalogId,
-                            cellId = newCell!!.id ?: 0,
-                            amount = count.toInt(),
-                            createdAt = LocalDateTime.now().toString()
-                        )
-                        db.getDao().insertGoodsBork(item)
-
-                    }
-                } catch (e: IOException) {
-                    println("${e.message}")
-                }
-
-
-            }
-        }
-    }
-    suspend fun getCatalogAtomyId(db: MainDB, newCell: Cell?, barcode: String): Int {
-        var dao = db.getDao()
-        var catalog = dao.getAllCatalogsAtomy().firstOrNull{ catalogItem ->
-            catalogItem.firstBarcode == barcode
-        }
-        if(catalog == null){
-            var id = dao.insertCatalogAtomy(CatalogAtomy(null, "name", barcode, barcode))
-            return id.toInt()
-        }else{
-            return catalog.id!!.toInt()
-        }
-
-    }
-    suspend fun getCatalogBorkId(db: MainDB, newCell: Cell?, barcode: String, name: String): Int {
-        var dao = db.getDao()
-        var catalog = dao.getAllBorkBarcode().firstOrNull{ catalogItem ->
-            catalogItem.name == barcode
-        }
-        if(catalog == null){
-            var id = dao.insertCatalogBork(CatalogBork(null, name))
-            var barcodeNew = BarcodeBork(null, barcode,"master", id.toInt())
-            dao.insertBorkBarcode(barcodeNew)
-            return id.toInt()
-        }else{
-            return catalog.id!!.toInt()
-        }
-
-    }
-    private fun getCell(cell: String, db: MainDB): Cell? {
-        var newCell = db.getDao().getAllCells().firstOrNull{ innerCell->
-            innerCell.name == cell
-        }
-        if(newCell == null){
-            var id = db.getDao().insertCell(Cell(null, cell))
-            newCell = Cell(id.toInt(), cell)
-        }
-        return newCell
-    }
-    fun readAtomyCatalog(db: MainDB, mainActivity: MainActivity){
-        lifecycleScope.launch {
-            withContext(Dispatchers.IO){
-            var items = getAtomyFromCsv("/testWms_db-atomyItems.csv", mainActivity)
-            items.forEach { item ->
-                var catalog = CatalogAtomy(null, "noName ${item.te}", item.barcode, item.expiration)
-                var result = db.getDao().insertCatalogAtomy(catalog)
-                if(isCell(item.cell)) {
-                    var cell = db.getDao().getAllCells().firstOrNull{cell-> cell.name == item.cell}
-                    if (cell == null) {
-                        db.getDao().insertCell(Cell(null, item.cell))
-                        cell = db.getDao().getAllCells().firstOrNull { cell -> cell.name == item.cell }
-                    }
-
-                    val goods: GoodsAtomy = GoodsAtomy(null, result.toInt(), cell!!.id!!, 1, "324", "2341", LocalDateTime.now().toString())
-                    db.getDao().insertGoodsAtomy(goods)
-                }
-            }
-            }
-        }
-    }
-    fun getAtomyFromCsv(path: String, mainActivity: MainActivity): MutableList<AtomyItem> {
-        var items = mutableListOf<AtomyItem>()
-        var reader = CSVReader(FileReader(mainActivity.filesDir.absolutePath + path))
-
-        reader.forEach{ line->
-            val splittedItem = line[0].toString().split(";")
-            val id = splittedItem[0].toIntOrNull()
-            if( id != null) {
-                val te = splittedItem[1]
-                val barcode = splittedItem[2]
-                val expiration = splittedItem[3]
-                val cell = splittedItem[4]
-                items.add(AtomyItem(id, te, barcode, expiration, cell))
-            }
-        }
-
-        reader.close()
-        return items
-    }
-    */
     private fun setNavigationBar() {
         val window = window
         // Устанавливаем флаги для скрытия навигационных кнопок
@@ -468,18 +281,220 @@ class MainActivity : AppCompatActivity() {
             )
         }
     }
-    private fun isCell(cell: String): Boolean {
-        if (cell.length == 4 && cell[0] in 'A' .. 'Z' && cell[1].isDigit() && cell[2].isDigit() && cell[3].isDigit()){
-            return true
-        }
-        return false
-    }
 
 
 }
 private fun getWidth(binding: ActivityMainBinding) : Int {
     return binding.main.width - (binding.btnBack.width + binding.btnBarcode.width + binding.btnThreeDots.width + binding.btnSearch.width)
 }
+fun readTextFileFromInternalStorage(context: Context, fileName: String): String {
+    val file = File(context.filesDir, fileName)
+    val reader = BufferedReader(InputStreamReader(file.inputStream(), Charset.forName("Windows-1251")))
+    return reader.readText()
 
+}
+/*fun writeDataToFile(fileName: String, context: Context, db: MainDB){
+    var data = db.getDao().getAllItems()
+    var str = ""
+    for (element in data){
+        str += "${element.id} ${element.te} ${element.barcode} ${element.time} ${element.cell}\n"
+    }
+    try {
+        context.openFileOutput(fileName, Context.MODE_PRIVATE).use { outputStream ->
+            outputStream.write(str.toByteArray())
+        }
+    } catch (e: Exception) {
+        e.printStackTrace()
+    }
+}*/
+/* fun readBorkCatalog(db: MainDB){
+     lifecycleScope.launch {
+         withContext(Dispatchers.IO) {
+             val fileContent = readTextFileFromInternalStoragee(this@MainActivity, "Bork.txt")
+             val splittedData = fileContent.split("\r\n").dropLast(1)
+             try {
+                 for (line in splittedData) {
+                     val (id, name, barcode) = line.split(",")
+                         .map { element -> element.trim() }
+                     val item = CatalogBork(
+                         id.toInt(),
+                         name = name,
+                     )
+                     var catalogId: Long? = null
+                     var catalog = db.getDao().getCatalogBorkByName(name)
+                     if(catalog == null){
+                         catalogId = db.getDao().insertCatalogBork(item)
+                     }else{
+                         catalogId = catalog.id!!.toLong()
+                     }
+                     val barcodeBork = BarcodeBork(
+                         id = null,
+                         name = barcode,
+                         type = "master",
+                         catalogId = catalogId!!.toInt()
+                     )
+                     db.getDao().insertBorkBarcode(barcodeBork)
+
+                 }
+             } catch (e: IOException) {
+                 println("${e.message}")
+             }
+
+
+         }
+     }
+ }
+ @RequiresApi(Build.VERSION_CODES.O)
+ fun readAtomyCatalogAndGoodsFromTxt(db: MainDB, mainActivity: MainActivity){
+     lifecycleScope.launch {
+         withContext(Dispatchers.IO) {
+             val fileContent = readTextFileFromInternalStorage(this@MainActivity, "Atomy.txt")
+             val splittedData = fileContent.split("\r\n").dropLast(1)
+             try {
+                 for (line in splittedData) {
+                     val (TrE, barcode, date, cell) = line.split(";")
+                         .map { element -> element.trim() }
+                     var newCell :Cell? = getCell(cell, db)
+                     var catalogId = getCatalogAtomyId(db, newCell, barcode)
+                     val item = GoodsAtomy(
+                         null,
+                         catalogId = catalogId,
+                         cellId = newCell!!.id ?: 0,
+                         amount = 1,
+                         TE = TrE.split(" ")[1],
+                         date = date,
+                         createdAt = LocalDateTime.now().toString()
+                     )
+                     db.getDao().insertGoodsAtomy(item)
+
+                 }
+             } catch (e: IOException) {
+                 println("${e.message}")
+             }
+
+
+         }
+     }
+ }
+ fun readTextFileFromInternalStoragee(context: Context, fileName: String, charset: Charset = Charsets.UTF_8): String {
+     context.openFileInput(fileName).use { inputStream ->
+         return InputStreamReader(inputStream, charset).readText()
+     }
+ }
+ fun readBorkCatalogAndGoodsFromTxt(db: MainDB, mainActivity: MainActivity){
+     lifecycleScope.launch {
+         withContext(Dispatchers.IO) {
+             val fileContent = readTextFileFromInternalStoragee(this@MainActivity, "Bork.txt")
+             val splittedData = fileContent.split("\r\n").dropLast(1)
+             try {
+                 for (line in splittedData) {
+                     val (name, barcode, cell, count) = line.split(";")
+                         .map { element -> element.trim() }
+                     var newCell :Cell? = getCell(cell, db)
+                     var catalogId = getCatalogBorkId(db, newCell, barcode, name)
+                     val item = GoodsBork(
+                         null,
+                         catalogId = catalogId,
+                         cellId = newCell!!.id ?: 0,
+                         amount = count.toInt(),
+                         createdAt = LocalDateTime.now().toString()
+                     )
+                     db.getDao().insertGoodsBork(item)
+
+                 }
+             } catch (e: IOException) {
+                 println("${e.message}")
+             }
+
+
+         }
+     }
+ }
+ suspend fun getCatalogAtomyId(db: MainDB, newCell: Cell?, barcode: String): Int {
+     var dao = db.getDao()
+     var catalog = dao.getAllCatalogsAtomy().firstOrNull{ catalogItem ->
+         catalogItem.firstBarcode == barcode
+     }
+     if(catalog == null){
+         var id = dao.insertCatalogAtomy(CatalogAtomy(null, "name", barcode, barcode))
+         return id.toInt()
+     }else{
+         return catalog.id!!.toInt()
+     }
+
+ }
+ suspend fun getCatalogBorkId(db: MainDB, newCell: Cell?, barcode: String, name: String): Int {
+     var dao = db.getDao()
+     var catalog = dao.getAllBorkBarcode().firstOrNull{ catalogItem ->
+         catalogItem.name == barcode
+     }
+     if(catalog == null){
+         var id = dao.insertCatalogBork(CatalogBork(null, name))
+         var barcodeNew = BarcodeBork(null, barcode,"master", id.toInt())
+         dao.insertBorkBarcode(barcodeNew)
+         return id.toInt()
+     }else{
+         return catalog.id!!.toInt()
+     }
+
+ }
+ private fun getCell(cell: String, db: MainDB): Cell? {
+     var newCell = db.getDao().getAllCells().firstOrNull{ innerCell->
+         innerCell.name == cell
+     }
+     if(newCell == null){
+         var id = db.getDao().insertCell(Cell(null, cell))
+         newCell = Cell(id.toInt(), cell)
+     }
+     return newCell
+ }
+ fun readAtomyCatalog(db: MainDB, mainActivity: MainActivity){
+     lifecycleScope.launch {
+         withContext(Dispatchers.IO){
+         var items = getAtomyFromCsv("/testWms_db-atomyItems.csv", mainActivity)
+         items.forEach { item ->
+             var catalog = CatalogAtomy(null, "noName ${item.te}", item.barcode, item.expiration)
+             var result = db.getDao().insertCatalogAtomy(catalog)
+             if(isCell(item.cell)) {
+                 var cell = db.getDao().getAllCells().firstOrNull{cell-> cell.name == item.cell}
+                 if (cell == null) {
+                     db.getDao().insertCell(Cell(null, item.cell))
+                     cell = db.getDao().getAllCells().firstOrNull { cell -> cell.name == item.cell }
+                 }
+
+                 val goods: GoodsAtomy = GoodsAtomy(null, result.toInt(), cell!!.id!!, 1, "324", "2341", LocalDateTime.now().toString())
+                 db.getDao().insertGoodsAtomy(goods)
+             }
+         }
+         }
+     }
+ }
+ fun getAtomyFromCsv(path: String, mainActivity: MainActivity): MutableList<AtomyItem> {
+     var items = mutableListOf<AtomyItem>()
+     var reader = CSVReader(FileReader(mainActivity.filesDir.absolutePath + path))
+
+     reader.forEach{ line->
+         val splittedItem = line[0].toString().split(";")
+         val id = splittedItem[0].toIntOrNull()
+         if( id != null) {
+             val te = splittedItem[1]
+             val barcode = splittedItem[2]
+             val expiration = splittedItem[3]
+             val cell = splittedItem[4]
+             items.add(AtomyItem(id, te, barcode, expiration, cell))
+         }
+     }
+
+     reader.close()
+     return items
+ }
+ */
+
+private fun isCell(cell: String): Boolean {
+    if (cell.length == 4 && cell[0] in 'A' .. 'Z' && cell[1].isDigit() && cell[2].isDigit() && cell[3].isDigit()){
+        return true
+    }
+    return false
+}
 
 

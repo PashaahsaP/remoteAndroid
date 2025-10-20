@@ -15,6 +15,7 @@ import com.example.wmsRemote.databinding.ActivityMainBinding
 import com.example.wmsRemote.databinding.FragmentIncomeSessionBinding
 import com.example.wmswherther.Adapters.IncomeSessionAdapter
 import com.example.wmswherther.Classes.IncomeItem
+import com.example.wmswherther.data.db.Barcode
 import com.example.wmswherther.viewModel.IncomeSessionViewModel
 import com.example.wmswherther.viewModel.MainViewModel
 import kotlinx.coroutines.Dispatchers
@@ -45,6 +46,30 @@ class IncomeSessionFragment : Fragment() {
             val sessionId = arguments?.getString("id")
 
             localViewModel.items.observe(viewLifecycleOwner,{ items ->
+                adapter.updateCollection(items, localViewModel.getSelectedItem())
+                recyclerView.smoothScrollToPosition(localViewModel.getSelectedItem())
+
+            })
+            viewModel.Barcode.observe(viewLifecycleOwner,{ barcode ->
+                lifecycleScope.launch {
+                    var catalog = MainDB.getDB(requireActivity()).getDao().getBarcodeByName(barcode)
+                    if(catalog != null && catalog is Barcode) {
+                        withContext(Dispatchers.IO) {
+                            var newItems: List<IncomeItem> = listOf()
+                            localViewModel.items.value?.forEach { item ->
+                                if(item.catalogId == catalog.id){
+                                    item.haveCount = item.haveCount + 1
+                                }
+                                newItems += item
+
+                            }
+                        }
+                        withContext(Dispatchers.Main) {
+
+                        }
+                    }
+                }
+
                 adapter.updateCollection(items, localViewModel.getSelectedItem())
                 recyclerView.smoothScrollToPosition(localViewModel.getSelectedItem())
 

@@ -81,6 +81,23 @@
             >
 
         </EditText>
+        <EditText
+            android:id="@+id/etIncomeBarcodeScan"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toStartOf="@+id/btnBarcode"
+            app:layout_constraintStart_toEndOf="@+id/btnBack"
+            android:padding="10dp"
+            android:layout_marginBottom="5dp"
+            android:background="@drawable/menu_border"
+            android:inputType="text"
+            android:focusableInTouchMode="true"
+            android:focusable="true"
+            android:alpha="0"
+            >
+
+        </EditText>
 
 
     </androidx.constraintlayout.widget.ConstraintLayout>
