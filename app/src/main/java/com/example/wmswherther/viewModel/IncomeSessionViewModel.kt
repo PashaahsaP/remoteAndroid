@@ -48,8 +48,8 @@ class IncomeSessionViewModel : ViewModel() {
                         item.isSelected = false//чтобы не было несколько edit text
                         if (item.catalogId == barcoded.catalogId) {
                             item.haveCount = item.haveCount + 1
-                            item.isSelected = true
-                            setSelectedItem(counter)
+                            //item.isSelected = true
+                            //setSelectedItem(counter)
                         }
                         counter = counter + 1
                         result += item

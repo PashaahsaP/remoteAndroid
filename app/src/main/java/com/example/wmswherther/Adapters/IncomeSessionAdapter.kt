@@ -18,8 +18,6 @@ class IncomeSessionAdapter(
     var localViewModel: IncomeSessionViewModel
 ):  RecyclerView.Adapter<RecyclerView.ViewHolder>() {
     private var barcodeBuffer = StringBuilder()
-    private val barcodeHandler = Handler(Looper.getMainLooper())
-    private val barcodeTimeout = 500L // мс, если сканер не успел — сбрасываем
     override fun getItemViewType(position: Int): Int {
         return if (data[position].isSelected) 1 else 0
     }
