@@ -38,7 +38,7 @@ class IncomeSessionFragment : Fragment() {
 
 
             var recyclerView: RecyclerView = binding.rwIncomeSessionList
-            var adapter = IncomeSessionAdapter(listOf(), recyclerView, localViewModel)
+            var adapter = IncomeSessionAdapter(listOf(), recyclerView, localViewModel, requireActivity())
             recyclerView.layoutManager = LinearLayoutManager(requireActivity())
             recyclerView.adapter = adapter
             val sessionId = arguments?.getString("id")

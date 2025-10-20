@@ -7,6 +7,7 @@ import android.opengl.Visibility
 import android.os.Build
 import android.os.Bundle
 import android.util.Log
+import android.view.Gravity
 import android.view.LayoutInflater
 import android.view.View
 import android.view.WindowManager
@@ -14,6 +15,8 @@ import android.view.inputmethod.EditorInfo
 import android.widget.Button
 import android.widget.EditText
 import android.widget.LinearLayout
+import android.widget.PopupMenu
+import android.widget.PopupWindow
 import android.widget.ScrollView
 import android.widget.Toast
 import android.window.OnBackInvokedDispatcher
@@ -203,6 +206,34 @@ class MainActivity : AppCompatActivity() {
                 }
                 return@setOnEditorActionListener false
 
+            }
+            btnThreeDots.setOnClickListener { view ->
+
+
+                val inflater = layoutInflater
+                val popupView = inflater.inflate(R.layout.pop_up_income_menu, null)
+                var scanBtn = popupView.findViewById<Button>(R.id.btnScanningMode)
+
+                val popupWindow = PopupWindow(
+                    popupView,
+                    WindowManager.LayoutParams.WRAP_CONTENT,
+                    WindowManager.LayoutParams.WRAP_CONTENT,
+                    true
+                )
+                scanBtn.setOnClickListener { view ->
+                    scanBtn.setBackgroundColor(Color.CYAN)
+                    popupWindow.dismiss()
+                }
+                val location = IntArray(2)
+                btnThreeDots.getLocationOnScreen(location)
+
+// Show popup to the left of the button
+                popupWindow.showAtLocation(
+                    btnThreeDots,
+                    Gravity.NO_GRAVITY,
+                    location[0] - popupWindow.width,  // x coordinate - to the left
+                    location[1] + btnThreeDots.height // y coordinate
+                )
             }
 
         }

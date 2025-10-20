@@ -1,12 +1,12 @@
 package com.example.wmswherther.Adapters
 
 import android.content.Context
-import android.os.Handler
-import android.os.Looper
 import android.view.KeyEvent
 import android.view.LayoutInflater
 import android.view.ViewGroup
 import android.view.inputmethod.InputMethodManager
+import androidx.core.content.ContextCompat
+import androidx.fragment.app.FragmentActivity
 import androidx.recyclerview.widget.RecyclerView
 import com.example.wmsRemote.R
 import com.example.wmswherther.Classes.IncomeItem
@@ -15,7 +15,8 @@ import com.example.wmswherther.viewModel.IncomeSessionViewModel
 class IncomeSessionAdapter(
     var data: List<IncomeItem>,
     var recyclerView: RecyclerView,
-    var localViewModel: IncomeSessionViewModel
+    var localViewModel: IncomeSessionViewModel,
+    var activity: FragmentActivity
 ):  RecyclerView.Adapter<RecyclerView.ViewHolder>() {
     private var barcodeBuffer = StringBuilder()
     override fun getItemViewType(position: Int): Int {
@@ -58,7 +59,10 @@ class IncomeSessionAdapter(
                     localViewModel.updateItems(listIncome)
 
                 }
-
+                if(item.haveCount > item.allCount) {
+                    holder.tvLeft.setTextColor(ContextCompat.getColor(activity, R.color.regularRed))
+                    holder.tvRight.setTextColor(ContextCompat.getColor(activity, R.color.regularRed))
+                }
                 holder.bind(item)
             }
             is IncomeSessionSelectedViewHolder ->
@@ -86,6 +90,21 @@ class IncomeSessionAdapter(
                         }
                     }
                     false
+                }
+                if(item.haveCount > item.allCount) {
+                    holder.tvLeft.setTextColor(ContextCompat.getColor(activity, R.color.regularRed))
+                    holder.tvRight.setTextColor(
+                        ContextCompat.getColor(
+                            activity,
+                            R.color.regularRed
+                        )
+                    )
+                    holder.etSelectedCount.setTextColor(
+                        ContextCompat.getColor(
+                            activity,
+                            R.color.regularRed
+                        )
+                    )
                 }
                 holder.bind(item)
             }
