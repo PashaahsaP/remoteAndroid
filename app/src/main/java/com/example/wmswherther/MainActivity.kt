@@ -90,6 +90,7 @@ class MainActivity : AppCompatActivity() {
         setContentView(binding.root)
         setNavigationBar()
 
+
         viewModel.IsMenuActive.observe(this) { isActive ->
             if(isActive){
                 binding.btnBack.visibility = View.GONE
@@ -100,11 +101,8 @@ class MainActivity : AppCompatActivity() {
         viewModel.IsIncomeSessionActive.observe(this) { isActive ->
             if(isActive){
                 binding.btnBarcode.visibility = View.VISIBLE
-                binding.etIncomeBarcode.visibility = View.VISIBLE
-                binding.etIncomeBarcode.requestFocus()
             }else{
                 binding.btnBarcode.visibility = View.GONE
-                binding.etIncomeBarcode.visibility = View.GONE
             }
         }
         viewModel.IsIncomeSessionTEModeActive.observe(this) { isActive ->
@@ -140,6 +138,19 @@ class MainActivity : AppCompatActivity() {
                     dialog.window?.setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_STATE_ALWAYS_VISIBLE)*/
                 }
             }
+        }
+        viewModel.IsScanningActive.observe(this){ isActive ->
+            if(isActive == true){
+                binding.etIncomeBarcode.visibility = View.VISIBLE
+                var widthOfScanning = getWidth(binding)
+                viewModel.setWidthScanningField(widthOfScanning)
+                binding.etIncomeBarcode.requestFocus()
+            }else{
+                binding.etIncomeBarcode.visibility = View.GONE
+            }
+        }
+        viewModel.WidthScanningField.observe(this){ value ->
+            binding.etIncomeBarcode.width = value
         }
 
         if(savedInstanceState == null){
@@ -208,32 +219,32 @@ class MainActivity : AppCompatActivity() {
 
             }
             btnThreeDots.setOnClickListener { view ->
+            if (viewModel.IsIncomeSessionActive.value == true) {
+                    val inflater = layoutInflater
+                    val popupView = inflater.inflate(R.layout.pop_up_income_menu, null)
+                    var scanBtn = popupView.findViewById<Button>(R.id.btnScanningMode)
 
-
-                val inflater = layoutInflater
-                val popupView = inflater.inflate(R.layout.pop_up_income_menu, null)
-                var scanBtn = popupView.findViewById<Button>(R.id.btnScanningMode)
-
-                val popupWindow = PopupWindow(
-                    popupView,
-                    WindowManager.LayoutParams.WRAP_CONTENT,
-                    WindowManager.LayoutParams.WRAP_CONTENT,
-                    true
-                )
-                scanBtn.setOnClickListener { view ->
-                    scanBtn.setBackgroundColor(Color.CYAN)
-                    popupWindow.dismiss()
-                }
-                val location = IntArray(2)
-                btnThreeDots.getLocationOnScreen(location)
+                    val popupWindow = PopupWindow(
+                        popupView,
+                        WindowManager.LayoutParams.WRAP_CONTENT,
+                        WindowManager.LayoutParams.WRAP_CONTENT,
+                        true
+                    )
+                    scanBtn.setOnClickListener { view ->
+                        viewModel.switchScanMode()
+                        popupWindow.dismiss()
+                    }
+                    val location = IntArray(2)
+                    btnThreeDots.getLocationOnScreen(location)
 
 // Show popup to the left of the button
-                popupWindow.showAtLocation(
-                    btnThreeDots,
-                    Gravity.NO_GRAVITY,
-                    location[0] - popupWindow.width,  // x coordinate - to the left
-                    location[1] + btnThreeDots.height // y coordinate
-                )
+                    popupWindow.showAtLocation(
+                        btnThreeDots,
+                        Gravity.NO_GRAVITY,
+                        location[0] - popupWindow.width,  // x coordinate - to the left
+                        location[1] + btnThreeDots.height // y coordinate
+                    )
+                }
             }
 
         }
@@ -242,6 +253,8 @@ class MainActivity : AppCompatActivity() {
 
 
     }
+
+
 
     fun readTextFileFromInternalStorage(context: Context, fileName: String): String {
         val file = File(context.filesDir, fileName)
@@ -462,8 +475,11 @@ class MainActivity : AppCompatActivity() {
         return false
     }
 
-}
 
+}
+private fun getWidth(binding: ActivityMainBinding) : Int {
+    return binding.main.width - (binding.btnBack.width + binding.btnBarcode.width + binding.btnThreeDots.width + binding.btnSearch.width)
+}
 
 
 

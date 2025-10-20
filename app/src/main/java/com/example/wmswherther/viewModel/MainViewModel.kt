@@ -5,6 +5,7 @@ import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 
 class MainViewModel : ViewModel() {
+    private val _isScanningActive = MutableLiveData<Boolean>(false)
     private val _isMenuActive = MutableLiveData<Boolean>(true)
     private val _isIncomeMenuActive = MutableLiveData<Boolean>(false)
     private val _isIncomeSessionActive = MutableLiveData<Boolean>(false)
@@ -13,7 +14,11 @@ class MainViewModel : ViewModel() {
     private val _TE= MutableLiveData<String>("")
     private val _barcode= MutableLiveData<String>("")
     private val _isNeedCheckBarcode= MutableLiveData<Boolean>(false)
+    private val _widhtScanningField= MutableLiveData<Int>(0)
 
+
+    val WidthScanningField: LiveData<Int> get() = _widhtScanningField
+    val IsScanningActive: LiveData<Boolean> get() = _isScanningActive
     val IsMenuActive: LiveData<Boolean> get() = _isMenuActive
     val IsIncomeMenuActive: LiveData<Boolean> get() = _isIncomeMenuActive
     val IsIncomeSessionActive: LiveData<Boolean> get() = _isIncomeSessionActive
@@ -21,7 +26,22 @@ class MainViewModel : ViewModel() {
     val IsWorkableTE: LiveData<Boolean> get() = _isWorkableTE
     val Barcode: LiveData<String> get() = _barcode
     val IsNeedCheckBarcode: LiveData<Boolean> get() = _isNeedCheckBarcode
-
+    fun setWidthScanningField(width: Int){
+        _widhtScanningField.value = width
+    }
+    fun switchScanMode(){
+        if(_isScanningActive.value == true){
+            turnOffScanMode()
+        }else{
+            turnOnScanMode()
+        }
+    }
+    fun turnOnScanMode(){
+        _isScanningActive.value = true
+    }
+    fun turnOffScanMode(){
+        _isScanningActive.value = false
+    }
     fun updateBarcode(){
         _isNeedCheckBarcode.value = true
     }

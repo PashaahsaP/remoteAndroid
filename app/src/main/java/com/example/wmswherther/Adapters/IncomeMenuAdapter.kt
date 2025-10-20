@@ -46,7 +46,9 @@ class IncomeMenuAdapter(var data: List<TaskMenuItem>,var fragment: Fragment, var
                 )
                 replace(R.id.fragmentContainer, newFragment)
                 addToBackStack(null)
+
             }
+            //viewModel.turnOnScanMode()
             viewModel.startIncomeSession()
         }
         var item = data[position]

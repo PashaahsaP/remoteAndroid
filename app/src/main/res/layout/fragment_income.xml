@@ -6,12 +6,11 @@
 
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/rwIncomeMenu"
-        android:layout_width="400dp"
+        android:layout_width="match_parent"
         android:layout_height="match_parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent"
-        android:layout_margin="20dp"
         android:paddingEnd="20dp"
         android:paddingStart="20dp"
         android:paddingBottom="20dp"

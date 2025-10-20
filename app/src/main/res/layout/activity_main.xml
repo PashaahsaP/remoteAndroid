@@ -68,14 +68,16 @@
 
         <EditText
             android:id="@+id/etIncomeBarcode"
-            android:layout_width="150dp"
+            android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toStartOf="@+id/btnBarcode"
             app:layout_constraintStart_toEndOf="@+id/btnBack"
             android:padding="10dp"
             android:layout_marginBottom="5dp"
             android:background="@drawable/menu_border"
             android:singleLine="true"
+            android:visibility="gone"
             >
 
         </EditText>

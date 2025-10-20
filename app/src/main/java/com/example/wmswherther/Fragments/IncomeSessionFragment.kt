@@ -11,6 +11,7 @@ import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.example.wmsRemote.data.db.MainDB
+import com.example.wmsRemote.databinding.ActivityMainBinding
 import com.example.wmsRemote.databinding.FragmentIncomeSessionBinding
 import com.example.wmswherther.Adapters.IncomeSessionAdapter
 import com.example.wmswherther.Classes.IncomeItem
@@ -67,6 +68,7 @@ class IncomeSessionFragment : Fragment() {
                     localViewModel.setSelectedItem(0)
                 }
             }
+
 
 
 
