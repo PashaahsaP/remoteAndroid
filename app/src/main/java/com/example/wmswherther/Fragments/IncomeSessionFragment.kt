@@ -51,27 +51,30 @@ class IncomeSessionFragment : Fragment() {
 
             })
             viewModel.Barcode.observe(viewLifecycleOwner,{ barcode ->
-                lifecycleScope.launch {
-                    var catalog = MainDB.getDB(requireActivity()).getDao().getBarcodeByName(barcode)
-                    if(catalog != null && catalog is Barcode) {
-                        withContext(Dispatchers.IO) {
-                            var newItems: List<IncomeItem> = listOf()
-                            localViewModel.items.value?.forEach { item ->
-                                if(item.catalogId == catalog.id){
-                                    item.haveCount = item.haveCount + 1
+                if(barcode != "") {
+                    lifecycleScope.launch {
+                        var newItems: List<IncomeItem> = listOf()
+                        var bar =
+                            MainDB.getDB(requireActivity()).getDao().getBarcodeByName(barcode)
+                        if (bar != null && bar is Barcode) {
+                            withContext(Dispatchers.IO) {
+                                localViewModel.items.value?.forEach { item ->
+                                    if (item.catalogId == bar.catalogId) {
+                                        newItems += IncomeItem(item.name, item.catalogId, (item.haveCount + 1), item.allCount, false)
+                                    }else {
+                                        newItems += item
+                                    }
+
                                 }
-                                newItems += item
+                            }
+                            withContext(Dispatchers.Main) {
+                                adapter.updateCollection(newItems, localViewModel.getSelectedItem())
+                                recyclerView.smoothScrollToPosition(localViewModel.getSelectedItem())
 
                             }
                         }
-                        withContext(Dispatchers.Main) {
-
-                        }
                     }
                 }
-
-                adapter.updateCollection(items, localViewModel.getSelectedItem())
-                recyclerView.smoothScrollToPosition(localViewModel.getSelectedItem())
 
             })
             viewModel.IsNeedCheckBarcode.observe(viewLifecycleOwner,{item ->

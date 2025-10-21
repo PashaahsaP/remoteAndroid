@@ -154,7 +154,9 @@ class MainActivity : AppCompatActivity() {
         viewModel.WidthScanningField.observe(this){ value ->
             binding.etIncomeBarcode.width = value
         }
-
+        viewModel.Barcode.observe(this){
+            binding.etIncomeBarcodeScan.requestFocus()
+        }
         if(savedInstanceState == null){
             supportFragmentManager.commit {
                 setCustomAnimations(
@@ -252,14 +254,17 @@ class MainActivity : AppCompatActivity() {
         }
         binding.etIncomeBarcodeScan.setOnKeyListener {v, keyCode, event ->
             val ch = event.unicodeChar.toChar()
+            if (ch == '\u0000' || event.action == KeyEvent.ACTION_UP){
+               return@setOnKeyListener false
+            }
             if (keyCode == KeyEvent.KEYCODE_ENTER || ch == '\n' || ch == '\r') {
                 val scannedCode = barcodeBuffer.toString()
                 barcodeBuffer.clear()
                 viewModel.setBarcode(scannedCode)
-                true
+                return@setOnKeyListener true
             } else {
                 barcodeBuffer.append(ch)
-                true
+                return@setOnKeyListener true
             }
         }
         binding.etIncomeBarcodeScan.requestFocus()
