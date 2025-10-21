@@ -71,20 +71,17 @@ class IncomeSessionFragment : Fragment() {
                             withContext(Dispatchers.Main) {
                                 localViewModel.updateItems(newItems)
                                 var binding = viewModel.getMainBinding()
-                                binding?.etIncomeBarcodeScan?.requestFocus()
+                                if(viewModel.IsScanningActive.value == true) {
+                                    binding?.etIncomeBarcode?.requestFocus()
+
+                                }else{
+                                    binding?.etIncomeBarcodeScan?.requestFocus()
+                                }
                             }
                         }
                     }
                 }
 
-            })
-            viewModel.IsNeedCheckBarcode.observe(viewLifecycleOwner,{item ->
-                if(item == true) {
-                    localViewModel.updateCollection(
-                        MainDB.getDB(requireActivity()),
-                        viewModel.getBarcode()
-                    )
-                }
             })
 
             lifecycleScope.launch {

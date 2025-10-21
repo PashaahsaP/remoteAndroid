@@ -215,7 +215,6 @@ class MainActivity : AppCompatActivity() {
                     val text = etIncomeBarcode.text.toString()
                     if(text != "") {
                         viewModel.setBarcode(text)
-                        viewModel.updateBarcode()
                         etIncomeBarcode.setText("")
                     }
                     return@setOnEditorActionListener true
