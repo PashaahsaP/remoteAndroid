@@ -66,11 +66,12 @@ class IncomeSessionFragment : Fragment() {
                                     }
 
                                 }
+
                             }
                             withContext(Dispatchers.Main) {
-                                adapter.updateCollection(newItems, localViewModel.getSelectedItem())
-                                recyclerView.smoothScrollToPosition(localViewModel.getSelectedItem())
-
+                                localViewModel.updateItems(newItems)
+                                var binding = viewModel.getMainBinding()
+                                binding?.etIncomeBarcodeScan?.requestFocus()
                             }
                         }
                     }

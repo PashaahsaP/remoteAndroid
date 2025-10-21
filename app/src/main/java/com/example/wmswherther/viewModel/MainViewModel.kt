@@ -3,8 +3,10 @@ package com.example.wmswherther.viewModel
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
+import com.example.wmsRemote.databinding.ActivityMainBinding
 
 class MainViewModel : ViewModel() {
+    private val _mainActivityBinding = MutableLiveData<ActivityMainBinding>()
     private val _isScanningActive = MutableLiveData<Boolean>(false)
     private val _isMenuActive = MutableLiveData<Boolean>(true)
     private val _isIncomeMenuActive = MutableLiveData<Boolean>(false)
@@ -16,7 +18,7 @@ class MainViewModel : ViewModel() {
     private val _isNeedCheckBarcode= MutableLiveData<Boolean>(false)
     private val _widhtScanningField= MutableLiveData<Int>(0)
 
-
+    val MainActivityBinding: LiveData<ActivityMainBinding> get() = _mainActivityBinding
     val WidthScanningField: LiveData<Int> get() = _widhtScanningField
     val IsScanningActive: LiveData<Boolean> get() = _isScanningActive
     val IsMenuActive: LiveData<Boolean> get() = _isMenuActive
@@ -26,6 +28,14 @@ class MainViewModel : ViewModel() {
     val IsWorkableTE: LiveData<Boolean> get() = _isWorkableTE
     val Barcode: LiveData<String> get() = _barcode
     val IsNeedCheckBarcode: LiveData<Boolean> get() = _isNeedCheckBarcode
+
+
+    fun getMainBinding() : ActivityMainBinding? {
+        return _mainActivityBinding.value
+    }
+    fun setMainBinding(binding: ActivityMainBinding) {
+        _mainActivityBinding.value = binding
+    }
     fun setWidthScanningField(width: Int){
         _widhtScanningField.value = width
     }

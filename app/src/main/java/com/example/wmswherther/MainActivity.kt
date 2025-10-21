@@ -87,6 +87,7 @@ class MainActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         val db = MainDB.getDB(this)
         _binding = ActivityMainBinding.inflate(layoutInflater)
+        viewModel.setMainBinding(binding)
         enableEdgeToEdge()
         setContentView(binding.root)
         setNavigationBar()
@@ -250,29 +251,29 @@ class MainActivity : AppCompatActivity() {
                     )
                 }
             }
-
-        }
-        binding.etIncomeBarcodeScan.setOnKeyListener {v, keyCode, event ->
-            val ch = event.unicodeChar.toChar()
-            if (ch == '\u0000' || event.action == KeyEvent.ACTION_UP){
-               return@setOnKeyListener false
+            etIncomeBarcodeScan.setOnKeyListener {v, keyCode, event ->
+                val ch = event.unicodeChar.toChar()
+                if (ch == '\u0000' || event.action == KeyEvent.ACTION_UP){
+                    return@setOnKeyListener false
+                }
+                if (keyCode == KeyEvent.KEYCODE_ENTER || ch == '\n' || ch == '\r') {
+                    val scannedCode = barcodeBuffer.toString()
+                    barcodeBuffer.clear()
+                    viewModel.setBarcode(scannedCode)
+                    viewModel.setBarcode("")
+                    return@setOnKeyListener true
+                } else {
+                    barcodeBuffer.append(ch)
+                    return@setOnKeyListener true
+                }
             }
-            if (keyCode == KeyEvent.KEYCODE_ENTER || ch == '\n' || ch == '\r') {
-                val scannedCode = barcodeBuffer.toString()
-                barcodeBuffer.clear()
-                viewModel.setBarcode(scannedCode)
-                return@setOnKeyListener true
-            } else {
-                barcodeBuffer.append(ch)
-                return@setOnKeyListener true
-            }
+            etIncomeBarcodeScan.requestFocus()
         }
-        binding.etIncomeBarcodeScan.requestFocus()
     }
     override fun onResume() {
         super.onResume()
         binding.etIncomeBarcodeScan.requestFocus()
-        binding.etIncomeBarcodeScan.post {
+        binding.etIncomeBarcodeScan.post {//not work
             binding.etIncomeBarcodeScan.requestFocus()
             }
     }
@@ -286,8 +287,6 @@ class MainActivity : AppCompatActivity() {
             )
         }
     }
-
-
 }
 private fun getWidth(binding: ActivityMainBinding) : Int {
     return binding.main.width - (binding.btnBack.width + binding.btnBarcode.width + binding.btnThreeDots.width + binding.btnSearch.width)
