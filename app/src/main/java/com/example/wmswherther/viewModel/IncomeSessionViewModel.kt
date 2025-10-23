@@ -85,7 +85,7 @@ class IncomeSessionViewModel : ViewModel() {
                 result += IncomeItem(catalog.name, item.first.catalogId, 0, item.first.amount, isExpandable = false, isChild = false, isShown = true)
             }
         }
-       return listOf()
+       return result
     }
     suspend fun getBarcode(db : MainDB, barcode: String) : Barcode{
         return db.getDao().getBarcodeByName(barcode)
