@@ -20,7 +20,22 @@ class IncomeSessionAdapter(
 ):  RecyclerView.Adapter<RecyclerView.ViewHolder>() {
     private var barcodeBuffer = StringBuilder()
     override fun getItemViewType(position: Int): Int {
-        return if (data[position].isSelected) 1 else 0
+        if(data[position].isSelected == true){
+            return 1
+        }else if (data[position].isSelected == false){
+            return 0
+        }else if (data[position].isExpandable && data[position].isExpanded){
+            return 2
+        }else if (data[position].isExpandable && data[position].isExpanded == false){
+            return 3
+        }else if (data[position].isChild && data[position].isShown){
+            return 4
+        }
+        else if (data[position].isChild && data[position].isShown == false){
+            return 5
+        }
+
+        return 0
     }
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): RecyclerView.ViewHolder {
         val inflater = LayoutInflater.from(parent.context)
