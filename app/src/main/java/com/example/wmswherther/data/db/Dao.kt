@@ -35,7 +35,7 @@ interface Dao {
     @Query("SELECT * FROM cells")
     fun getAllCells(): List<Cell>
     @Query("SELECT * FROM cells WHERE id =:cellId")
-    suspend fun getCellById(cellId: Int): Cell
+    suspend fun getCellById(cellId: String): Cell
     @Query("SELECT * FROM cells WHERE name =:cellName")
     suspend fun getCellByName(cellName: String): Cell
     /*@Delete
@@ -52,6 +52,8 @@ interface Dao {
     }
     @Query("SELECT * FROM sessions_income")
     fun getAllIncomeSession(): List<SessionIncome>
+    @Query("SELECT * FROM sessions_income WHERE id =:sessionId")
+    suspend fun getIncomeSessionById(sessionId: String): SessionIncome
     // </editor-fold>
     // <editor-fold desc="IncomeItem">
     @Insert
@@ -77,6 +79,8 @@ interface Dao {
     }
     @Query("SELECT * FROM cell_types WHERE type =:cellTypeName")
     suspend fun getCellTypeByName(cellTypeName: String): List<CellType>
+    @Query("SELECT * FROM cell_types WHERE id =:cellTypeId")
+    suspend fun getCellTypeById(cellTypeId: String): CellType
     // </editor-fold>
     // <editor-fold desc="Supplier">
     @Insert

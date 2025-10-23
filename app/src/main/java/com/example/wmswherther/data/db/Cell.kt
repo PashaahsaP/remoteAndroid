@@ -18,6 +18,8 @@ data class Cell (
     @PrimaryKey(autoGenerate = false)  var id: String,
     @ColumnInfo(name = "typeCellId")
     val typeCellId: String,
+    @ColumnInfo(name = "parentCellId")
+    val parentCellId: String?,
     @ColumnInfo(name = "name")
     var name: String,
 )

@@ -108,6 +108,7 @@ val MIGRATION_1_2 = object : Migration(1, 2) {
             CREATE TABLE IF NOT EXISTS cells (
                 id TEXT NOT NULL PRIMARY KEY,
                 typeCellId TEXT NOT NULL,
+                parentCellId TEXT,
                 name TEXT NOT NULL,
                 FOREIGN KEY(typeCellId) REFERENCES CellType(id)
             )

@@ -62,11 +62,19 @@ class IncomeSessionViewModel : ViewModel() {
 
     suspend fun loadItems (db : MainDB, sessionId: String) : List<IncomeItem>{
         var dao = db.getDao()
+
         var coll = dao.getAllIncomeItem().filter { item -> item.sessionId == sessionId}
         var result = coll.map { item ->
             var goods = dao.getGoodsById(item.goodsId)
+            var cell = dao.getCellById(goods.id)
+            var typeCell = dao.getCellTypeById(cell.typeCellId)
             var catalog = dao.getCatalogById(goods.catalogId)
-            IncomeItem(catalog.name, catalog.id, 0, goods.amount)
+            if(typeCell.type == "BoxTE"){
+                IncomeItem(catalog.name, catalog.id, 0, goods.amount, isChild = true, isShown = false)
+            }else {
+                IncomeItem(catalog.name, catalog.id, 0, goods.amount)
+            }
+            //сделать сортировку по группам, одна просто товар, другая сортировка по те. Потом постепенноее добавление
         }
         return result
     }
