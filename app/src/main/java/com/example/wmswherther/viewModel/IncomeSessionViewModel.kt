@@ -4,9 +4,11 @@ import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.example.wmsRemote.data.db.Cell
 import com.example.wmsRemote.data.db.MainDB
 import com.example.wmswherther.Classes.IncomeItem
 import com.example.wmswherther.data.db.Barcode
+import com.example.wmswherther.data.db.Goods
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
@@ -32,7 +34,6 @@ class IncomeSessionViewModel : ViewModel() {
     fun setSelectedItem(selectedItemCount: Int){
         _selectedItem.value = selectedItemCount
     }
-
     fun updateCollection(db : MainDB, barcode: String?){
         var barcoded = Barcode("","","","","")
         viewModelScope.launch {
@@ -62,21 +63,29 @@ class IncomeSessionViewModel : ViewModel() {
 
     suspend fun loadItems (db : MainDB, sessionId: String) : List<IncomeItem>{
         var dao = db.getDao()
+        var listOfGoods: List<Pair<Goods, Cell>> = listOf()
+        listOfGoods = dao.getAllIncomeItem()
+            .filter { item -> item.sessionId == sessionId}
+            .map { item ->  dao.getGoodsById(item.goodsId) }
+            .map { inner -> Pair(inner, dao.getCellById(inner.cellId)) }
 
-        var coll = dao.getAllIncomeItem().filter { item -> item.sessionId == sessionId}
-        var result = coll.map { item ->
-            var goods = dao.getGoodsById(item.goodsId)
-            var cell = dao.getCellById(goods.id)
-            var typeCell = dao.getCellTypeById(cell.typeCellId)
-            var catalog = dao.getCatalogById(goods.catalogId)
-            if(typeCell.type == "BoxTE"){
-                IncomeItem(catalog.name, catalog.id, 0, goods.amount, isChild = true, isShown = false)
-            }else {
-                IncomeItem(catalog.name, catalog.id, 0, goods.amount)
+        var previousCellId: String = ""
+        var result : List<IncomeItem> = listOf()
+        for (item in listOfGoods){
+            var catalog = dao.getCatalogById(item.first.catalogId)
+            if (item.second.typeCellId == "6730f3c3-0a33-4454-a485-520522b64de5"){
+                if(item.second.id != previousCellId){
+                    previousCellId = item.second.id
+                    result += IncomeItem(item.second.name, "", 0, 0, isExpandable = true, isChild = false)
+                    result += IncomeItem(catalog.name, item.first.catalogId, 0, item.first.amount, isExpandable = false, isChild = true, isShown = false)
+                }else{
+                    result += IncomeItem(catalog.name, item.first.catalogId, 0, item.first.amount, isExpandable = false, isChild = true, isShown = false)
+                }
+            }else{
+                result += IncomeItem(catalog.name, item.first.catalogId, 0, item.first.amount, isExpandable = false, isChild = false, isShown = true)
             }
-            //сделать сортировку по группам, одна просто товар, другая сортировка по те. Потом постепенноее добавление
         }
-        return result
+       return listOf()
     }
     suspend fun getBarcode(db : MainDB, barcode: String) : Barcode{
         return db.getDao().getBarcodeByName(barcode)

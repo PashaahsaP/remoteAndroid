@@ -48,9 +48,8 @@ class IncomeSessionFragment : Fragment() {
             localViewModel.items.observe(viewLifecycleOwner,{ items ->
                 adapter.updateCollection(items, localViewModel.getSelectedItem())
                 recyclerView.smoothScrollToPosition(localViewModel.getSelectedItem())
-
             })
-            viewModel.Barcode.observe(viewLifecycleOwner,{ barcode ->
+            viewModel.Barcode.observe(viewLifecycleOwner, { barcode ->
                 if(barcode != "") {
                     lifecycleScope.launch {
                         var newItems: List<IncomeItem> = listOf()
