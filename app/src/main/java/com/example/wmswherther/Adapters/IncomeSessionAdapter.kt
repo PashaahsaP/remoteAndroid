@@ -9,7 +9,6 @@ import androidx.core.content.ContextCompat
 import androidx.fragment.app.FragmentActivity
 import androidx.recyclerview.widget.RecyclerView
 import com.example.wmsRemote.R
-import com.example.wmsRemote.databinding.IncomeSessionInnerCollapsedBinding
 import com.example.wmswherther.Classes.IncomeItem
 import com.example.wmswherther.viewModel.IncomeSessionViewModel
 
@@ -23,6 +22,8 @@ class IncomeSessionAdapter(
     override fun getItemViewType(position: Int): Int {
         if(data[position].isSelected == true){
             return 1
+        }else if (data[position].isSelected == false){
+            return 0
         }else if (data[position].isExpandable && data[position].isExpanded){
             return 2
         }else if (data[position].isExpandable && data[position].isExpanded == false){
@@ -32,9 +33,6 @@ class IncomeSessionAdapter(
         }
         else if (data[position].isChild && data[position].isShown == false){
             return 5
-        }
-        else if (data[position].isChild && data[position].isShown && data[position].isSelected){
-            return 6
         }
 
         return 0
@@ -50,31 +48,6 @@ class IncomeSessionAdapter(
             1 -> {
                 val view = inflater.inflate(R.layout.income_session_selected, parent, false)
                 IncomeSessionSelectedViewHolder(view)
-            }
-
-            2 -> {
-                val view = inflater.inflate(R.layout.income_session_expanded, parent, false)
-                IncomeSessionExpanded(view)
-            }
-
-            3 -> {
-                val view = inflater.inflate(R.layout.income_session_collapsed, parent, false)
-                IncomeSessionCollapsed(view)
-            }
-
-            4 -> {
-                val view = inflater.inflate(R.layout.income_session_inner, parent, false)
-                IncomeSessionInnerViewHolder(view)
-            }
-
-            5 -> {
-                val view = inflater.inflate(R.layout.income_session_inner_collapsed, parent, false)
-                IncomeSessionInnerCollapsedViewHolder(view)
-            }
-
-            6 -> {
-                val view = inflater.inflate(R.layout.income_session_inner_selected, parent, false)
-                IncomeSessionInnerSelectedViewHolder(view)
             }
 
             else -> throw IllegalArgumentException("Invalid view type")
@@ -107,7 +80,8 @@ class IncomeSessionAdapter(
                 }
                 holder.bind(item)
             }
-            is IncomeSessionSelectedViewHolder -> {
+            is IncomeSessionSelectedViewHolder ->
+            {
                 holder.etSelectedCount.setOnKeyListener{ _, keyCode, event ->
                     if (event.action == KeyEvent.ACTION_DOWN) {
                         val char = event.unicodeChar.toChar()
@@ -149,13 +123,6 @@ class IncomeSessionAdapter(
                 }
                 holder.bind(item)
             }
-            is IncomeSessionExpanded -> {
-
-            }
-            is IncomeSessionCollapsed ->{}
-            is IncomeSessionInnerViewHolder -> {}
-            is IncomeSessionInnerCollapsedViewHolder -> {}
-            is IncomeSessionInnerSelectedViewHolder -> {}
         }
 
             }

@@ -2,9 +2,7 @@
 <androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
-    android:layout_height="70dp"
-    android:id="@+id/container"
-    >
+    android:layout_height="70dp">
 
     <ImageButton
         android:id="@+id/btnExpand"
@@ -14,8 +12,8 @@
         android:src="@drawable/collapsed_icon"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintStart_toStartOf="@+id/container"
-        >
+        app:layout_constraintEnd_toStartOf="t"
+        app:layout_constraintStart_toStartOf="parent">
 
     </ImageButton>
     <TextView
