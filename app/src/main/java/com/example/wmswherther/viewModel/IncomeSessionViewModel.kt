@@ -73,7 +73,7 @@ class IncomeSessionViewModel : ViewModel() {
         var result : List<IncomeItem> = listOf()
         for (item in listOfGoods){
             var catalog = dao.getCatalogById(item.first.catalogId)
-            if (item.second.typeCellId == "6730f3c3-0a33-4454-a485-520522b64de5"){
+            if (item.second.typeCellId == "8423d2f4-5890-4052-86f9-e9f5a234fa23"){
                 if(item.second.id != previousCellId){
                     previousCellId = item.second.id
                     result += IncomeItem(item.second.name, "", 0, 0, isExpandable = true, isChild = false)

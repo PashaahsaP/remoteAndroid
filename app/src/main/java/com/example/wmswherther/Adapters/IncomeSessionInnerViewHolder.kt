@@ -10,9 +10,11 @@ class IncomeSessionInnerViewHolder(itemView: View): RecyclerView.ViewHolder(item
     val container: androidx.constraintlayout.widget.ConstraintLayout =
         itemView as androidx.constraintlayout.widget.ConstraintLayout
     val tvLeft: TextView = itemView.findViewById(R.id.tvName)
+    val tvTE: TextView = itemView.findViewById(R.id.tvTE)
     val tvRight: TextView = itemView.findViewById(R.id.tvCount)
     fun bind(item: IncomeItem) {
         tvLeft.text = item.name
+        tvTE.text = item.name
         tvRight.text = "${item.haveCount}/${item.allCount}"
     }
 }

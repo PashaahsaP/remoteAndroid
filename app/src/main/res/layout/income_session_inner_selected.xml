@@ -2,30 +2,38 @@
 <androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
-    android:background="@color/regularBlue"
     android:layout_height="70dp">
+
 
     <TextView
         android:id="@+id/tvName"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
+        android:layout_marginStart="15dp"
+        android:text="some"
+        android:layout_marginTop="8dp"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent">
+
+    </TextView>
+    <TextView
+        android:id="@+id/tvTE"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent"
         android:layout_marginStart="15dp"
-        android:textColor="@color/white"
+        android:layout_marginBottom="8dp"
         android:text="some">
 
     </TextView>
-
     <EditText
         android:id="@+id/etSelectedCount"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="1"
-        android:textColor="@color/white"
+        android:layout_marginBottom="5dp"
         app:layout_constraintEnd_toStartOf="@+id/tvCount"
-        app:layout_constraintTop_toTopOf="parent"
         app:layout_constraintBottom_toBottomOf="parent">
 
     </EditText>
@@ -35,8 +43,7 @@
         android:layout_height="wrap_content"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintTop_toTopOf="parent"
-        android:textColor="@color/white"
+        android:layout_marginBottom="8dp"
         android:text="asdf">
     </TextView>
 </androidx.constraintlayout.widget.ConstraintLayout>
