@@ -59,7 +59,7 @@ class IncomeSessionFragment : Fragment() {
                             withContext(Dispatchers.IO) {
                                 localViewModel.items.value?.forEach { item ->
                                     if (item.catalogId == bar.catalogId) {
-                                        newItems += IncomeItem(item.name, item.catalogId, (item.haveCount + 1), item.allCount, false)
+                                        newItems += IncomeItem(item.name, item.catalogId,"", (item.haveCount + 1), item.allCount, false)
                                     }else {
                                         newItems += item
                                     }

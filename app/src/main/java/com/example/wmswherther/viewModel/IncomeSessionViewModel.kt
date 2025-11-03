@@ -61,6 +61,9 @@ class IncomeSessionViewModel : ViewModel() {
         }
     }
 
+    //Получить список при помощи определенного элемента(те)
+    //Если элемент списка это те то запустить новую фунцию и скрыть эту те
+    //Иначе обновить видимость элемента
     suspend fun loadItems (db : MainDB, sessionId: String) : List<IncomeItem>{
         var dao = db.getDao()
         var listOfGoods: List<Pair<Goods, Cell>> = listOf()
@@ -69,27 +72,55 @@ class IncomeSessionViewModel : ViewModel() {
             .map { item ->  dao.getGoodsById(item.goodsId) }
             .map { inner -> Pair(inner, dao.getCellById(inner.cellId)) }
 
-        var previousCellId: String = ""
         var result : List<IncomeItem> = listOf()
+        var previousCellId: String = ""
         for (item in listOfGoods){
             var catalog = dao.getCatalogById(item.first.catalogId)
             if (item.second.typeCellId == "8423d2f4-5890-4052-86f9-e9f5a234fa23"){
+                var parentCell = dao.getCellById(item.second.parentCellId.toString())
+                var isShown = if(parentCell.name.contains("IN")) true else false
                 if(item.second.id != previousCellId){
                     previousCellId = item.second.id
-                    result += IncomeItem(item.second.name, "", 0, 0, isExpandable = true, isChild = false)
-                    result += IncomeItem(catalog.name, item.first.catalogId, 0, item.first.amount, isExpandable = false, isChild = true, isShown = false)
+                    result += IncomeItem(
+                        name =  item.second.name,
+                        TE = if(isShown) item.second.name else "",
+                        catalogId = catalog.id,
+                        allCount = item.first.amount,
+                        haveCount = 0,
+                        isExpandable = true,
+                        isShown = isShown)
+                    result += IncomeItem(
+                        name =  catalog.name,
+                        TE = if(isShown) item.second.name else "",
+                        catalogId = catalog.id,
+                        allCount = item.first.amount,
+                        haveCount = 0,
+                        isExpandable = false,
+                        isShown = !isShown)
                 }else{
-                    result += IncomeItem(catalog.name, item.first.catalogId, 0, item.first.amount, isExpandable = false, isChild = true, isShown = false)
+                    result += IncomeItem(
+                        name =  catalog.name,
+                        TE = if(isShown) item.second.name else "",
+                        catalogId = catalog.id,
+                        allCount = item.first.amount,
+                        haveCount = 0,
+                        isExpandable = false,
+                        isShown = !isShown)
                 }
             }else{
-                result += IncomeItem(catalog.name, item.first.catalogId, 0, item.first.amount, isExpandable = false, isChild = false, isShown = true)
+                result += IncomeItem(
+                    name =  catalog.name,
+                    TE = "",
+                    catalogId = catalog.id,
+                    allCount = item.first.amount,
+                    haveCount = 0,
+                    isExpandable = false,
+                    isShown = true)
             }
         }
-       return result
+        return  result
     }
     suspend fun getBarcode(db : MainDB, barcode: String) : Barcode{
         return db.getDao().getBarcodeByName(barcode)
     }
-
-
 }

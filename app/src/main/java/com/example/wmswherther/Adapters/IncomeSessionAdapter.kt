@@ -22,17 +22,12 @@ class IncomeSessionAdapter(
     override fun getItemViewType(position: Int): Int {
         if(data[position].isSelected == true){
             return 1
-        }else if (data[position].isSelected == false){
-            return 0
         }else if (data[position].isExpandable && data[position].isExpanded){
             return 2
         }else if (data[position].isExpandable && data[position].isExpanded == false){
             return 3
-        }else if (data[position].isChild && data[position].isShown){
+        }else if (data[position].isShown == false){
             return 4
-        }
-        else if (data[position].isChild && data[position].isShown == false){
-            return 5
         }
 
         return 0
@@ -49,7 +44,18 @@ class IncomeSessionAdapter(
                 val view = inflater.inflate(R.layout.income_session_selected, parent, false)
                 IncomeSessionSelectedViewHolder(view)
             }
-
+            2 -> {
+                val view = inflater.inflate(R.layout.income_session_expanded, parent, false)
+                IncomeSessionExpandedViewHolder(view)
+            }
+            3 -> {
+                val view = inflater.inflate(R.layout.income_session_collapsed, parent, false)
+                IncomeSessionCollapsedViewHolder(view)
+            }
+            4 -> {
+                val view = inflater.inflate(R.layout.income_session_invisible, parent, false)
+                IncomeSessionInvisibleViewHolder(view)
+            }
             else -> throw IllegalArgumentException("Invalid view type")
         }
     }
@@ -123,9 +129,28 @@ class IncomeSessionAdapter(
                 }
                 holder.bind(item)
             }
+            is IncomeSessionExpandedViewHolder ->{
+
+                holder.container.setOnClickListener {
+                    collapseItems(localViewModel, item)
+                }
+            }
+            is IncomeSessionCollapsedViewHolder ->{
+                holder.tvLeft.text = item.name
+                holder.tvTe.text = item.TE
+                holder.container.setOnClickListener {
+                    var list: MutableList<IncomeItem> = mutableListOf()
+                    localViewModel.items.value?.forEach { elem ->
+                        if(elem.TE == item.name){
+                            list.add(elem.copy(isShown = true))
+                        }
+                    }
+                    localViewModel.updateItems(list.toList())
+                }
+            }
         }
 
-            }
+    }
 
     override fun getItemCount(): Int {
         return data.count()
@@ -151,4 +176,20 @@ fun focusOnItem(recyclerView: RecyclerView, position: Int) {
             }
         }
     }
+}
+//Получить список при помощи определенного элемента(те)
+//Если элемент списка это те то запустить новую фунцию и скрыть эту те
+//Иначе обновить видимость элемента
+fun collapseItems(localViewModel: IncomeSessionViewModel, item: IncomeItem) {
+    var list: MutableList<IncomeItem> = mutableListOf()
+    localViewModel.items.value?.forEach { inner ->
+        if(inner.isExpandable && item.name == inner.TE){
+            val new = inner.copy(isExpanded = false)
+            collapseItems(localViewModel, inner)
+            list.add(new)
+        }else if(item.name == inner.TE){
+            list.add(inner.copy(isShown = false))
+        }
+    }
+    localViewModel.updateItems(list)
 }
