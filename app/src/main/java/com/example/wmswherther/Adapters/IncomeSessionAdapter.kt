@@ -80,6 +80,9 @@ class IncomeSessionAdapter(
                     localViewModel.updateItems(listIncome)
 
                 }
+
+                holder.tvLeft.setTextColor(ContextCompat.getColor(activity, R.color.black))
+                holder.tvRight.setTextColor(ContextCompat.getColor(activity, R.color.black))
                 if(item.haveCount > item.allCount) {
                     holder.tvLeft.setTextColor(ContextCompat.getColor(activity, R.color.regularRed))
                     holder.tvRight.setTextColor(ContextCompat.getColor(activity, R.color.regularRed))
@@ -130,18 +133,32 @@ class IncomeSessionAdapter(
                 holder.bind(item)
             }
             is IncomeSessionExpandedViewHolder ->{
-
+                holder.tvLeft.text = item.name
                 holder.container.setOnClickListener {
-                    collapseItems(localViewModel, item)
+                    var value = localViewModel.stack.removeLast().toList()
+                    for (elem in value){
+                        localViewModel.items.value?.forEach { item ->
+                            if(item.name == elem.TE){
+                                elem.isExpanded = false
+                            }
+                            if(elem.catalogId == item.catalogId){
+                                elem.haveCount = item.haveCount
+                            }
+                        }
+                    }
+                    localViewModel.updateItems(value)
                 }
             }
             is IncomeSessionCollapsedViewHolder ->{
                 holder.tvLeft.text = item.name
-                holder.tvTe.text = item.TE
                 holder.container.setOnClickListener {
+                    var value = localViewModel.items.value!!.toList()
+                    localViewModel.stack.addLast(value)
                     var list: MutableList<IncomeItem> = mutableListOf()
                     localViewModel.items.value?.forEach { elem ->
-                        if(elem.TE == item.name){
+                        if(elem.name == item.name){
+                            list.add(elem.copy(isExpanded = true))
+                        }else if(elem.TE == item.name){
                             list.add(elem.copy(isShown = true))
                         }
                     }
@@ -180,6 +197,7 @@ fun focusOnItem(recyclerView: RecyclerView, position: Int) {
 //Получить список при помощи определенного элемента(те)
 //Если элемент списка это те то запустить новую фунцию и скрыть эту те
 //Иначе обновить видимость элемента
+/*
 fun collapseItems(localViewModel: IncomeSessionViewModel, item: IncomeItem) {
     var list: MutableList<IncomeItem> = mutableListOf()
     localViewModel.items.value?.forEach { inner ->
@@ -192,4 +210,4 @@ fun collapseItems(localViewModel: IncomeSessionViewModel, item: IncomeItem) {
         }
     }
     localViewModel.updateItems(list)
-}
+}*/

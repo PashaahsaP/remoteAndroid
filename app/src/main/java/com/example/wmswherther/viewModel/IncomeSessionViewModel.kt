@@ -19,6 +19,7 @@ class IncomeSessionViewModel : ViewModel() {
 
     val items: LiveData<List<IncomeItem>> get() = _items
     val selectedItem: LiveData<Int> get() = _selectedItem
+    val stack: ArrayDeque<List<IncomeItem>> = ArrayDeque()
 
 
     fun updateItems(items: List<IncomeItem>){

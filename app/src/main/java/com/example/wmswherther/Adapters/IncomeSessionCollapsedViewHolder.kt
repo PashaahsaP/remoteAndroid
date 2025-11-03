@@ -10,11 +10,9 @@ import com.example.wmswherther.Classes.IncomeItem
 class IncomeSessionCollapsedViewHolder (itemView: View): RecyclerView.ViewHolder(itemView) {
     val container: androidx.constraintlayout.widget.ConstraintLayout = itemView as androidx.constraintlayout.widget.ConstraintLayout
     val tvLeft: TextView = itemView.findViewById(R.id.tvName)
-    val tvTe: TextView = itemView.findViewById(R.id.tvTE)
 
     fun bind(item: IncomeItem){
         tvLeft.text = item.name
-        tvTe.text = item.TE
     }
 
 }
