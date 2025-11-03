@@ -16,10 +16,14 @@ import kotlinx.coroutines.withContext
 class IncomeSessionViewModel : ViewModel() {
     private val _items = MutableLiveData<List<IncomeItem>>()
     private val _selectedItem = MutableLiveData<Int>()
+    private  val _currentCellName = MutableLiveData<String>()
 
     val items: LiveData<List<IncomeItem>> get() = _items
     val selectedItem: LiveData<Int> get() = _selectedItem
+    val currentCellName: LiveData<String> get() = _currentCellName
+
     val stack: ArrayDeque<List<IncomeItem>> = ArrayDeque()
+    val cellStack: ArrayDeque<List<String>> = ArrayDeque()
 
 
     fun updateItems(items: List<IncomeItem>){
@@ -34,6 +38,9 @@ class IncomeSessionViewModel : ViewModel() {
     }
     fun setSelectedItem(selectedItemCount: Int){
         _selectedItem.value = selectedItemCount
+    }
+    fun setCellName(cellName: String){
+        _currentCellName.value = cellName
     }
     fun updateCollection(db : MainDB, barcode: String?){
         var barcoded = Barcode("","","","","")
@@ -61,12 +68,9 @@ class IncomeSessionViewModel : ViewModel() {
             }
         }
     }
-
-    //Получить список при помощи определенного элемента(те)
-    //Если элемент списка это те то запустить новую фунцию и скрыть эту те
-    //Иначе обновить видимость элемента
     suspend fun loadItems (db : MainDB, sessionId: String) : List<IncomeItem>{
         var dao = db.getDao()
+
         var listOfGoods: List<Pair<Goods, Cell>> = listOf()
         listOfGoods = dao.getAllIncomeItem()
             .filter { item -> item.sessionId == sessionId}
@@ -85,7 +89,7 @@ class IncomeSessionViewModel : ViewModel() {
                     result += IncomeItem(
                         name =  item.second.name,
                         TE = if(isShown) item.second.name else "",
-                        catalogId = catalog.id,
+                        catalogId = "",
                         allCount = item.first.amount,
                         haveCount = 0,
                         isExpandable = true,
@@ -111,7 +115,7 @@ class IncomeSessionViewModel : ViewModel() {
             }else{
                 result += IncomeItem(
                     name =  catalog.name,
-                    TE = "",
+                    TE = currentCellName.value.toString(),
                     catalogId = catalog.id,
                     allCount = item.first.amount,
                     haveCount = 0,

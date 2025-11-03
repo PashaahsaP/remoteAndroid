@@ -58,8 +58,22 @@ class IncomeSessionFragment : Fragment() {
                         if (bar != null && bar is Barcode) {
                             withContext(Dispatchers.IO) {
                                 localViewModel.items.value?.forEach { item ->
-                                    if (item.catalogId == bar.catalogId) {
-                                        newItems += IncomeItem(item.name, item.catalogId,"", (item.haveCount + 1), item.allCount, false)
+                                    var teCount = item.teCount
+                                    if(viewModel.IsIncomeSessionTEModeActive.value == true){
+                                        teCount = teCount + 1
+                                    }
+                                    if (item.catalogId == bar.catalogId && localViewModel.currentCellName.value.toString() == item.TE) {
+                                        newItems += IncomeItem(
+                                            name = item.name,
+                                            TE = item.TE,
+                                            catalogId = item.catalogId,
+                                            haveCount = item.haveCount + 1,
+                                            allCount = item.allCount,
+                                            teCount = teCount,
+                                            isSelected = item.isSelected,
+                                            isExpanded = item.isExpanded,
+                                            isShown = item.isShown,
+                                            isExpandable = item.isExpandable)
                                     }else {
                                         newItems += item
                                     }
@@ -82,9 +96,95 @@ class IncomeSessionFragment : Fragment() {
                 }
 
             })
+            viewModel.TE.observe(viewLifecycleOwner, { TE ->
+                var newTe = IncomeItem(
+                    name = TE,
+                    TE = TE,
+                    catalogId = "",
+                    haveCount = 0,
+                    allCount = 0,
+                    teCount = 0,
+                    isExpanded = false,
+                    isExpandable = true
+                )
+                var innerIncomeItems : MutableList<IncomeItem> = mutableListOf()
+                innerIncomeItems.add(newTe)
+                localViewModel.items.value?.forEach { item ->
+                    if(item.haveCount == 0){
+                        if(item.teCount < item.allCount){
+                            //Создать новый а старый уменьшить в общем количестве
+                            var newItem = IncomeItem(
+                                name = item.name,
+                                TE = item.TE,
+                                catalogId = item.catalogId,
+                                teCount = 0,
+                                allCount = item.teCount,
+                                haveCount = item.teCount,
+                                isExpandable = item.isExpandable,
+                                isExpanded = item.isExpanded,
+                                isSelected = item.isSelected,
+                                isShown = false
+                            )
+                            innerIncomeItems.add(newItem)
+                            item.allCount = item.allCount - item.teCount
+                        }else{
+                            //Изменить parentTE и изменить положение в списке, оставить общеее количество таким же(чтобы показывало превышение или ровно)
+                            item.TE = TE // потом надо будет найти при повторном прохождении списка
+                            item.isShown = false
+                            innerIncomeItems.add(item)
+                        }
+                    }else{
+                        if(item.teCount  + item.haveCount < item.allCount){
+                            //Cоздать новый элемент где количество общее и имеющиеся берется из те
+                            //Изменить старый элемент уменьшив общее количество а количество оставить
+                            var newItem = IncomeItem(
+                                name = item.name,
+                                TE = item.TE,
+                                catalogId = item.catalogId,
+                                teCount = 0,
+                                allCount = item.teCount,
+                                haveCount = item.teCount,
+                                isExpandable = item.isExpandable,
+                                isExpanded = item.isExpanded,
+                                isSelected = item.isSelected,
+                                isShown = false
+                            )
+                            item.allCount -= item.teCount
+                            item.haveCount -= item.teCount
+                            innerIncomeItems.add(newItem)
 
+                        }else{
+                            //Cоздать новый элемент где количество общее и имеющиеся берется из те
+                            //Изменить старый элемент,где общее количество равно нулю,  а количество оставить
+                            var newItem = IncomeItem(
+                                name = item.name,
+                                TE = item.TE,
+                                catalogId = item.catalogId,
+                                teCount = 0,
+                                allCount = item.teCount,
+                                haveCount = item.teCount,
+                                isExpandable = item.isExpandable,
+                                isExpanded = item.isExpanded,
+                                isSelected = item.isSelected,
+                                isShown = false
+                            )
+                            item.haveCount -= item.teCount
+                            item.allCount = 0
+                            innerIncomeItems.add(newItem)
+                        }
+                    }
+
+                }
+                //пройти список по новой и где есть элементы с таким же те то не добавлять в коллекцию
+            })
             lifecycleScope.launch {
                 var data: List<IncomeItem> = listOf()
+                withContext(Dispatchers.Main){
+                    var dao = MainDB.getDB(requireActivity()).getDao()
+                    var session = dao.getIncomeSessionById(sessionId.toString())
+                    var cellName = dao.getCellById(session.toCellId.toString()).name
+                    localViewModel.setCellName(cellName)
+                }
                 withContext(Dispatchers.IO){
                     data = localViewModel.loadItems(MainDB.getDB(requireActivity()), sessionId.toString())
                 }

@@ -1,11 +1,13 @@
 package com.example.wmswherther.Adapters
 
 import android.content.Context
+import android.graphics.Color
 import android.view.KeyEvent
 import android.view.LayoutInflater
 import android.view.ViewGroup
 import android.view.inputmethod.InputMethodManager
 import androidx.core.content.ContextCompat
+import androidx.core.graphics.toColor
 import androidx.fragment.app.FragmentActivity
 import androidx.recyclerview.widget.RecyclerView
 import com.example.wmsRemote.R
@@ -83,9 +85,14 @@ class IncomeSessionAdapter(
 
                 holder.tvLeft.setTextColor(ContextCompat.getColor(activity, R.color.black))
                 holder.tvRight.setTextColor(ContextCompat.getColor(activity, R.color.black))
+                holder.tvTE.setTextColor(ContextCompat.getColor(activity, R.color.regularBack))
                 if(item.haveCount > item.allCount) {
                     holder.tvLeft.setTextColor(ContextCompat.getColor(activity, R.color.regularRed))
                     holder.tvRight.setTextColor(ContextCompat.getColor(activity, R.color.regularRed))
+                }
+                if (item.teCount != 0){
+                    holder.tvTE.setTextColor(ContextCompat.getColor(activity, R.color.regularRed))
+                    holder.tvTE.text
                 }
                 holder.bind(item)
             }

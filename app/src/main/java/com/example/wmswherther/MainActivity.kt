@@ -121,8 +121,15 @@ class MainActivity : AppCompatActivity() {
                     text.isSingleLine = true
                     text.requestFocus()
                     dialog.setButton(android.app.AlertDialog.BUTTON_POSITIVE, "Сохранить") { _, _ ->
-                        viewModel.unworkTe()
-                        viewModel.setTE(text.text.toString())
+                        if(isBoxTE(text.text.toString())){
+                            viewModel.unworkTe()
+                            viewModel.setTE(text.text.toString())
+                        }else{
+                            viewModel.turnOnTeMode()
+                            viewModel.workTe()
+                            Toast.makeText(this@MainActivity, "invalid te barcode", Toast.LENGTH_SHORT).show()
+                        }
+
                     }
                     dialog.setButton(android.app.AlertDialog.BUTTON_NEGATIVE, "Отмена") { dialogInterface, _ ->
                         viewModel.turnOnTeMode()
@@ -495,6 +502,12 @@ fun readTextFileFromInternalStorage(context: Context, fileName: String): String 
 
 private fun isCell(cell: String): Boolean {
     if (cell.length == 4 && cell[0] in 'A' .. 'Z' && cell[1].isDigit() && cell[2].isDigit() && cell[3].isDigit()){
+        return true
+    }
+    return false
+}
+fun isBoxTE(str: String) : Boolean{
+    if(str.length == 9){
         return true
     }
     return false

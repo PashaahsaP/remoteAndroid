@@ -12,6 +12,7 @@ data class IncomeItem(
     var catalogId: String,
     var haveCount: Int,
     var allCount: Int,
+    var teCount:Int = 0,
     var isSelected: Boolean = false,
     var isExpanded: Boolean = false,
     var isExpandable: Boolean = false,

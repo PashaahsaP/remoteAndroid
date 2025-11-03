@@ -6,4 +6,6 @@
     <color name="regularMenu">#6C37FF</color>
     <color name="regularRed">#fc2803</color>
     <color name="regularGrey">#5D5D5D</color>
+    <color name="regularBack">#fef7ff</color>
+
 </resources>
