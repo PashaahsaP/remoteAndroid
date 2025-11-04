@@ -81,7 +81,7 @@ class IncomeSessionViewModel : ViewModel() {
         var previousCellId: String = ""
         for (item in listOfGoods){
             var catalog = dao.getCatalogById(item.first.catalogId)
-            if (item.second.typeCellId == "8423d2f4-5890-4052-86f9-e9f5a234fa23"){
+            if (item.second.typeCellId == "6730f3c3-0a33-4454-a485-520522b64de5"){//8423d2f4-5890-4052-86f9-e9f5a234fa23
                 var parentCell = dao.getCellById(item.second.parentCellId.toString())
                 var isShown = if(parentCell.name.contains("IN")) true else false
                 if(item.second.id != previousCellId){
