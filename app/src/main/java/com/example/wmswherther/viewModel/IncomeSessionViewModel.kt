@@ -23,7 +23,7 @@ class IncomeSessionViewModel : ViewModel() {
     val currentCellName: LiveData<String> get() = _currentCellName
 
     val stack: ArrayDeque<List<IncomeItem>> = ArrayDeque()
-    val cellStack: ArrayDeque<List<String>> = ArrayDeque()
+    val cellStack: ArrayDeque<String> = ArrayDeque()
 
 
     fun updateItems(items: List<IncomeItem>){
@@ -81,7 +81,7 @@ class IncomeSessionViewModel : ViewModel() {
         var previousCellId: String = ""
         for (item in listOfGoods){
             var catalog = dao.getCatalogById(item.first.catalogId)
-            if (item.second.typeCellId == "6730f3c3-0a33-4454-a485-520522b64de5"){//8423d2f4-5890-4052-86f9-e9f5a234fa23
+            if (item.second.typeCellId == "cc921596-bf29-45d1-90dc-f9a8430f2cbb"){//6730f3c3-0a33-4454-a485-520522b64de5
                 var parentCell = dao.getCellById(item.second.parentCellId.toString())
                 var isShown = if(parentCell.name.contains("IN")) true else false
                 if(item.second.id != previousCellId){
@@ -113,6 +113,7 @@ class IncomeSessionViewModel : ViewModel() {
                         isShown = !isShown)
                 }
             }else{
+
                 result += IncomeItem(
                     name =  catalog.name,
                     TE = currentCellName.value.toString(),

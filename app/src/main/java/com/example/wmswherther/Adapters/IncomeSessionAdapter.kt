@@ -143,12 +143,14 @@ class IncomeSessionAdapter(
                 holder.tvLeft.text = item.name
                 holder.container.setOnClickListener {
                     var value = localViewModel.stack.removeLast().toList()
+                    localViewModel.cellStack.removeLast()
+                    localViewModel.setCellName(localViewModel.cellStack.last())
                     for (elem in value){
                         localViewModel.items.value?.forEach { item ->
                             if(item.name == elem.TE){
                                 elem.isExpanded = false
                             }
-                            if(elem.catalogId == item.catalogId){
+                            if(elem.catalogId == item.catalogId && item.TE == elem.TE){
                                 elem.haveCount = item.haveCount
                             }
                         }
@@ -162,6 +164,8 @@ class IncomeSessionAdapter(
                     var value = localViewModel.items.value!!.toList()
                     localViewModel.stack.addLast(value)
                     var list: MutableList<IncomeItem> = mutableListOf()
+                    localViewModel.setCellName(item.TE)
+                    localViewModel.cellStack.addLast(localViewModel.currentCellName.value.toString())
                     localViewModel.items.value?.forEach { elem ->
                         if(elem.name == item.name){
                             list.add(elem.copy(isExpanded = true))
