@@ -51,7 +51,7 @@ class MainViewModel : ViewModel() {
     fun turnOffScanMode(){
         _isScanningActive.value = false
     }
-fun setTE(text: String){
+    fun setTE(text: String){
         _TE.value = text
     }
     fun setBarcode(text: String){

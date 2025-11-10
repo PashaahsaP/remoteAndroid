@@ -97,43 +97,38 @@ class IncomeSessionFragment : Fragment() {
 
             })
             viewModel.TE.observe(viewLifecycleOwner, { TE ->
-                if(TE != "") {
-                    var newTe = IncomeItem(
-                        name = TE,
-                        TE = TE,
-                        catalogId = "",
-                        haveCount = 0,
-                        allCount = 0,
-                        teCount = 0,
-                        isExpanded = false,
-                        isExpandable = true
-                    )
-                    var innerIncomeItems: MutableList<IncomeItem> = mutableListOf()
-                    innerIncomeItems.add(newTe)
+                var innerIncomeItems: MutableList<IncomeItem> = mutableListOf()
+                if(TE != "") {//надо найти есть ли те, если есть то добавить ее и ее элементы в новую коллекцию, а потом оставшиеся элементы
+                    localViewModel.items.value!!.forEach { item ->
+                        if (item.name == TE){
+                            innerIncomeItems.add(item)
+                        }
+                    }
+                    if(innerIncomeItems.size == 0) {
+                        var newTe = IncomeItem(
+                            name = TE,
+                            TE = TE,
+                            catalogId = "",
+                            haveCount = 0,
+                            allCount = 0,
+                            teCount = 0,
+                            isExpanded = false,
+                            isExpandable = true
+                        )
+                        innerIncomeItems.add(newTe)
+                    }
                     localViewModel.items.value?.forEach { item ->
                         if (item.teCount != 0) {
                             if (item.haveCount == item.teCount) {
                                 if (item.teCount < item.allCount) {
                                     //Создать новый а старый уменьшить в общем количестве
-                                    var newItem = IncomeItem(
-                                        name = item.name,
-                                        TE = TE,
-                                        catalogId = item.catalogId,
-                                        teCount = 0,
-                                        allCount = item.teCount,
-                                        haveCount = item.teCount,
-                                        isExpandable = item.isExpandable,
-                                        isExpanded = item.isExpanded,
-                                        isSelected = item.isSelected,
-                                        isShown = false
-                                    )
+                                    var newItem = item.copy(TE = TE, teCount = 0, isShown = false)
                                     innerIncomeItems.add(newItem)
                                     item.allCount = item.allCount - item.teCount
                                     item.haveCount = item.haveCount - item.teCount
                                 } else {
                                     //Изменить parentTE и изменить положение в списке, оставить общеее количество таким же(чтобы показывало превышение или ровно)
-                                    item.TE =
-                                        TE // потом надо будет найти при повторном прохождении списка
+                                    item.TE = TE // потом надо будет найти при повторном прохождении списка
                                     item.isShown = false
                                     item.allCount = item.teCount
                                     item.haveCount = item.teCount
@@ -143,18 +138,7 @@ class IncomeSessionFragment : Fragment() {
                                 if (item.teCount + item.haveCount < item.allCount) {
                                     //Cоздать новый элемент где количество общее и имеющиеся берется из те
                                     //Изменить старый элемент уменьшив общее количество а количество оставить
-                                    var newItem = IncomeItem(
-                                        name = item.name,
-                                        TE = TE,
-                                        catalogId = item.catalogId,
-                                        teCount = 0,
-                                        allCount = item.teCount,
-                                        haveCount = item.teCount,
-                                        isExpandable = item.isExpandable,
-                                        isExpanded = item.isExpanded,
-                                        isSelected = item.isSelected,
-                                        isShown = false
-                                    )
+                                    var newItem = item.copy(TE = TE, teCount = 0, isShown = false)
                                     item.allCount -= item.teCount
                                     item.haveCount -= item.teCount
                                     innerIncomeItems.add(newItem)
@@ -162,18 +146,7 @@ class IncomeSessionFragment : Fragment() {
                                 } else {
                                     //Cоздать новый элемент где количество общее и имеющиеся берется из те
                                     //Изменить старый элемент,где общее количество равно нулю,  а количество оставить
-                                    var newItem = IncomeItem(
-                                        name = item.name,
-                                        TE = TE,
-                                        catalogId = item.catalogId,
-                                        teCount = 0,
-                                        allCount = item.teCount,
-                                        haveCount = item.teCount,
-                                        isExpandable = item.isExpandable,
-                                        isExpanded = item.isExpanded,
-                                        isSelected = item.isSelected,
-                                        isShown = false
-                                    )
+                                    var newItem = item.copy(TE = TE, teCount = 0, isShown = false)
                                     item.haveCount -= item.teCount
                                     item.allCount = item.allCount - item.teCount
                                     innerIncomeItems.add(newItem)
@@ -182,17 +155,39 @@ class IncomeSessionFragment : Fragment() {
                         }
                     }
                     localViewModel.items.value?.forEach { item ->
-                        if (item.TE == TE) {
+                        if (item.TE == TE && item.name != item.TE)//чтобы повторно не добавлять те, которая была в начале обработана
+                        {
                             innerIncomeItems.add(item)
                         }
+                    }//надо перебрать имеющиеся элементы в новой коллекции и если есть дубликаты сложить их
+                    innerIncomeItems.forEach{ item ->
+                        if(!item.isExpandable){
+
+                        }
+                    }
+                    var result: MutableList<IncomeItem> = mutableListOf()
+
+                    for (i in 0..< innerIncomeItems.size){
+                        if(!innerIncomeItems[i].isExpandable && innerIncomeItems[i].haveCount != 0 && innerIncomeItems[i].allCount != 0){
+                            for (j in (i + 1) ..< innerIncomeItems.size){
+                                innerIncomeItems[i].haveCount += innerIncomeItems[j].haveCount
+                                innerIncomeItems[i].allCount += innerIncomeItems[j].allCount
+                                innerIncomeItems[j].haveCount = 0
+                                innerIncomeItems[j].allCount = 0
+                            }
+                        }
+                        if(!innerIncomeItems[i].isExpandable && innerIncomeItems[i].allCount == 0 && innerIncomeItems[i].haveCount == 0)
+                            continue
+                        else
+                            result += innerIncomeItems[i]
                     }
                     localViewModel.items.value?.forEach { item ->
                         if (item.TE != TE && item.allCount != 0) {
                             item.teCount = 0
-                            innerIncomeItems.add(item)
+                            result.add(item)
                         }
                     }
-                    localViewModel.updateItems(innerIncomeItems)
+                    localViewModel.updateItems(result)
                     //В новой коллекции уже есть те и вновь созданные элементы
                     //Если есть элементы где
                     //пройти список по новой и где есть элементы с таким же те то не добавлять в коллекцию
@@ -215,10 +210,6 @@ class IncomeSessionFragment : Fragment() {
                     localViewModel.setSelectedItem(0)
                 }
             }
-
-
-
-
 
             return  binding.root
         }
