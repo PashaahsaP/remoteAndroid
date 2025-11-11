@@ -98,7 +98,9 @@ class IncomeSessionFragment : Fragment() {
             })
             viewModel.TE.observe(viewLifecycleOwner, { TE ->
                 var innerIncomeItems: MutableList<IncomeItem> = mutableListOf()
+
                 if(TE != "") {//надо найти есть ли те, если есть то добавить ее и ее элементы в новую коллекцию, а потом оставшиеся элементы
+                    // <editor-fold desc="adding TE to new collection">
                     localViewModel.items.value!!.forEach { item ->
                         if (item.name == TE){
                             innerIncomeItems.add(item)
@@ -117,6 +119,8 @@ class IncomeSessionFragment : Fragment() {
                         )
                         innerIncomeItems.add(newTe)
                     }
+                    // </editor-fold>
+                    // <editor-fold desc="create new collection by te counter">
                     localViewModel.items.value?.forEach { item ->
                         if (item.teCount != 0) {
                             if (item.haveCount == item.teCount) {
@@ -154,6 +158,10 @@ class IncomeSessionFragment : Fragment() {
                             }
                         }
                     }
+                    // </editor-fold>
+                    // <editor-fold desc="Получение полного списка за исключением тех что были обработаны и добавлены ранее">
+
+
                     localViewModel.items.value?.forEach { item ->
                         if (item.TE == TE && item.name != item.TE)//чтобы повторно не добавлять те, которая была в начале обработана
                         {
@@ -165,6 +173,10 @@ class IncomeSessionFragment : Fragment() {
 
                         }
                     }
+                    // </editor-fold>
+                    // <editor-fold desc="remove duplication item from list">
+
+
                     var result: MutableList<IncomeItem> = mutableListOf()
 
                     for (i in 0..< innerIncomeItems.size){
@@ -181,12 +193,15 @@ class IncomeSessionFragment : Fragment() {
                         else
                             result += innerIncomeItems[i]
                     }
+                    // </editor-fold>
+                    // <editor-fold desc="обнуление ТЕ счетчика">
                     localViewModel.items.value?.forEach { item ->
                         if (item.TE != TE && item.allCount != 0) {
                             item.teCount = 0
                             result.add(item)
                         }
                     }
+                    // </editor-fold>
                     localViewModel.updateItems(result)
                     //В новой коллекции уже есть те и вновь созданные элементы
                     //Если есть элементы где

@@ -47,7 +47,7 @@ class IncomeFragment : Fragment() {
         container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View? {
-        /*lifecycleScope.launch {
+      /*  lifecycleScope.launch {
             withContext(Dispatchers.IO){
                 appendDummyData(MainDB.getDB(requireActivity()))
             }
