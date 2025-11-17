@@ -123,38 +123,41 @@ class IncomeSessionFragment : Fragment() {
                     // <editor-fold desc="create new collection by te counter">
                     localViewModel.items.value?.forEach { item ->
                         if (item.teCount != 0) {
-                            if (item.haveCount == item.teCount) {
-                                if (item.teCount < item.allCount) {
-                                    //Создать новый а старый уменьшить в общем количестве
-                                    var newItem = item.copy(TE = TE, teCount = 0, isShown = false)
+                            if (item.haveCount < item.allCount) {
+                                //То создать новый элемент, в старом уменьшить have и te
+                                var newItem = item.copy(TE = TE, teCount = 0, isShown = false, haveCount = item.teCount, allCount = item.teCount)
+                                innerIncomeItems.add(newItem)
+                                item.allCount = item.allCount - item.teCount
+                                item.haveCount = item.haveCount - item.teCount
+
+                            } else if(item.haveCount == item.allCount) {
+                                if((item.haveCount - item.teCount) == 0){
+                                    item.TE = TE
+                                    item.isShown = false
+                                    item.teCount = 0
+                                }else{
+                                    var newItem = item.copy(TE = TE, teCount = 0, isShown = false, haveCount = item.teCount, allCount = item.teCount)
                                     innerIncomeItems.add(newItem)
                                     item.allCount = item.allCount - item.teCount
                                     item.haveCount = item.haveCount - item.teCount
-                                } else {
-                                    //Изменить parentTE и изменить положение в списке, оставить общеее количество таким же(чтобы показывало превышение или ровно)
-                                    item.TE = TE // потом надо будет найти при повторном прохождении списка
-                                    item.isShown = false
-                                    item.allCount = item.teCount
-                                    item.haveCount = item.teCount
                                 }
-                                item.teCount = 0
-                            } else {
-                                if (item.teCount + item.haveCount < item.allCount) {
-                                    //Cоздать новый элемент где количество общее и имеющиеся берется из те
-                                    //Изменить старый элемент уменьшив общее количество а количество оставить
-                                    var newItem = item.copy(TE = TE, teCount = 0, isShown = false)
-                                    item.allCount -= item.teCount
-                                    item.haveCount -= item.teCount
-                                    innerIncomeItems.add(newItem)
+                                //То проверить (have - te) == 0
+                                //Если да просто перенести элемент, иначе разделить, из старого вычесть have и te
 
-                                } else {
-                                    //Cоздать новый элемент где количество общее и имеющиеся берется из те
-                                    //Изменить старый элемент,где общее количество равно нулю,  а количество оставить
-                                    var newItem = item.copy(TE = TE, teCount = 0, isShown = false)
-                                    item.haveCount -= item.teCount
-                                    item.allCount = item.allCount - item.teCount
+
+                            }
+                            else{
+                                if(item.allCount <= item.teCount){
+                                    item.TE = TE
+                                    item.isShown = false
+                                    item.teCount = 0
+                                }else{
+                                    var newItem = item.copy(TE = TE, teCount = 0, isShown = false, haveCount = item.teCount, allCount = item.teCount)
                                     innerIncomeItems.add(newItem)
+                                    item.allCount = item.allCount - item.teCount
+                                    item.haveCount = item.haveCount - item.teCount
                                 }
+                                //Создать новый элемент если have - te != 0, иначе перенести весь элемент
                             }
                         }
                     }
@@ -163,7 +166,7 @@ class IncomeSessionFragment : Fragment() {
 
 
                     localViewModel.items.value?.forEach { item ->
-                        if (item.TE == TE && item.name != item.TE)//чтобы повторно не добавлять те, которая была в начале обработана
+                        if (item.TE == TE && it                                            не добавлять те, которая была в начале обработана
                         {
                             innerIncomeItems.add(item)
                         }
