@@ -50,12 +50,15 @@ class IncomeSessionFragment : Fragment() {
                 recyclerView.smoothScrollToPosition(localViewModel.getSelectedItem())
             })
             viewModel.Barcode.observe(viewLifecycleOwner, { barcode ->
+                //TODO сделать чтобы была сортировка по те, количеству и прочему перед добавлением
+                //TODO  Если нажал ТЕ надо сделать чтобы можно было отменить добавление товара в те.
                 if(barcode != "") {
                     lifecycleScope.launch {
                         var newItems: List<IncomeItem> = listOf()
                         var bar =
                             MainDB.getDB(requireActivity()).getDao().getBarcodeByName(barcode)
                         if (bar != null && bar is Barcode) {
+                            var isAdded = false
                             withContext(Dispatchers.IO) {
                                 localViewModel.items.value?.forEach { item ->
                                     var teCount = item.teCount
@@ -63,6 +66,7 @@ class IncomeSessionFragment : Fragment() {
                                         teCount = teCount + 1
                                     }
                                     if (item.catalogId == bar.catalogId && localViewModel.currentCellName.value.toString() == item.TE) {
+                                        isAdded = true
                                         newItems += IncomeItem(
                                             name = item.name,
                                             TE = item.TE,
@@ -79,7 +83,22 @@ class IncomeSessionFragment : Fragment() {
                                     }
 
                                 }
-
+                                if(!isAdded){
+                                    var catalog = MainDB.getDB(requireActivity()).getDao().getCatalogById(bar.catalogId)
+                                    if (catalog != null){
+                                        newItems += IncomeItem(
+                                            name = catalog.name,
+                                            TE = localViewModel.currentCellName.value.toString(),
+                                            catalogId = catalog.id,
+                                            haveCount = 1,
+                                            allCount = 0,
+                                            teCount = if (viewModel.IsIncomeSessionTEModeActive.value == true) 1 else 0,
+                                            isSelected = false,
+                                            isExpanded = false,
+                                            isShown = true,
+                                            isExpandable = false)
+                                    }
+                                }
                             }
                             withContext(Dispatchers.Main) {
                                 localViewModel.updateItems(newItems)
@@ -147,14 +166,15 @@ class IncomeSessionFragment : Fragment() {
 
                             }
                             else{
-                                if(item.allCount <= item.teCount){
+                                if((item.haveCount - item.teCount) == 0){
                                     item.TE = TE
                                     item.isShown = false
                                     item.teCount = 0
                                 }else{
-                                    var newItem = item.copy(TE = TE, teCount = 0, isShown = false, haveCount = item.teCount, allCount = item.teCount)
+                                    var newItem = item.copy(TE = TE, teCount = 0, isShown = false, haveCount = item.teCount, allCount = item.allCount)
                                     innerIncomeItems.add(newItem)
-                                    item.allCount = item.allCount - item.teCount
+                                    var newCount = item.allCount - item.teCount
+                                    item.allCount = if (newCount < 0) 0 else newCount
                                     item.haveCount = item.haveCount - item.teCount
                                 }
                                 //Создать новый элемент если have - te != 0, иначе перенести весь элемент
@@ -166,7 +186,7 @@ class IncomeSessionFragment : Fragment() {
 
 
                     localViewModel.items.value?.forEach { item ->
-                        if (item.TE == TE && it                                            не добавлять те, которая была в начале обработана
+                        if (item.TE == TE && item.name != item.TE)//чтобы повторно не добавлять те, которая была в начале обработана
                         {
                             innerIncomeItems.add(item)
                         }
@@ -199,7 +219,7 @@ class IncomeSessionFragment : Fragment() {
                     // </editor-fold>
                     // <editor-fold desc="обнуление ТЕ счетчика">
                     localViewModel.items.value?.forEach { item ->
-                        if (item.TE != TE && item.allCount != 0) {
+                        if (item.TE != TE && !(item.haveCount == 0 && item.allCount == 0)) {
                             item.teCount = 0
                             result.add(item)
                         }
