@@ -129,11 +129,14 @@ class MainActivity : AppCompatActivity() {
                             viewModel.workTe()
                             Toast.makeText(this@MainActivity, "invalid te barcode", Toast.LENGTH_SHORT).show()
                         }
-
                     }
-                    dialog.setButton(android.app.AlertDialog.BUTTON_NEGATIVE, "Отмена") { dialogInterface, _ ->
+                    dialog.setButton(android.app.AlertDialog.BUTTON_NEGATIVE, "Закрыть") { dialogInterface, _ ->
                         viewModel.turnOnTeMode()
                         viewModel.workTe()
+                        dialogInterface.dismiss()
+                    }
+                    dialog.setButton(android.app.AlertDialog.BUTTON_NEUTRAL, "Отмена") { dialogInterface, _ ->
+                        viewModel.switchTeButton()
                         dialogInterface.dismiss()
                     }
                     dialog.setOnCancelListener {
@@ -245,6 +248,7 @@ class MainActivity : AppCompatActivity() {
                         viewModel.switchScanMode()
                         popupWindow.dismiss()
                     }
+
                     val location = IntArray(2)
                     btnThreeDots.getLocationOnScreen(location)
 

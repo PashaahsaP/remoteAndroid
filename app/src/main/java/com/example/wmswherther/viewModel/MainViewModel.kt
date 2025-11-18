@@ -15,6 +15,7 @@ class MainViewModel : ViewModel() {
     private val _isWorkableTE= MutableLiveData<Boolean>(false)//нужен чтобы отображать диалоговое окно
     private val _TE= MutableLiveData<String>("")
     private val _barcode= MutableLiveData<String>("")
+    private val _IsCloseTE= MutableLiveData<Boolean>(true)
     private val _widhtScanningField= MutableLiveData<Int>(0)
 
     val MainActivityBinding: LiveData<ActivityMainBinding> get() = _mainActivityBinding
@@ -27,6 +28,7 @@ class MainViewModel : ViewModel() {
     val TE: LiveData<String> get() = _TE
     val IsWorkableTE: LiveData<Boolean> get() = _isWorkableTE
     val Barcode: LiveData<String> get() = _barcode
+    val IsCloseTE: LiveData<Boolean> get() = _IsCloseTE
 
 
     fun getMainBinding() : ActivityMainBinding? {
@@ -37,6 +39,13 @@ class MainViewModel : ViewModel() {
     }
     fun setWidthScanningField(width: Int){
         _widhtScanningField.value = width
+    }
+    fun switchTeButton(){
+        if(_IsCloseTE.value == true) {
+            _IsCloseTE.value = false
+        }else{
+            _IsCloseTE.value = true
+        }
     }
     fun switchScanMode(){
         if(_isScanningActive.value == true){
@@ -91,6 +100,14 @@ class MainViewModel : ViewModel() {
     fun turnOffTeMode()
     {
         _isIncomeSessionTEModeActive.value = false
+    }
+    fun switchTeMode()
+    {
+        if(_isIncomeSessionTEModeActive.value == true){
+            turnOffTeMode()
+        }else{
+            turnOnTeMode()
+        }
     }
     fun workTe()
     {

@@ -231,6 +231,22 @@ class IncomeSessionFragment : Fragment() {
                     //пройти список по новой и где есть элементы с таким же те то не добавлять в коллекцию
                 }
             })
+            viewModel.IsCloseTE.observe(viewLifecycleOwner, { isClosed ->
+                var clearedCollection : List<IncomeItem> = listOf()
+                lifecycleScope.launch {
+                    if (isClosed == false) {
+                        withContext(Dispatchers.IO) {
+                            var clearedCollection : List<IncomeItem> = listOf()
+                            localViewModel.items.value?.forEach { item ->
+                                clearedCollection += item.copy(teCount = 0)
+                            }
+                        }
+                        withContext(Dispatchers.Main) {
+                            localViewModel.updateItems(clearedCollection)
+                        }
+                    }
+                }
+            })
             lifecycleScope.launch {
                 var data: List<IncomeItem> = listOf()
                 withContext(Dispatchers.Main){
