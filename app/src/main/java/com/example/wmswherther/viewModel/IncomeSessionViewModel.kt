@@ -27,7 +27,25 @@ class IncomeSessionViewModel : ViewModel() {
 
 
     fun updateItems(items: List<IncomeItem>){
-        _items.value = items
+        var sortedCollection : MutableList<IncomeItem> = mutableListOf()
+        var teCollection : MutableList<IncomeItem> = mutableListOf()
+        var otherCollection : MutableList<IncomeItem> = mutableListOf()
+        items.forEach { item ->
+            if(item.isExpandable){
+                teCollection.add(item)
+            }else if(!item.isShown){
+                teCollection.add(item)
+            }else{
+                otherCollection.add(item)
+            }
+        }
+        teCollection.forEach { item ->
+            sortedCollection.add(item)
+        }
+        otherCollection.forEach { item ->
+            sortedCollection.add(item)
+        }
+        _items.value = sortedCollection
     }
     fun getSelectedItem() : Int{
         var isCorrect = _selectedItem.value

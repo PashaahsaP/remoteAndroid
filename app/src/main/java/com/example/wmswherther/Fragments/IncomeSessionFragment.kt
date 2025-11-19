@@ -269,3 +269,4 @@ class IncomeSessionFragment : Fragment() {
         }
 
 }
+//TODO когда выходишь из заявки то вылезает окно те мода
