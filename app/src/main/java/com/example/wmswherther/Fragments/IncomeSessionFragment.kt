@@ -232,17 +232,17 @@ class IncomeSessionFragment : Fragment() {
                 }
             })
             viewModel.IsCloseTE.observe(viewLifecycleOwner, { isClosed ->
-                var clearedCollection : List<IncomeItem> = listOf()
+                var clearedCollection : MutableList<IncomeItem> = mutableListOf()
                 lifecycleScope.launch {
                     if (isClosed == false) {
                         withContext(Dispatchers.IO) {
-                            var clearedCollection : List<IncomeItem> = listOf()
                             localViewModel.items.value?.forEach { item ->
-                                clearedCollection += item.copy(teCount = 0)
+                                clearedCollection.add(item.copy(teCount = 0))
                             }
                         }
                         withContext(Dispatchers.Main) {
-                            localViewModel.updateItems(clearedCollection)
+                            localViewModel.updateItems(clearedCollection.toList())
+                            viewModel.switchTeButton()
                         }
                     }
                 }
