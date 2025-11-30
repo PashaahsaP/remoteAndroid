@@ -106,14 +106,14 @@ class IncomeSessionAdapter(
                             }
                         }else{
                             localViewModel.items.value?.forEach { innerItem ->
-                                if (innerItem.catalogId != item.catalogId || (innerItem.catalogId == item.catalogId && localViewModel.currentCellName.value != item.TE)) {
+                                if (innerItem.catalogId != item.catalogId || (innerItem.catalogId == item.catalogId && localViewModel.currentCellName.value != innerItem.TE)) {
                                     newData += innerItem
                                 }
                             }
 
                             var value = localViewModel.stack.removeLast().toList()
                             value.forEach { innerItem->
-                                if (innerItem.catalogId != item.catalogId || (innerItem.catalogId == item.catalogId && localViewModel.currentCellName.value != item.TE)) {
+                                if (innerItem.catalogId != item.catalogId || (innerItem.catalogId == item.catalogId && localViewModel.currentCellName.value != innerItem.TE)) {
                                     allData += innerItem
                                 }
                             }
