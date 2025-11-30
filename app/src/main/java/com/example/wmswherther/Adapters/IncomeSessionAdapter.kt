@@ -156,10 +156,14 @@ class IncomeSessionAdapter(
                             var t = holder.etSelectedCount.text.trim()
                             var counter = 0
                             var listIncome : List<IncomeItem> = listOf()
+                            var count = t.toString().toInt()
                             localViewModel.items.value?.forEach{ item ->
                                 item.isSelected = false
                                 if(counter == position){
-                                    item.haveCount = t.toString().toInt()
+                                    item.haveCount = count
+                                    if(viewModel.IsIncomeSessionTEModeActive.value == true){
+                                        item.teCount = count
+                                    }
                                 }
                                 listIncome+= item
                                 counter = counter + 1
