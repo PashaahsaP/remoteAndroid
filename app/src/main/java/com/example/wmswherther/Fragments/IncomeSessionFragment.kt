@@ -11,7 +11,6 @@ import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.example.wmsRemote.data.db.MainDB
-import com.example.wmsRemote.databinding.ActivityMainBinding
 import com.example.wmsRemote.databinding.FragmentIncomeSessionBinding
 import com.example.wmswherther.Adapters.IncomeSessionAdapter
 import com.example.wmswherther.Classes.IncomeItem
@@ -40,7 +39,7 @@ class IncomeSessionFragment : Fragment() {
 
 
             var recyclerView: RecyclerView = binding.rwIncomeSessionList
-            var adapter = IncomeSessionAdapter(listOf(), recyclerView, localViewModel, requireActivity())
+            var adapter = IncomeSessionAdapter(listOf(), recyclerView, localViewModel, requireActivity(),viewModel)
             recyclerView.layoutManager = LinearLayoutManager(requireActivity())
             recyclerView.adapter = adapter
             val sessionId = arguments?.getString("id")

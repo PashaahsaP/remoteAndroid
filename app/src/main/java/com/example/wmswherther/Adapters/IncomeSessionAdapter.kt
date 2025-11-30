@@ -1,24 +1,29 @@
 package com.example.wmswherther.Adapters
 
 import android.content.Context
-import android.graphics.Color
 import android.view.KeyEvent
 import android.view.LayoutInflater
 import android.view.ViewGroup
 import android.view.inputmethod.InputMethodManager
+import android.widget.EditText
+import android.widget.TextView
+import android.widget.Toast
 import androidx.core.content.ContextCompat
-import androidx.core.graphics.toColor
+import androidx.core.view.setPadding
 import androidx.fragment.app.FragmentActivity
 import androidx.recyclerview.widget.RecyclerView
 import com.example.wmsRemote.R
+import com.example.wmsRemote.isBoxTE
 import com.example.wmswherther.Classes.IncomeItem
 import com.example.wmswherther.viewModel.IncomeSessionViewModel
+import com.example.wmswherther.viewModel.MainViewModel
 
 class IncomeSessionAdapter(
     var data: List<IncomeItem>,
     var recyclerView: RecyclerView,
     var localViewModel: IncomeSessionViewModel,
-    var activity: FragmentActivity
+    var activity: FragmentActivity,
+    var viewModel: MainViewModel
 ):  RecyclerView.Adapter<RecyclerView.ViewHolder>() {
     private var barcodeBuffer = StringBuilder()
     override fun getItemViewType(position: Int): Int {
@@ -62,7 +67,7 @@ class IncomeSessionAdapter(
         }
     }
 
-    override fun onBindViewHolder(holder: RecyclerView.ViewHolder, position: Int) {
+    override fun  onBindViewHolder(holder: RecyclerView.ViewHolder, position: Int) {
         val item = data[position]
         when (holder) {
             is IncomeSessionViewHolder -> {
@@ -82,7 +87,50 @@ class IncomeSessionAdapter(
                     localViewModel.updateItems(listIncome)
 
                 }
+                holder.container.setOnLongClickListener {
 
+                    var dialog = android.app.AlertDialog.Builder(activity)
+                        .create()
+                    var text = TextView(activity)
+                    text.width = 100
+                    text.setPadding(30)
+                    text.setText("Вы точно хотите удалить строку?")
+                    dialog.setButton(android.app.AlertDialog.BUTTON_POSITIVE, "Да") { _, _ ->
+                        var newData: MutableList<IncomeItem> = mutableListOf()
+                        var allData: MutableList<IncomeItem> = mutableListOf()
+                        if(localViewModel.stack.size == 0) {
+                            localViewModel.items.value?.forEach { innerItem ->
+                                if (innerItem.catalogId != item.catalogId || (innerItem.catalogId == item.catalogId && localViewModel.currentCellName.value != item.TE)) {
+                                    newData += innerItem
+                                }
+                            }
+                        }else{
+                            localViewModel.items.value?.forEach { innerItem ->
+                                if (innerItem.catalogId != item.catalogId || (innerItem.catalogId == item.catalogId && localViewModel.currentCellName.value != item.TE)) {
+                                    newData += innerItem
+                                }
+                            }
+
+                            var value = localViewModel.stack.removeLast().toList()
+                            value.forEach { innerItem->
+                                if (innerItem.catalogId != item.catalogId || (innerItem.catalogId == item.catalogId && localViewModel.currentCellName.value != item.TE)) {
+                                    allData += innerItem
+                                }
+                            }
+                            localViewModel.stack.addLast(allData)
+                        }
+                        localViewModel.updateItems(newData.toList())
+                        //TODO удалить запись из коллекции. Надо искать элемент который в текущей те и по id
+                    }
+                    dialog.setButton(android.app.AlertDialog.BUTTON_NEGATIVE, "Нет") { dialogInterface, _ ->
+                        dialogInterface.dismiss()
+                    }
+
+
+                    dialog.setView(text)
+                    dialog.show()
+                    true
+                }
                 holder.tvLeft.setTextColor(ContextCompat.getColor(activity, R.color.black))
                 holder.tvRight.setTextColor(ContextCompat.getColor(activity, R.color.black))
                 holder.tvTE.setTextColor(ContextCompat.getColor(activity, R.color.regularBack))
@@ -157,6 +205,7 @@ class IncomeSessionAdapter(
                     }
                     localViewModel.updateItems(value)
                 }
+
             }
             is IncomeSessionCollapsedViewHolder ->{
                 holder.tvLeft.text = item.name
