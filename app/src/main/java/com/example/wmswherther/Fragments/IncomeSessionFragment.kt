@@ -118,7 +118,7 @@ class IncomeSessionFragment : Fragment() {
                 var innerIncomeItems: MutableList<IncomeItem> = mutableListOf()
 
                 if(TE != "") {//надо найти есть ли те, если есть то добавить ее и ее элементы в новую коллекцию, а потом оставшиеся элементы
-                    // <editor-fold desc="adding TE to new collection">
+                    // <editor-fold desc="Добавление те в новую коллекцию если не существует создание новой и добавление">
                     localViewModel.items.value!!.forEach { item ->
                         if (item.name == TE){
                             innerIncomeItems.add(item)
@@ -178,14 +178,15 @@ class IncomeSessionFragment : Fragment() {
                                 }
                                 //Создать новый элемент если have - te != 0, иначе перенести весь элемент
                             }
+
                         }
                     }
                     // </editor-fold>
                     // <editor-fold desc="Получение полного списка за исключением тех что были обработаны и добавлены ранее">
 
 
-                    localViewModel.items.value?.forEach { item ->
-                        if (item.TE == TE && item.name != item.TE)//чтобы повторно не добавлять те, которая была в начале обработана
+                    localViewModel.items.value?.forEach { item ->//TODO какая то хуета тут
+                        if (item.TE == TE && item.name != item.TE)//чтобы повторно не добавлять те, которая была в начале обработана. Добивание коллекции
                         {
                             innerIncomeItems.add(item)
                         }
@@ -201,20 +202,24 @@ class IncomeSessionFragment : Fragment() {
 
                     var result: MutableList<IncomeItem> = mutableListOf()
 
-                    for (i in 0..< innerIncomeItems.size){
-                        if(!innerIncomeItems[i].isExpandable && innerIncomeItems[i].haveCount != 0 && innerIncomeItems[i].allCount != 0){
-                            for (j in (i + 1) ..< innerIncomeItems.size){
-                                innerIncomeItems[i].haveCount += innerIncomeItems[j].haveCount
-                                innerIncomeItems[i].allCount += innerIncomeItems[j].allCount
-                                innerIncomeItems[j].haveCount = 0
-                                innerIncomeItems[j].allCount = 0
-                            }
-                        }
-                        if(!innerIncomeItems[i].isExpandable && innerIncomeItems[i].allCount == 0 && innerIncomeItems[i].haveCount == 0)
-                            continue
-                        else
-                            result += innerIncomeItems[i]
-                    }
+                    result += innerIncomeItems.first()
+                    innerIncomeItems.removeFirst()
+                    innerIncomeItems
+                        .groupBy { it.catalogId }
+                        .map {(id, group) ->
+                            IncomeItem(
+                                name = group.first().name,
+                                TE = group.first().TE,
+                                catalogId = id,
+                                haveCount = group.sumOf { it.haveCount },
+                                allCount = group.sumOf { it.allCount },
+                                teCount = group.sumOf { it.teCount },
+                                isSelected = group.first().isSelected,
+                                isExpandable = group.first().isExpandable,
+                                isExpanded = group.first().isExpanded,
+                                isShown = group.first().isShown,
+                            )
+                        }.forEach { item -> result += item }
                     // </editor-fold>
                     // <editor-fold desc="обнуление ТЕ счетчика">
                     localViewModel.items.value?.forEach { item ->
