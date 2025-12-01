@@ -6,6 +6,7 @@ import android.view.LayoutInflater
 import android.view.ViewGroup
 import android.view.inputmethod.InputMethodManager
 import android.widget.EditText
+import android.widget.LinearLayout
 import android.widget.TextView
 import android.widget.Toast
 import androidx.core.content.ContextCompat
@@ -228,6 +229,32 @@ class IncomeSessionAdapter(
                     }
                     localViewModel.updateItems(list.toList())
                 }
+                holder.container.setOnLongClickListener {
+
+                    var dialog = android.app.AlertDialog.Builder(activity)
+                        .create()
+                    var titleText = TextView(activity)
+                    var contentText = TextView(activity)
+                    var containerLocal = LinearLayout (activity)
+                    containerLocal.addView(titleText)
+                    containerLocal.addView(contentText)
+                    containerLocal.orientation = LinearLayout.VERTICAL
+                    titleText.setPadding(30)
+                    titleText.setText("Удаление")
+                    contentText.setPadding(30)
+                    contentText.setText("Удалить вложенные элементы?")
+                    dialog.setButton(android.app.AlertDialog.BUTTON_POSITIVE, "Да") { _, _ ->
+                        //TODO удалить запись из коллекции. Надо искать элемент который в текущей те и по id
+                    }
+                    dialog.setButton(android.app.AlertDialog.BUTTON_NEGATIVE, "Нет") { dialogInterface, _ ->
+                        dialogInterface.dismiss()
+                    }
+
+
+                    dialog.setView(containerLocal)
+                    dialog.show()
+                    true
+                }
             }
         }
 
@@ -237,7 +264,6 @@ class IncomeSessionAdapter(
     override fun getItemCount(): Int {
         return data.count()
     }
-
 
     fun updateCollection(items: List<IncomeItem>, selectedItem: Int){
         data = items
