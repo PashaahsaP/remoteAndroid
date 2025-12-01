@@ -244,17 +244,36 @@ class IncomeSessionAdapter(
                     contentText.setPadding(30)
                     contentText.setText("Удалить вложенные элементы?")
                     dialog.setButton(android.app.AlertDialog.BUTTON_POSITIVE, "Да") { _, _ ->
-                        //TODO удалить запись из коллекции. Надо искать элемент который в текущей те и по id
+                        //TODO Перебрать коллекцию и удалить из нее те, и элементы у которых такая же те
                     }
                     dialog.setButton(android.app.AlertDialog.BUTTON_NEGATIVE, "Нет") { dialogInterface, _ ->
+                        var newCollection : MutableList<IncomeItem> = mutableListOf()
+                        localViewModel.items.value?.forEach { localItem->
+                            if (localItem.name != localItem.TE){
+                                if(item.name == localItem.TE){
+                                    newCollection += localItem.copy(TE = localViewModel.currentCellName.value.toString(), isShown = true)
+                                }else{
+                                    newCollection += localItem
+                                }
+                            }
+                        }
+                        localViewModel.updateItems(newCollection)
+                        //TODO Удалить те, а для элементов назначить те, как и у остальных
                         dialogInterface.dismiss()
                     }
-
+                    dialog.setButton(android.app.AlertDialog.BUTTON_NEUTRAL, "Отмена") { dialogInterface, _ ->
+                        dialogInterface.dismiss()
+                    }
+                    dialog.setOnCancelListener {
+                        viewModel.turnOnTeMode()
+                        viewModel.workTe()
+                    }
 
                     dialog.setView(containerLocal)
                     dialog.show()
                     true
                 }
+
             }
         }
 
