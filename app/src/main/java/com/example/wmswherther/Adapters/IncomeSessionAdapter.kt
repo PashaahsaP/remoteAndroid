@@ -244,12 +244,19 @@ class IncomeSessionAdapter(
                     contentText.setPadding(30)
                     contentText.setText("Удалить вложенные элементы?")
                     dialog.setButton(android.app.AlertDialog.BUTTON_POSITIVE, "Да") { _, _ ->
-                        //TODO Перебрать коллекцию и удалить из нее те, и элементы у которых такая же те
+                        var newCollection : MutableList<IncomeItem> = mutableListOf()
+                        localViewModel.items.value?.forEach { localItem->
+                            if (item.name != localItem.TE){
+                                newCollection += localItem
+                            }
+                        }
+                        localViewModel.updateItems(newCollection)
                     }
                     dialog.setButton(android.app.AlertDialog.BUTTON_NEGATIVE, "Нет") { dialogInterface, _ ->
                         var newCollection : MutableList<IncomeItem> = mutableListOf()
+                        //удаление те
                         localViewModel.items.value?.forEach { localItem->
-                            if (localItem.name != localItem.TE){
+                            if (item.name != localItem.name){
                                 if(item.name == localItem.TE){
                                     newCollection += localItem.copy(TE = localViewModel.currentCellName.value.toString(), isShown = true)
                                 }else{
@@ -257,7 +264,24 @@ class IncomeSessionAdapter(
                                 }
                             }
                         }
-                        localViewModel.updateItems(newCollection)
+                        // сложение дубликатов
+                        var result = newCollection
+                            .groupBy {it.catalogId}
+                            .map { (id, group) ->
+                               IncomeItem(
+                                   name = group.first().name,
+                                   TE = group.first().TE,
+                                   catalogId = id,
+                                   haveCount = group.sumOf { it.haveCount },
+                                   allCount = group.sumOf { it.allCount },
+                                   teCount = group.sumOf { it.teCount },
+                                   isSelected = group.first().isSelected,
+                                   isExpandable = group.first().isExpandable,
+                                   isExpanded = group.first().isExpanded,
+                                   isShown = group.first().isShown,
+                               )
+                            }
+                        localViewModel.updateItems(result)
                         //TODO Удалить те, а для элементов назначить те, как и у остальных
                         dialogInterface.dismiss()
                     }
