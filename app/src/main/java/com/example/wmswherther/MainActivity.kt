@@ -30,6 +30,7 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.doOnPreDraw
 import androidx.core.view.setPadding
 import androidx.fragment.app.commit
+import androidx.fragment.app.replace
 import androidx.lifecycle.Observer
 import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.viewModelScope
@@ -37,7 +38,9 @@ import com.example.wmsRemote.databinding.ActivityMainBinding
 import com.example.wmsRemote.data.db.Cell
 import com.example.wmsRemote.data.db.MainDB
 import com.example.wmsRemote.viewModel.AssemblyViewModel
+import com.example.wmswherther.Fragments.IncomeFragment
 import com.example.wmswherther.Fragments.MainFragment
+import com.example.wmswherther.Fragments.SearchFragment
 import com.example.wmswherther.LogActivity
 import com.example.wmswherther.viewModel.MainViewModel
 import com.google.android.material.button.MaterialButton
@@ -199,7 +202,7 @@ class MainActivity : AppCompatActivity() {
                         .setMessage("Точно закрыть текущий экран?")
                         .setPositiveButton("Да") { _, _ ->
                             viewModel.finishIncomeSession()
-                            viewModel.turnOffTeMode()
+                            viewModel.turnOffTeMode()//TODO заменить на что то другое) просто при переключении флага вызывается окно но уже в другом меню
                             super.onBackPressed()
                         }
                         .setNegativeButton("Нет", null)
@@ -278,6 +281,21 @@ class MainActivity : AppCompatActivity() {
                 }
             }
             etIncomeBarcodeScan.requestFocus()
+            btnSearch.setOnClickListener {
+                if(viewModel.CurrFragment.value != null){
+                    viewModel.getCurrFragment()?.
+                    parentFragmentManager?.commit {
+                        setCustomAnimations(
+                            R.anim.slide_in_right, // enter
+                            R.anim.slide_out_left,  // exit
+                            R.anim.slide_in_left,   // popEnter
+                            R.anim.slide_out_right  // popExit
+                        )
+                        replace<SearchFragment>(R.id.fragmentContainer)
+                        addToBackStack(null)
+                    }
+                }
+            }
         }
     }
     override fun onResume() {

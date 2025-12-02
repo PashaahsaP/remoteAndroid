@@ -36,6 +36,7 @@ class IncomeSessionFragment : Fragment() {
         ): View? {
             val localViewModel = ViewModelProvider(requireActivity()).get(IncomeSessionViewModel::class)
             _binding = FragmentIncomeSessionBinding.inflate(inflater)
+            viewModel.setCurrFragment(this)
 
 
             var recyclerView: RecyclerView = binding.rwIncomeSessionList

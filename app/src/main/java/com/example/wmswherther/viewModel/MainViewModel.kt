@@ -1,5 +1,6 @@
 package com.example.wmswherther.viewModel
 
+import androidx.fragment.app.Fragment
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
@@ -12,11 +13,13 @@ class MainViewModel : ViewModel() {
     private val _isIncomeMenuActive = MutableLiveData<Boolean>(false)
     private val _isIncomeSessionActive = MutableLiveData<Boolean>(false)
     private val _isIncomeSessionTEModeActive = MutableLiveData<Boolean>(false)
-    private val _isWorkableTE= MutableLiveData<Boolean>(false)//нужен чтобы отображать диалоговое окно
-    private val _TE= MutableLiveData<String>("")
-    private val _barcode= MutableLiveData<String>("")
-    private val _IsCloseTE= MutableLiveData<Boolean>(true)
-    private val _widhtScanningField= MutableLiveData<Int>(0)
+    private val _isWorkableTE = MutableLiveData<Boolean>(false)//нужен чтобы отображать диалоговое окно
+    private val _TE = MutableLiveData<String>("")
+    private val _barcode = MutableLiveData<String>("")
+    private val _IsCloseTE = MutableLiveData<Boolean>(true)
+    private val _widhtScanningField = MutableLiveData<Int>(0)
+    private val _isActiveSearchWindow = MutableLiveData<Boolean>(false)
+    private val _currFragment = MutableLiveData<Fragment>(null)
 
     val MainActivityBinding: LiveData<ActivityMainBinding> get() = _mainActivityBinding
     val WidthScanningField: LiveData<Int> get() = _widhtScanningField
@@ -29,8 +32,21 @@ class MainViewModel : ViewModel() {
     val IsWorkableTE: LiveData<Boolean> get() = _isWorkableTE
     val Barcode: LiveData<String> get() = _barcode
     val IsCloseTE: LiveData<Boolean> get() = _IsCloseTE
+    val IsActiveSearchWindow: LiveData<Boolean> get() = _isActiveSearchWindow
+    val CurrFragment: LiveData<Fragment> get() = _currFragment
 
-
+    fun setCurrFragment(fragment: Fragment){
+        _currFragment.value = fragment
+    }
+    fun getCurrFragment() : Fragment?{
+        return _currFragment.value
+    }
+    fun openSearchWindow() {
+        _isActiveSearchWindow.value = true
+    }
+    fun closeSearchWindow() {
+        _isActiveSearchWindow.value = false
+    }
     fun getMainBinding() : ActivityMainBinding? {
         return _mainActivityBinding.value
     }

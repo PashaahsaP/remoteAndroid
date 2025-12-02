@@ -52,7 +52,7 @@ class IncomeFragment : Fragment() {
                 appendDummyData(MainDB.getDB(requireActivity()))
             }
         }*/
-
+        viewModel.setCurrFragment(this)
         val localViewModel = ViewModelProvider(requireActivity()).get(IncomeMenuViewModel::class)
         _binding = FragmentIncomeBinding.inflate(inflater)
         var adapter = IncomeMenuAdapter(listOf(), this, viewModel)

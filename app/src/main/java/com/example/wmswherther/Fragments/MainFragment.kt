@@ -54,6 +54,7 @@ class MainFragment : Fragment(R.layout.fragment_main) {
         savedInstanceState: Bundle?
     ): View? {
         var mainContext : Context = requireActivity()
+        viewModel.setCurrFragment(this)
        /* lifecycleScope.launch {
             withContext(Dispatchers.IO){//for testing income ui
                 val db = MainDB.getDB(mainContext)
@@ -96,6 +97,7 @@ class MainFragment : Fragment(R.layout.fragment_main) {
                     replace<IncomeFragment>(R.id.fragmentContainer)
                     addToBackStack(null)
                 }
+
                 viewModel.closeMenu()
                 viewModel.startIncomeMenu()
             }
