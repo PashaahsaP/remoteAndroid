@@ -310,8 +310,8 @@ class MainActivity : AppCompatActivity() {
             etIncomeBarcodeScan.requestFocus()
             btnSearch.setOnClickListener {
                 if(viewModel.CurrFragment.value != null){
+                    viewModel.turnOffScanMode()
                     viewModel.openSearchWindow()
-                    viewModel.switchScanMode()
                     viewModel.getCurrFragment()?.
                     parentFragmentManager?.commit {
                         setCustomAnimations(
