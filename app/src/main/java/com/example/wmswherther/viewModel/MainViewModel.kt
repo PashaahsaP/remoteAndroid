@@ -21,6 +21,7 @@ class MainViewModel : ViewModel() {
     private val _isActiveSearchWindow = MutableLiveData<Boolean>(false)
     private val _currFragment = MutableLiveData<Fragment>(null)
     private val _searchLineData = MutableLiveData<String>(null)
+    private val _searchState = MutableLiveData<String>("Barcode")
 
     val MainActivityBinding: LiveData<ActivityMainBinding> get() = _mainActivityBinding
     val WidthScanningField: LiveData<Int> get() = _widhtScanningField
@@ -36,8 +37,12 @@ class MainViewModel : ViewModel() {
     val IsActiveSearchWindow: LiveData<Boolean> get() = _isActiveSearchWindow
     val CurrFragment: LiveData<Fragment> get() = _currFragment
     val SearchLineData: LiveData<String> get() = _searchLineData
+    val SearchState: LiveData<String> get() = _searchState
 
-fun setSearchData(str: String){
+    fun setSearchState(str: String){
+        _searchState.value = str
+    }
+    fun setSearchData(str: String){
         _searchLineData.value = str
     }
     fun setCurrFragment(fragment: Fragment){

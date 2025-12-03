@@ -117,6 +117,8 @@ interface Dao {
             val to = insertGoodsChanges(change)
             return from to to
         }
+        @Query("SELECT * FROM goods WHERE catalogId =:catalogId")
+        suspend fun getGoodsByCatalogId(catalogId: String): List<Goods>
         @Query("SELECT * FROM goods WHERE id =:goodsId")
         suspend fun getGoodsById(goodsId: String): Goods
         @Query("SELECT * FROM goods ")

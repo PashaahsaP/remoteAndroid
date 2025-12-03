@@ -100,9 +100,9 @@ class MainActivity : AppCompatActivity() {
         enableEdgeToEdge()
         setContentView(binding.root)
         setNavigationBar()
-        var searchData : MutableList<Pair<String, List<String>>> = mutableListOf()
+       // var searchData : MutableList<Pair<String, List<String>>> = mutableListOf()
         var barcodeBuffer: StringBuilder = StringBuilder()
-        lifecycleScope.launch {
+       /* lifecycleScope.launch {
             withContext(Dispatchers.IO){
                 var dao = db.getDao()
                 var barcodes = dao.getBarcodes()
@@ -114,7 +114,7 @@ class MainActivity : AppCompatActivity() {
                     searchData += Pair("${catalog.name} ${item.amount} ${cell.name}", list)
                 }
            }
-        }
+        }*/
 
         viewModel.IsActiveSearchWindow.observe(this){ isActive ->
             if(isActive){
@@ -212,17 +212,42 @@ class MainActivity : AppCompatActivity() {
         }
         viewModel.Barcode.observe(this){ barcode ->
             binding.etIncomeBarcodeScan.requestFocus()
-            var result : String = ""
             if(viewModel.IsActiveSearchWindow.value == true){
-                searchData.forEach{ item ->
+                // проверить какой флаг выбран и дальше идут стратегии поиска различные
+                if(viewModel.SearchState.value == "Barcode"){
+                    // Если шк то сначала найти каталог такой, а дальше все goods и уже ячейки к ним
+                    lifecycleScope.launch {
+                        var totalResult: String = ""
+                        withContext(Dispatchers.IO) {
+                            var dao = db.getDao()
+                            var bar = dao.getBarcodeByName(barcode)
+                            var catalog = dao.getCatalogById(bar.catalogId)
+                            var goodsList = dao.getGoodsByCatalogId(catalog.id)
+                            var result = goodsList.map { item ->
+                                var cell = dao.getCellById(item.cellId)
+                                "${catalog.name} ${item.amount} ${cell.name}"
+                            }
+                            totalResult = result.joinToString("\n")
+                        }
+                        withContext(Dispatchers.Main) {
+                            viewModel.setSearchData(totalResult)
+                        }
+
+                    }
+                }
+
+
+                // Если по наименованию то перебрать каталоги и получить каталоги с вхождениями и дальше поиск goods и ячейки к ним
+                // Если по ячейке то получение всех goods с данной ячейкой, а дальше получение каталогов, чтобы иметь наименование
+                /*searchData.forEach{ item ->
                     for (innerBarcode in item.second){
                         if(barcode == innerBarcode){
                             result += item.first
                             break
                         }
                     }
-                }
-                viewModel.setSearchData(result)
+                }*/
+                viewModel.setSearchData("result")
             }
         }
         if(savedInstanceState == null){
