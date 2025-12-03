@@ -100,7 +100,21 @@ class MainActivity : AppCompatActivity() {
         enableEdgeToEdge()
         setContentView(binding.root)
         setNavigationBar()
+        var searchData : MutableList<Pair<String, List<String>>> = mutableListOf()
         var barcodeBuffer: StringBuilder = StringBuilder()
+        lifecycleScope.launch {
+            withContext(Dispatchers.IO){
+                var dao = db.getDao()
+                var barcodes = dao.getBarcodes()
+                var goods =dao.getGoods()
+                goods.forEach { item ->
+                    var catalog = dao.getCatalogById(item.catalogId)
+                    var cell = dao.getCellById(item.cellId)
+                    var list = barcodes.filter { inner -> inner.catalogId == catalog.id }.map { locItem ->  locItem.name}
+                    searchData += Pair("${catalog.name} ${item.amount} ${cell.name}", list)
+                }
+           }
+        }
 
         viewModel.IsActiveSearchWindow.observe(this){ isActive ->
             if(isActive){
@@ -214,16 +228,14 @@ class MainActivity : AppCompatActivity() {
 
             }
         }
-        with(binding){
-            btnBack.setOnClickListener{
+        with(binding) {
+            btnBack.setOnClickListener {
                 //val count = supportFragmentManager.backStackEntryCount
 
                 if (viewModel.IsActiveSearchWindow.value == true) {
                     viewModel.closeSearchWindow()
                     super.onBackPressed()
-                }
-
-                else if (viewModel.IsIncomeSessionActive.value == true) {
+                } else if (viewModel.IsIncomeSessionActive.value == true) {
                     // Если есть фрагменты в стеке
                     val dialog = AlertDialog.Builder(this@MainActivity)
                         .setTitle("Выход")
@@ -235,17 +247,16 @@ class MainActivity : AppCompatActivity() {
                         .setNegativeButton("Нет", null)
                         .create()
                     dialog.show()
-                }
-                else if(viewModel.IsIncomeMenuActive.value == true){
+                } else if (viewModel.IsIncomeMenuActive.value == true) {
                     viewModel.finishIncomeMenu()
                     viewModel.showMenu()
                     super.onBackPressed()
                 }
             }
             btnBarcode.setOnClickListener {
-                if(viewModel.IsIncomeSessionTEModeActive.value == true){
+                if (viewModel.IsIncomeSessionTEModeActive.value == true) {
                     viewModel.turnOffTeMode()
-                }else{
+                } else {
                     viewModel.turnOnTeMode()
                     viewModel.workTe()
                 }
@@ -253,7 +264,7 @@ class MainActivity : AppCompatActivity() {
             etIncomeBarcode.setOnEditorActionListener { v, actionId, event ->
                 if (actionId == EditorInfo.IME_ACTION_DONE || actionId == EditorInfo.IME_ACTION_UNSPECIFIED) {
                     val text = etIncomeBarcode.text.toString()
-                    if(text != "") {
+                    if (text != "") {
                         viewModel.setBarcode(text)
                         etIncomeBarcode.setText("")
                     }
@@ -263,7 +274,36 @@ class MainActivity : AppCompatActivity() {
 
             }
             btnThreeDots.setOnClickListener { view ->
-            if (viewModel.IsIncomeSessionActive.value == true) {
+                if (viewModel.IsActiveSearchWindow.value == true) {
+                    val inflater = layoutInflater
+                    val popupView = inflater.inflate(R.layout.pop_up_search_menu, null)
+                    var btnSupplier = popupView.findViewById<Button>(R.id.btnSuppliersList)
+                    var btnName = popupView.findViewById<Button>(R.id.btnName)
+                    var btnBarcode = popupView.findViewById<Button>(R.id.btnBarcode)
+                    var btnCells = popupView.findViewById<Button>(R.id.btnCells)
+
+                    val popupWindow = PopupWindow(
+                        popupView,
+                        WindowManager.LayoutParams.WRAP_CONTENT,
+                        WindowManager.LayoutParams.WRAP_CONTENT,
+                        true
+                    )
+                    /*scanBtn.setOnClickListener { view ->
+                    viewModel.switchScanMode()
+                    popupWindow.dismiss()
+                }*/
+
+                    val location = IntArray(2)
+                    btnThreeDots.getLocationOnScreen(location)
+
+// Show popup to the left of the button
+                    popupWindow.showAtLocation(
+                        btnThreeDots,
+                        Gravity.NO_GRAVITY,
+                        location[0] - popupWindow.width,  // x coordinate - to the left
+                        location[1] + btnThreeDots.height // y coordinate
+                    )
+                } else if (viewModel.IsIncomeSessionActive.value == true) {
                     val inflater = layoutInflater
                     val popupView = inflater.inflate(R.layout.pop_up_income_menu, null)
                     var scanBtn = popupView.findViewById<Button>(R.id.btnScanningMode)
@@ -291,6 +331,7 @@ class MainActivity : AppCompatActivity() {
                     )
                 }
             }
+
             etIncomeBarcodeScan.setOnKeyListener {v, keyCode, event ->
                 val ch = event.unicodeChar.toChar()
                 if (ch == '\u0000' || event.action == KeyEvent.ACTION_UP){

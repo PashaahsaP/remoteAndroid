@@ -105,6 +105,8 @@ interface Dao {
     }
     @Query("SELECT * FROM catalogs WHERE id =:catalogId")
     suspend fun getCatalogById(catalogId: String): Catalog
+    @Query("SELECT * FROM catalogs ")
+    suspend fun getCatalogs(): List<Catalog>
     // </editor-fold>
     // <editor-fold desc="Goods">
         @Insert
@@ -117,6 +119,8 @@ interface Dao {
         }
         @Query("SELECT * FROM goods WHERE id =:goodsId")
         suspend fun getGoodsById(goodsId: String): Goods
+        @Query("SELECT * FROM goods ")
+        suspend fun getGoods(): List<Goods>
     // </editor-fold>
     // <editor-fold desc="Barcodes">
     @Insert
@@ -129,6 +133,8 @@ interface Dao {
     }
     @Query("SELECT * FROM barcodes WHERE name =:barcodeName")
     suspend fun getBarcodeByName(barcodeName: String): Barcode
+    @Query("SELECT * FROM barcodes")
+    suspend fun getBarcodes(): List<Barcode>
     // </editor-fold>
     // <editor-fold desc="Changes">
     @Insert

@@ -2,6 +2,9 @@ package com.example.wmswherther.Fragments
 
 import android.content.Context
 import android.os.Bundle
+import android.text.SpannableString
+import android.text.Spanned
+import android.text.style.ForegroundColorSpan
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -27,7 +30,8 @@ class SearchFragment : Fragment(R.layout.fragment_search) {
         viewModel.setCurrFragment(this)
 
         _binding = FragmentSearchBinding.inflate(inflater, container, false)
-
+        viewModel.
+        //var remakeStr = highlightSubstring(str, text, color)
 
 
 
@@ -51,4 +55,15 @@ class SearchFragment : Fragment(R.layout.fragment_search) {
         }*/
         return binding.root
     }
+}
+fun highlightSubstring(text: String, substring: String, highlightColor: Int): Spanned {
+    val spannableString = SpannableString(text)
+    var startIndex = text.indexOf(substring)
+
+    while (startIndex != -1) {
+        val endIndex = startIndex + substring.length
+        spannableString.setSpan(ForegroundColorSpan(highlightColor), startIndex, endIndex, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE)
+        startIndex = text.indexOf(substring, endIndex)
+    }
+    return spannableString
 }

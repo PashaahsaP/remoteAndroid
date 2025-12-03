@@ -20,6 +20,7 @@ class MainViewModel : ViewModel() {
     private val _widhtScanningField = MutableLiveData<Int>(0)
     private val _isActiveSearchWindow = MutableLiveData<Boolean>(false)
     private val _currFragment = MutableLiveData<Fragment>(null)
+    private val _searchLineData = MutableLiveData<String>(null)
 
     val MainActivityBinding: LiveData<ActivityMainBinding> get() = _mainActivityBinding
     val WidthScanningField: LiveData<Int> get() = _widhtScanningField
@@ -34,7 +35,11 @@ class MainViewModel : ViewModel() {
     val IsCloseTE: LiveData<Boolean> get() = _IsCloseTE
     val IsActiveSearchWindow: LiveData<Boolean> get() = _isActiveSearchWindow
     val CurrFragment: LiveData<Fragment> get() = _currFragment
+    val SearchLineData: LiveData<String> get() = _searchLineData
 
+    fun setSearchData(str: String){
+        _searchLineData.value = str
+    }
     fun setCurrFragment(fragment: Fragment){
         _currFragment.value = fragment
     }
