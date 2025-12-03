@@ -28,6 +28,7 @@ import androidx.annotation.RequiresApi
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.doOnPreDraw
+import androidx.core.view.isVisible
 import androidx.core.view.setPadding
 import androidx.fragment.app.commit
 import androidx.fragment.app.replace
@@ -106,8 +107,13 @@ class MainActivity : AppCompatActivity() {
                 binding.btnBack.visibility = View.VISIBLE
                 binding.btnSearch.visibility = View.GONE
                 binding.btnBarcode.visibility = View.GONE
+                binding.etIncomeBarcode.visibility = View.VISIBLE
+                var widthOfScanning = getWidth(binding)
+                viewModel.setWidthScanningField(widthOfScanning)
+                binding.etIncomeBarcode.requestFocus()
             }else{
                 binding.btnSearch.visibility = View.VISIBLE
+                binding.etIncomeBarcode.visibility = View.GONE
                 if(viewModel.IsIncomeSessionActive.value == true){
                     binding.btnBarcode.visibility = View.VISIBLE
                 }
@@ -338,7 +344,11 @@ class MainActivity : AppCompatActivity() {
     }
 }
 private fun getWidth(binding: ActivityMainBinding) : Int {
-    return binding.main.width - (binding.btnBack.width + binding.btnBarcode.width + binding.btnThreeDots.width + binding.btnSearch.width)
+    var btnBackWidth = if (binding.btnBack.isVisible && binding.btnBack.width != 0) binding.btnBack.width else 144
+    var btnBarcodeWidth = if (binding.btnBarcode.isVisible &&  binding.btnBarcode.width != 0) binding.btnBarcode.width else 144
+    var btnThreeDotsWidth = if (binding.btnThreeDots.isVisible &&  binding.btnThreeDots.width != 0) binding.btnThreeDots.width else 144
+    var btnSearchWidth = if (binding.btnSearch.isVisible &&  binding.btnSearch.width != 0) binding.btnSearch.width else 144
+    return binding.main.width - (btnBackWidth + btnBarcodeWidth + btnThreeDotsWidth + btnSearchWidth) + 150
 }
 fun readTextFileFromInternalStorage(context: Context, fileName: String): String {
     val file = File(context.filesDir, fileName)
