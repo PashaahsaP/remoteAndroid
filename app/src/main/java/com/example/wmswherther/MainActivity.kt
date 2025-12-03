@@ -64,25 +64,30 @@ class MainActivity : AppCompatActivity() {
     val viewModel: MainViewModel by viewModels()
 
     override fun onBackPressed() {
-        val count = supportFragmentManager.backStackEntryCount
+        //val count = supportFragmentManager.backStackEntryCount
 
-        if (count == 2) {
-            viewModel.showMenu()
+        if (viewModel.IsActiveSearchWindow.value == true) {
+            viewModel.closeSearchWindow()
             super.onBackPressed()
         }
 
-        if (viewModel.IsIncomeMenuActive.value == true) {
+        else if (viewModel.IsIncomeSessionActive.value == true) {
             // Если есть фрагменты в стеке
             val dialog = AlertDialog.Builder(this@MainActivity)
                 .setTitle("Выход")
                 .setMessage("Точно закрыть текущий экран?")
                 .setPositiveButton("Да") { _, _ ->
-                    viewModel.finishIncomeMenu()
+                    viewModel.finishIncomeSession()
                     super.onBackPressed()
                 }
                 .setNegativeButton("Нет", null)
                 .create()
             dialog.show()
+        }
+        else if(viewModel.IsIncomeMenuActive.value == true){
+            viewModel.finishIncomeMenu()
+            viewModel.showMenu()
+            super.onBackPressed()
         }
     }
 
@@ -96,6 +101,22 @@ class MainActivity : AppCompatActivity() {
         setNavigationBar()
         var barcodeBuffer: StringBuilder = StringBuilder()
 
+        viewModel.IsActiveSearchWindow.observe(this){ isActive ->
+            if(isActive){
+                binding.btnBack.visibility = View.VISIBLE
+                binding.btnSearch.visibility = View.GONE
+                binding.btnBarcode.visibility = View.GONE
+            }else{
+                binding.btnSearch.visibility = View.VISIBLE
+                if(viewModel.IsIncomeSessionActive.value == true){
+                    binding.btnBarcode.visibility = View.VISIBLE
+                }
+                if(viewModel.IsMenuActive.value == true){
+                    binding.btnBack.visibility = View.GONE
+                }
+
+            }
+        }
         viewModel.IsMenuActive.observe(this) { isActive ->
             if(isActive){
                 binding.btnBack.visibility = View.GONE
@@ -188,31 +209,30 @@ class MainActivity : AppCompatActivity() {
         }
         with(binding){
             btnBack.setOnClickListener{
-                val count = supportFragmentManager.backStackEntryCount
+                //val count = supportFragmentManager.backStackEntryCount
 
-
-                /*if (count == 2) {
-                    viewModel.showMenu()
+                if (viewModel.IsActiveSearchWindow.value == true) {
+                    viewModel.closeSearchWindow()
                     super.onBackPressed()
-                }*/
-                if (viewModel.IsIncomeSessionActive.value == true) {
+                }
+
+                else if (viewModel.IsIncomeSessionActive.value == true) {
                     // Если есть фрагменты в стеке
                     val dialog = AlertDialog.Builder(this@MainActivity)
                         .setTitle("Выход")
                         .setMessage("Точно закрыть текущий экран?")
                         .setPositiveButton("Да") { _, _ ->
                             viewModel.finishIncomeSession()
-                            viewModel.turnOffTeMode()//TODO заменить на что то другое) просто при переключении флага вызывается окно но уже в другом меню
                             super.onBackPressed()
                         }
                         .setNegativeButton("Нет", null)
                         .create()
                     dialog.show()
                 }
-                else if (viewModel.IsIncomeMenuActive.value == true) {
-                    super.onBackPressed()
+                else if(viewModel.IsIncomeMenuActive.value == true){
                     viewModel.finishIncomeMenu()
                     viewModel.showMenu()
+                    super.onBackPressed()
                 }
             }
             btnBarcode.setOnClickListener {
@@ -283,6 +303,7 @@ class MainActivity : AppCompatActivity() {
             etIncomeBarcodeScan.requestFocus()
             btnSearch.setOnClickListener {
                 if(viewModel.CurrFragment.value != null){
+                    viewModel.openSearchWindow()
                     viewModel.getCurrFragment()?.
                     parentFragmentManager?.commit {
                         setCustomAnimations(
@@ -521,7 +542,6 @@ fun readTextFileFromInternalStorage(context: Context, fileName: String): String 
      return items
  }
  */
-
 private fun isCell(cell: String): Boolean {
     if (cell.length == 4 && cell[0] in 'A' .. 'Z' && cell[1].isDigit() && cell[2].isDigit() && cell[3].isDigit()){
         return true
