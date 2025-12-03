@@ -135,6 +135,7 @@ class MainActivity : AppCompatActivity() {
                 binding.btnBarcode.visibility = View.VISIBLE
             }else{
                 binding.btnBarcode.visibility = View.GONE
+                binding.etIncomeBarcode.visibility = View.GONE
             }
         }
         viewModel.IsIncomeSessionTEModeActive.observe(this) { isActive ->
@@ -310,6 +311,7 @@ class MainActivity : AppCompatActivity() {
             btnSearch.setOnClickListener {
                 if(viewModel.CurrFragment.value != null){
                     viewModel.openSearchWindow()
+                    viewModel.switchScanMode()
                     viewModel.getCurrFragment()?.
                     parentFragmentManager?.commit {
                         setCustomAnimations(
@@ -344,11 +346,37 @@ class MainActivity : AppCompatActivity() {
     }
 }
 private fun getWidth(binding: ActivityMainBinding) : Int {
-    var btnBackWidth = if (binding.btnBack.isVisible && binding.btnBack.width != 0) binding.btnBack.width else 144
-    var btnBarcodeWidth = if (binding.btnBarcode.isVisible &&  binding.btnBarcode.width != 0) binding.btnBarcode.width else 144
-    var btnThreeDotsWidth = if (binding.btnThreeDots.isVisible &&  binding.btnThreeDots.width != 0) binding.btnThreeDots.width else 144
-    var btnSearchWidth = if (binding.btnSearch.isVisible &&  binding.btnSearch.width != 0) binding.btnSearch.width else 144
-    return binding.main.width - (btnBackWidth + btnBarcodeWidth + btnThreeDotsWidth + btnSearchWidth) + 150
+    var width = 0
+    if(binding.btnBack.isVisible){
+        if(binding.btnBack.width != 0){
+            width += binding.btnBack.width
+        }else{
+            width += 144
+        }
+    }
+    if(binding.btnBarcode.isVisible){
+        if(binding.btnBarcode.width != 0){
+            width += binding.btnBarcode.width
+        }else{
+            width += 144
+        }
+    }
+    if(binding.btnThreeDots.isVisible){
+        if(binding.btnThreeDots.width != 0){
+            width += binding.btnThreeDots.width
+        }else{
+            width += 144
+        }
+    }
+    if(binding.btnSearch.isVisible){
+        if(binding.btnSearch.width != 0){
+            width += binding.btnSearch.width
+        }else{
+            width += 144
+        }
+    }
+
+    return binding.main.width - width
 }
 fun readTextFileFromInternalStorage(context: Context, fileName: String): String {
     val file = File(context.filesDir, fileName)
