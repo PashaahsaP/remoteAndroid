@@ -37,7 +37,7 @@ class MainViewModel : ViewModel() {
     val CurrFragment: LiveData<Fragment> get() = _currFragment
     val SearchLineData: LiveData<String> get() = _searchLineData
 
-    fun setSearchData(str: String){
+fun setSearchData(str: String){
         _searchLineData.value = str
     }
     fun setCurrFragment(fragment: Fragment){

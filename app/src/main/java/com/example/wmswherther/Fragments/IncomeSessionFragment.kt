@@ -52,7 +52,7 @@ class IncomeSessionFragment : Fragment() {
             viewModel.Barcode.observe(viewLifecycleOwner, { barcode ->
                 //TODO сделать чтобы была сортировка по те, количеству и прочему перед добавлением
                 //TODO  Если нажал ТЕ надо сделать чтобы можно было отменить добавление товара в те.
-                if(barcode != "") {
+                if(barcode != "" && viewModel.IsActiveSearchWindow.value == false) {
                     lifecycleScope.launch {
                         var newItems: List<IncomeItem> = listOf()
                         var bar =

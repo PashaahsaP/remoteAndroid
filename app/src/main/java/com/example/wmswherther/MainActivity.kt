@@ -210,8 +210,20 @@ class MainActivity : AppCompatActivity() {
         viewModel.WidthScanningField.observe(this){ value ->
             binding.etIncomeBarcode.width = value
         }
-        viewModel.Barcode.observe(this){
+        viewModel.Barcode.observe(this){ barcode ->
             binding.etIncomeBarcodeScan.requestFocus()
+            var result : String = ""
+            if(viewModel.IsActiveSearchWindow.value == true){
+                searchData.forEach{ item ->
+                    for (innerBarcode in item.second){
+                        if(barcode == innerBarcode){
+                            result += item.first
+                            break
+                        }
+                    }
+                }
+                viewModel.setSearchData(result)
+            }
         }
         if(savedInstanceState == null){
             supportFragmentManager.commit {

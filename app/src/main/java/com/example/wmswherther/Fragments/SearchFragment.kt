@@ -29,8 +29,12 @@ class SearchFragment : Fragment(R.layout.fragment_search) {
         var mainContext : Context = requireActivity()
         viewModel.setCurrFragment(this)
 
-        _binding = FragmentSearchBinding.inflate(inflater, container, false)
-        viewModel.
+       _binding = FragmentSearchBinding.inflate(inflater, container, false)
+        viewModel.SearchLineData.observe(viewLifecycleOwner){ data ->
+            if(data != ""){
+                binding.tvData.text = data
+            }
+        }
         //var remakeStr = highlightSubstring(str, text, color)
 
 
