@@ -38,6 +38,8 @@ interface Dao {
     suspend fun getCellById(cellId: String): Cell
     @Query("SELECT * FROM cells WHERE name =:cellName")
     suspend fun getCellByName(cellName: String): Cell
+    @Query("SELECT * FROM cells WHERE parentCellId =:parentCellId")
+    suspend fun getChildrenCells(parentCellId: String): List<Cell>
     /*@Delete
     suspend fun deleteCell(cell: Cell)*/
     // </editor-fold>
@@ -121,6 +123,8 @@ interface Dao {
         suspend fun getGoodsByCatalogId(catalogId: String): List<Goods>
         @Query("SELECT * FROM goods WHERE id =:goodsId")
         suspend fun getGoodsById(goodsId: String): Goods
+        @Query("SELECT * FROM goods WHERE cellId =:cellId")
+        suspend fun getGoodsByCellId(cellId: String): List<Goods>
         @Query("SELECT * FROM goods ")
         suspend fun getGoods(): List<Goods>
     // </editor-fold>

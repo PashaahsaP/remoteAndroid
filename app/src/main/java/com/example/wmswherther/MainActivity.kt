@@ -43,6 +43,7 @@ import com.example.wmswherther.Fragments.IncomeFragment
 import com.example.wmswherther.Fragments.MainFragment
 import com.example.wmswherther.Fragments.SearchFragment
 import com.example.wmswherther.LogActivity
+import com.example.wmswherther.data.db.Goods
 import com.example.wmswherther.viewModel.MainViewModel
 import com.google.android.material.button.MaterialButton
 import kotlinx.coroutines.*
@@ -210,7 +211,7 @@ class MainActivity : AppCompatActivity() {
         viewModel.WidthScanningField.observe(this){ value ->
             binding.etIncomeBarcode.width = value
         }
-        viewModel.Barcode.observe(this){ barcode ->
+        viewModel.Barcode.observe(this){ searchData ->
             binding.etIncomeBarcodeScan.requestFocus()
             if(viewModel.IsActiveSearchWindow.value == true){
                 // проверить какой флаг выбран и дальше идут стратегии поиска различные
@@ -220,14 +221,74 @@ class MainActivity : AppCompatActivity() {
                         var totalResult: String = ""
                         withContext(Dispatchers.IO) {
                             var dao = db.getDao()
-                            var bar = dao.getBarcodeByName(barcode)
-                            var catalog = dao.getCatalogById(bar.catalogId)
-                            var goodsList = dao.getGoodsByCatalogId(catalog.id)
+                            var bar = dao.getBarcodeByName(searchData)
+                            if(bar != null) {
+                                var catalog = dao.getCatalogById(bar.catalogId)
+                                var goodsList = dao.getGoodsByCatalogId(catalog.id)
+                                var result = goodsList.map { item ->
+                                    var cell = dao.getCellById(item.cellId)
+                                    "${catalog.name}   ${item.amount}   ${cell.name}"
+                                }
+                                totalResult = result.joinToString("\n")
+                                println()
+                            }
+                        }
+                        //TODO удалить result в view когда забиваешь к примеру буквы вместо шк
+                        withContext(Dispatchers.Main) {
+                                viewModel.setSearchData(totalResult)
+                        }
+
+                    }
+                }else if (viewModel.SearchState.value == "Name"){
+                    // Если наименование, то надо найти все каталоги которые имею данное вхождение
+                    // Дальше найти все goods с данным каталогом
+                    // Сформировать результат
+                    lifecycleScope.launch {
+                        var totalResult: String = ""
+                        withContext(Dispatchers.IO) {
+                            var dao = db.getDao()
+                            var catalogs = dao.getCatalogs().filter { item ->
+                                item.name.contains(searchData)
+                            }
+                            var goodsList : MutableList<Pair<Goods, String>> = mutableListOf()
+                            catalogs.forEach { item->
+                                var goods = dao.getGoodsByCatalogId(item.id)
+                                goodsList.addAll(goods.map { innerItem -> Pair(innerItem, item.name ) })
+                            }
                             var result = goodsList.map { item ->
-                                var cell = dao.getCellById(item.cellId)
-                                "${catalog.name} ${item.amount} ${cell.name}"
+                                var cell = dao.getCellById(item.first.cellId)
+                                "${item.second}   ${item.first.amount}   ${cell.name}" //item.second is name of catalog
                             }
                             totalResult = result.joinToString("\n")
+                        }
+                        withContext(Dispatchers.Main) {
+                            viewModel.setSearchData(totalResult)
+                        }
+
+                    }
+                }else if (viewModel.SearchState.value == "Cells"){
+                    //Надо отобразить все что привязано к ячейки в том числе и те
+                    //Сначало надо показать весь товар на ячейке, а потом сами ячейки которые привязаны к данной ячейке
+                    lifecycleScope.launch {
+                        var totalResult: String = ""
+                        withContext(Dispatchers.IO) {
+                            var dao = db.getDao()
+                            var cell = dao.getCellByName(searchData)
+                            if(cell != null){
+                                var goods = dao.getGoodsByCellId(cell.id)
+                                var result = goods.map { item ->
+                                    var catalog = dao.getCatalogById(item.catalogId)
+                                    "${catalog.name}   ${item.amount}   ${cell.name}"
+                                }
+                                var cells = dao.getChildrenCells(cell.id)
+                                if(cells != null){
+                                    result += cells.map { item ->
+                                        "${item.name}   ${1}   ${cell.name}"
+                                    }
+                                }
+
+                            totalResult = result.joinToString("\n")
+                                }
                         }
                         withContext(Dispatchers.Main) {
                             viewModel.setSearchData(totalResult)
@@ -325,10 +386,18 @@ class MainActivity : AppCompatActivity() {
                         WindowManager.LayoutParams.WRAP_CONTENT,
                         true
                     )
-                    /*scanBtn.setOnClickListener { view ->
-                    viewModel.switchScanMode()
-                    popupWindow.dismiss()
-                }*/
+                    btnName.setOnClickListener { view ->
+                        viewModel.setSearchState("Name")
+                        popupWindow.dismiss()
+                    }
+                    btnCells.setOnClickListener { view ->
+                        viewModel.setSearchState("Cells")
+                        popupWindow.dismiss()
+                    }
+                    btnBarcode.setOnClickListener { view ->
+                        viewModel.setSearchState("Barcode")
+                        popupWindow.dismiss()
+                    }
 
                     val location = IntArray(2)
                     btnThreeDots.getLocationOnScreen(location)
