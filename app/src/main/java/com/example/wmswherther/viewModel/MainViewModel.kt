@@ -22,6 +22,7 @@ class MainViewModel : ViewModel() {
     private val _currFragment = MutableLiveData<Fragment>(null)
     private val _searchLineData = MutableLiveData<String>(null)
     private val _searchState = MutableLiveData<String>("Barcode")
+    private val _currentSupplierId = MutableLiveData<String>(null)
 
     val MainActivityBinding: LiveData<ActivityMainBinding> get() = _mainActivityBinding
     val WidthScanningField: LiveData<Int> get() = _widhtScanningField
@@ -38,7 +39,11 @@ class MainViewModel : ViewModel() {
     val CurrFragment: LiveData<Fragment> get() = _currFragment
     val SearchLineData: LiveData<String> get() = _searchLineData
     val SearchState: LiveData<String> get() = _searchState
+    val CurrentSupplierId: LiveData<String> get() = _currentSupplierId
 
+    fun setCurrentSupplierId(str: String){
+        _currentSupplierId.value = str
+    }
     fun setSearchState(str: String){
         _searchState.value = str
     }

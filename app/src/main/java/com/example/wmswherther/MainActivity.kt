@@ -13,12 +13,14 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.WindowManager
 import android.view.inputmethod.EditorInfo
+import android.widget.ArrayAdapter
 import android.widget.Button
 import android.widget.EditText
 import android.widget.LinearLayout
 import android.widget.PopupMenu
 import android.widget.PopupWindow
 import android.widget.ScrollView
+import android.widget.Spinner
 import android.widget.Toast
 import android.window.OnBackInvokedDispatcher
 import androidx.activity.enableEdgeToEdge
@@ -37,6 +39,7 @@ import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.viewModelScope
 import com.example.wmsRemote.databinding.ActivityMainBinding
 import com.example.wmsRemote.data.db.Cell
+import com.example.wmsRemote.data.db.Dao
 import com.example.wmsRemote.data.db.MainDB
 import com.example.wmsRemote.viewModel.AssemblyViewModel
 import com.example.wmswherther.Fragments.IncomeFragment
@@ -56,6 +59,7 @@ import java.io.InputStreamReader
 import java.nio.charset.Charset
 import java.time.LocalDateTime
 
+data class SupplierItem(val id: String, val text: String)
 
 class MainActivity : AppCompatActivity() {
 
@@ -386,6 +390,43 @@ class MainActivity : AppCompatActivity() {
                         WindowManager.LayoutParams.WRAP_CONTENT,
                         true
                     )
+                    btnSupplier.setOnClickListener { view ->
+                        var supplierList : List<SupplierItem> = listOf()
+                        lifecycleScope.launch {
+                            Dispatchers.IO{
+                                var dao = MainDB.getDB(this@MainActivity).getDao()
+                                supplierList = dao.getAllSuppliers().map { item ->
+                                    SupplierItem(item.id, item.name)
+                                }
+                            }
+                            Dispatchers.Main {
+                                var dialog = android.app.AlertDialog.Builder(this@MainActivity)
+                                    .create()
+                                var spinner = Spinner(this@MainActivity)
+                                spinner.setPadding(20, 40, 20, 0)
+                                val adapter = ArrayAdapter(this@MainActivity, android.R.layout.simple_spinner_item, supplierList.map { it.text })
+                                adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
+
+                                spinner.adapter = adapter
+
+
+                                dialog.setButton(android.app.AlertDialog.BUTTON_POSITIVE, "Выбрать") { _, _ ->
+                                    val pos = spinner.selectedItemPosition
+                                    val selected = supplierList[pos]
+                                    viewModel.setCurrentSupplierId(selected.id)
+                                }
+                                dialog.setButton(android.app.AlertDialog.BUTTON_NEGATIVE, "Отмена") { dialogInterface, _ ->
+                                    viewModel.turnOnTeMode()
+                                    viewModel.workTe()
+                                    dialogInterface.dismiss()
+                                }
+
+                                dialog.setView(spinner)
+                                dialog.show()
+                                popupWindow.dismiss()
+                            }
+                        }
+                    }
                     btnName.setOnClickListener { view ->
                         viewModel.setSearchState("Name")
                         popupWindow.dismiss()
