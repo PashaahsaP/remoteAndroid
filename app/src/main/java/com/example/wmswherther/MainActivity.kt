@@ -392,11 +392,22 @@ class MainActivity : AppCompatActivity() {
                     )
                     btnSupplier.setOnClickListener { view ->
                         var supplierList : List<SupplierItem> = listOf()
+                        var counter = 0
+                        var selected = 0
                         lifecycleScope.launch {
                             Dispatchers.IO{
                                 var dao = MainDB.getDB(this@MainActivity).getDao()
+
                                 supplierList = dao.getAllSuppliers().map { item ->
-                                    SupplierItem(item.id, item.name)
+                                    if(viewModel.CurrentSupplierId.value == item.id){
+                                        selected = counter
+                                        counter = counter + 1
+                                        SupplierItem(item.id, item.name)
+                                    }else{
+                                        counter = counter + 1
+                                        SupplierItem(item.id, item.name)
+                                    }
+
                                 }
                             }
                             Dispatchers.Main {
@@ -408,7 +419,7 @@ class MainActivity : AppCompatActivity() {
                                 adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
 
                                 spinner.adapter = adapter
-
+                                spinner.setSelection(selected)
 
                                 dialog.setButton(android.app.AlertDialog.BUTTON_POSITIVE, "Выбрать") { _, _ ->
                                     val pos = spinner.selectedItemPosition
