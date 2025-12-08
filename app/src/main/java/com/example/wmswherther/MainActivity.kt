@@ -32,6 +32,7 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.doOnPreDraw
 import androidx.core.view.isVisible
 import androidx.core.view.setPadding
+import androidx.fragment.app.add
 import androidx.fragment.app.commit
 import androidx.fragment.app.replace
 import androidx.lifecycle.Observer
@@ -47,6 +48,7 @@ import com.example.wmswherther.Fragments.MainFragment
 import com.example.wmswherther.Fragments.SearchFragment
 import com.example.wmswherther.LogActivity
 import com.example.wmswherther.data.db.Goods
+import com.example.wmswherther.viewModel.IncomeSessionViewModel
 import com.example.wmswherther.viewModel.MainViewModel
 import com.google.android.material.button.MaterialButton
 import kotlinx.coroutines.*
@@ -68,6 +70,7 @@ class MainActivity : AppCompatActivity() {
         get() = _binding ?: throw IllegalStateException("Binding for ActivityMain")
     private lateinit var getContent: ActivityResultLauncher<String>
     val viewModel: MainViewModel by viewModels()
+    private val localViewModel: IncomeSessionViewModel by viewModels()
 
     override fun onBackPressed() {
         //val count = supportFragmentManager.backStackEntryCount
@@ -508,19 +511,24 @@ class MainActivity : AppCompatActivity() {
             }
             etIncomeBarcodeScan.requestFocus()
             btnSearch.setOnClickListener {
-                if(viewModel.CurrFragment.value != null){
+            val currentFragment = supportFragmentManager
+                .findFragmentById(R.id.fragmentContainer)
+                if(currentFragment != null){
+
                     viewModel.turnOffScanMode()
                     viewModel.openSearchWindow()
-                    viewModel.getCurrFragment()?.
-                    parentFragmentManager?.commit {
+                    currentFragment.parentFragmentManager.commit {
                         setCustomAnimations(
                             R.anim.slide_in_right, // enter
                             R.anim.slide_out_left,  // exit
                             R.anim.slide_in_left,   // popEnter
                             R.anim.slide_out_right  // popExit
                         )
-                        replace<SearchFragment>(R.id.fragmentContainer)
+                        hide(currentFragment)
+                        //viewModel.CurrFragment.value.let { it -> hide(it!!) }
+                        add<SearchFragment>(R.id.fragmentContainer)
                         addToBackStack(null)
+
                     }
                 }
             }

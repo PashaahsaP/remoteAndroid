@@ -54,7 +54,7 @@ class MainFragment : Fragment(R.layout.fragment_main) {
         savedInstanceState: Bundle?
     ): View? {
         var mainContext : Context = requireActivity()
-        viewModel.setCurrFragment(this)
+        //viewModel.setCurrFragment(this)
        /* lifecycleScope.launch {
             withContext(Dispatchers.IO){//for testing income ui
                 val db = MainDB.getDB(mainContext)

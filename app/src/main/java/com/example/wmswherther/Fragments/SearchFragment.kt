@@ -27,7 +27,7 @@ class SearchFragment : Fragment(R.layout.fragment_search) {
         savedInstanceState: Bundle?
     ): View? {
         var mainContext : Context = requireActivity()
-        viewModel.setCurrFragment(this)
+        //viewModel.setCurrFragment(this)
 
        _binding = FragmentSearchBinding.inflate(inflater, container, false)
         viewModel.SearchLineData.observe(viewLifecycleOwner){ data ->

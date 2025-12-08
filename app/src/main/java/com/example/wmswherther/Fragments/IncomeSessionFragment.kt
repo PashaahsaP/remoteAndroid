@@ -27,6 +27,10 @@ class IncomeSessionFragment : Fragment() {
         private val binding
             get() = _binding ?: throw IllegalStateException("Binding for FragmentIncome")
         private val viewModel: MainViewModel by activityViewModels()
+        private val localViewModel: IncomeSessionViewModel by activityViewModels()
+
+
+
 
 
         override fun onCreateView(
@@ -34,13 +38,17 @@ class IncomeSessionFragment : Fragment() {
             container: ViewGroup?,
             savedInstanceState: Bundle?
         ): View? {
-            val localViewModel = ViewModelProvider(requireActivity()).get(IncomeSessionViewModel::class)
-            _binding = FragmentIncomeSessionBinding.inflate(inflater)
-            viewModel.setCurrFragment(this)
+            //val localViewModel = ViewModelProvider(requireActivity()).get(IncomeSessionViewModel::class)
+            _binding = FragmentIncomeSessionBinding.inflate(inflater, container, false)
+            //viewModel.setCurrFragment(this)
 
 
             var recyclerView: RecyclerView = binding.rwIncomeSessionList
-            var adapter = IncomeSessionAdapter(listOf(), recyclerView, localViewModel, requireActivity(),viewModel)
+            var adapterCollection = mutableListOf<IncomeItem>()
+            if( localViewModel.items.value != null){
+                adapterCollection = localViewModel.items.value as MutableList<IncomeItem>
+            }
+            val adapter = IncomeSessionAdapter(adapterCollection, recyclerView, localViewModel, requireActivity(), viewModel)
             recyclerView.layoutManager = LinearLayoutManager(requireActivity())
             recyclerView.adapter = adapter
             val sessionId = arguments?.getString("id")
@@ -49,6 +57,7 @@ class IncomeSessionFragment : Fragment() {
                 adapter.updateCollection(items, localViewModel.getSelectedItem())
                 recyclerView.smoothScrollToPosition(localViewModel.getSelectedItem())
             })
+
             viewModel.Barcode.observe(viewLifecycleOwner, { barcode ->
                 //TODO сделать чтобы была сортировка по те, количеству и прочему перед добавлением
                 //TODO  Если нажал ТЕ надо сделать чтобы можно было отменить добавление товара в те.
