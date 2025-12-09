@@ -18,14 +18,47 @@ class IncomeSessionViewModel : ViewModel() {
     private val _selectedItem = MutableLiveData<Int>()
     private  val _currentCellName = MutableLiveData<String>()
 
+
+    private  val _currentLineCount = MutableLiveData<Int>()
+    private  val _lineCount = MutableLiveData<Int>()
+    private  val _currentCountOfCount = MutableLiveData<Int>()
+    private  val _countOfCount = MutableLiveData<Int>()
+
     val items: LiveData<List<IncomeItem>> get() = _items
     val selectedItem: LiveData<Int> get() = _selectedItem
     val currentCellName: LiveData<String> get() = _currentCellName
+    val CurrentLineCount: LiveData<Int> get() = _currentLineCount
+    val LineCount: LiveData<Int> get() = _lineCount
+    val CurrentCountOfCount: LiveData<Int> get() = _currentCountOfCount
+    val CountOfCount: LiveData<Int> get() = _countOfCount
 
     val stack: ArrayDeque<List<IncomeItem>> = ArrayDeque()
     val cellStack: ArrayDeque<String> = ArrayDeque()
 
-
+    fun setCurLineCount(count: Int){
+        _currentLineCount.value = count
+    }
+    fun getCurLineCount() : Int{
+        return CurrentLineCount.value!!.toInt()
+    }
+    fun setLineCount(count: Int){
+        _lineCount.value = count
+    }
+    fun getLineCount() : Int{
+        return LineCount.value!!.toInt()
+    }
+    fun setCurCountOfCount(count: Int){
+        _currentCountOfCount.value = count
+    }
+    fun getCurCountOfCount() : Int{
+        return CurrentCountOfCount.value!!.toInt()
+    }
+    fun setCountOfCount(count: Int){
+        _countOfCount.value = count
+    }
+    fun getCountOfCount() : Int{
+        return _countOfCount.value!!.toInt()
+    }
     fun updateItems(items: List<IncomeItem>){
         var sortedCollection : MutableList<IncomeItem> = mutableListOf()
         var teCollection : MutableList<IncomeItem> = mutableListOf()

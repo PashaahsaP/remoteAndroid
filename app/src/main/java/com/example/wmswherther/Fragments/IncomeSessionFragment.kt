@@ -54,6 +54,27 @@ class IncomeSessionFragment : Fragment() {
             val sessionId = arguments?.getString("id")
 
             localViewModel.items.observe(viewLifecycleOwner,{ items ->
+                var curLineCounter = 0
+                var lineCounter = 0
+                var curCounterOfCounter = 0
+                var counterOfCounter = 0
+                items.forEach { item ->
+                    if(item.catalogId != ""){
+                        lineCounter += 1
+                        if(item.haveCount == item.allCount){
+                            curLineCounter += 1
+                        }
+                        curCounterOfCounter += item.haveCount
+                        counterOfCounter += item.haveCount
+                    }
+                }
+                //доделать апдейт
+
+
+
+
+
+
                 adapter.updateCollection(items, localViewModel.getSelectedItem())
                 recyclerView.smoothScrollToPosition(localViewModel.getSelectedItem())
             })

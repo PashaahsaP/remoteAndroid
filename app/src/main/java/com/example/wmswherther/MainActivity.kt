@@ -337,6 +337,7 @@ class MainActivity : AppCompatActivity() {
             btnBack.setOnClickListener {
                 //val count = supportFragmentManager.backStackEntryCount
 
+
                 if (viewModel.IsActiveSearchWindow.value == true) {
                     viewModel.closeSearchWindow()
                     super.onBackPressed()
