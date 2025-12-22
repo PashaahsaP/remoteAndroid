@@ -63,14 +63,21 @@ class IncomeSessionViewModel : ViewModel() {
         var sortedCollection : MutableList<IncomeItem> = mutableListOf()
         var teCollection : MutableList<IncomeItem> = mutableListOf()
         var otherCollection : MutableList<IncomeItem> = mutableListOf()
+        var counter = 0
+        var curCounter = 0
         items.forEach { item ->
             if(item.isExpandable){
                 teCollection.add(item)
             }else if(!item.isShown){
                 teCollection.add(item)
+                counter += item.allCount
+                curCounter += item.haveCount
             }else{
                 otherCollection.add(item)
+                counter += item.allCount
+                curCounter += item.haveCount
             }
+
         }
         teCollection.forEach { item ->
             sortedCollection.add(item)
@@ -79,6 +86,8 @@ class IncomeSessionViewModel : ViewModel() {
             sortedCollection.add(item)
         }
         _items.value = sortedCollection
+        setCountOfCount(counter)
+        setCurCountOfCount(curCounter)
     }
     fun getSelectedItem() : Int{
         var isCorrect = _selectedItem.value
@@ -130,9 +139,10 @@ class IncomeSessionViewModel : ViewModel() {
 
         var result : List<IncomeItem> = listOf()
         var previousCellId: String = ""
+        var counter: Int = 0
         for (item in listOfGoods){
             var catalog = dao.getCatalogById(item.first.catalogId)
-            if (item.second.typeCellId == "e873f579-44fc-48e1-84d2-f529b77653ee"){//6730f3c3-0a33-4454-a485-520522b64de5
+            if (item.second.typeCellId == "8b15baf4-27cd-4287-9a62-def4108cb8dd"){//6730f3c3-0a33-4454-a485-520522b64de5
                 var parentCell = dao.getCellById(item.second.parentCellId.toString())
                 var isShown = if(parentCell.name.contains("IN")) true else false
                 if(item.second.id != previousCellId){
@@ -164,7 +174,6 @@ class IncomeSessionViewModel : ViewModel() {
                         isShown = !isShown)
                 }
             }else{
-
                 result += IncomeItem(
                     name =  catalog.name,
                     TE = currentCellName.value.toString(),
@@ -175,6 +184,7 @@ class IncomeSessionViewModel : ViewModel() {
                     isShown = true)
             }
         }
+
         return  result
     }
     suspend fun getBarcode(db : MainDB, barcode: String) : Barcode{

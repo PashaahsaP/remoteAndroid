@@ -282,6 +282,12 @@ class IncomeSessionFragment : Fragment() {
                     }
                 }
             })
+            localViewModel.CurrentCountOfCount.observe(viewLifecycleOwner, {counter ->
+                binding.tvLineCounter.text = "${counter.toString()}  /"
+            })
+            localViewModel.CountOfCount.observe(viewLifecycleOwner, {counter ->
+                binding.tvCounterCounter.text = counter.toString()
+            })
             lifecycleScope.launch {
                 var data: List<IncomeItem> = listOf()
                 withContext(Dispatchers.Main){

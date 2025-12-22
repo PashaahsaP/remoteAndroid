@@ -11,8 +11,9 @@
         android:id="@+id/tvLineCounter"
         android:layout_width="wrap_content"
         android:layout_height="20dp"
-        android:layout_marginEnd="15dp"
+        android:layout_marginEnd="5dp"
         app:layout_constraintEnd_toStartOf="@+id/tvCounterCounter"
+        android:text="0 /"
         app:layout_constraintTop_toTopOf="parent" />
 
     <TextView
@@ -21,6 +22,7 @@
         android:layout_height="20dp"
         android:layout_marginEnd="20dp"
         app:layout_constraintBottom_toTopOf="@+id/rwIncomeSessionList"
+        android:text="0"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintTop_toTopOf="parent" />
 
