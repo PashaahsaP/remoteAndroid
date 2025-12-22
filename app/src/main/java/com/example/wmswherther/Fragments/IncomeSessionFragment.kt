@@ -7,6 +7,7 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.core.content.ContextCompat
+import androidx.core.view.setPadding
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
 import androidx.lifecycle.ViewModelProvider
@@ -300,6 +301,15 @@ class IncomeSessionFragment : Fragment() {
                 }else{
                     binding.tvCounterCounter.setTextColor(Color.BLACK)
                     binding.tvLineCounter.setTextColor(Color.BLACK)
+                }
+            })
+            localViewModel.IsFinish.observe(viewLifecycleOwner, {flag ->
+                if(flag) {
+                    binding.rwIncomeSessionList.setPadding(20, 0, 20, 80)
+                    binding.btnFinish.visibility = View.VISIBLE
+                }else{
+                    binding.rwIncomeSessionList.setPadding(20, 0, 20, 40)
+                    binding.btnFinish.visibility = View.GONE
                 }
             })
             //todo set red color or black

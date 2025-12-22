@@ -24,6 +24,7 @@ class IncomeSessionViewModel : ViewModel() {
     private  val _currentCountOfCount = MutableLiveData<Int>()
     private  val _countOfCount = MutableLiveData<Int>()
     private  val _isOverCounter = MutableLiveData<Boolean>()
+    private  val _finish = MutableLiveData<Boolean>()
 
     val items: LiveData<List<IncomeItem>> get() = _items
     val selectedItem: LiveData<Int> get() = _selectedItem
@@ -33,6 +34,7 @@ class IncomeSessionViewModel : ViewModel() {
     val CurrentCountOfCount: LiveData<Int> get() = _currentCountOfCount
     val CountOfCount: LiveData<Int> get() = _countOfCount
     val IsOverCounter: LiveData<Boolean> get() = _isOverCounter
+    val IsFinish: LiveData<Boolean> get() = _finish
 
     val stack: ArrayDeque<List<IncomeItem>> = ArrayDeque()
     val cellStack: ArrayDeque<String> = ArrayDeque()
@@ -42,6 +44,12 @@ class IncomeSessionViewModel : ViewModel() {
     }
     fun getCounterValidation() : Boolean?{
         return _isOverCounter.value
+    }
+    fun setFinishValidation(isOverFlag: Boolean){
+        _finish.value = isOverFlag
+    }
+    fun getFinishValidation() : Boolean?{
+        return _finish.value
     }
     fun setCurLineCount(count: Int){
         _currentLineCount.value = count
@@ -104,6 +112,11 @@ class IncomeSessionViewModel : ViewModel() {
         setCountOfCount(counter)
         setCurCountOfCount(curCounter)
         setCounterValidation(isOver)
+        if(IsOverCounter.value == false && CurrentCountOfCount.value == CountOfCount.value){
+            setFinishValidation(true)
+        }else{
+            setFinishValidation(false)
+        }
     }
     fun getSelectedItem() : Int{
         var isCorrect = _selectedItem.value
