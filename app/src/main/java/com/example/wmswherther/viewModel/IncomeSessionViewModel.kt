@@ -23,6 +23,7 @@ class IncomeSessionViewModel : ViewModel() {
     private  val _lineCount = MutableLiveData<Int>()
     private  val _currentCountOfCount = MutableLiveData<Int>()
     private  val _countOfCount = MutableLiveData<Int>()
+    private  val _isOverCounter = MutableLiveData<Boolean>()
 
     val items: LiveData<List<IncomeItem>> get() = _items
     val selectedItem: LiveData<Int> get() = _selectedItem
@@ -31,10 +32,17 @@ class IncomeSessionViewModel : ViewModel() {
     val LineCount: LiveData<Int> get() = _lineCount
     val CurrentCountOfCount: LiveData<Int> get() = _currentCountOfCount
     val CountOfCount: LiveData<Int> get() = _countOfCount
+    val IsOverCounter: LiveData<Boolean> get() = _isOverCounter
 
     val stack: ArrayDeque<List<IncomeItem>> = ArrayDeque()
     val cellStack: ArrayDeque<String> = ArrayDeque()
 
+    fun setCounterValidation(isOverFlag: Boolean){
+        _isOverCounter.value = isOverFlag
+    }
+    fun getCounterValidation() : Boolean?{
+        return _isOverCounter.value
+    }
     fun setCurLineCount(count: Int){
         _currentLineCount.value = count
     }
@@ -65,15 +73,22 @@ class IncomeSessionViewModel : ViewModel() {
         var otherCollection : MutableList<IncomeItem> = mutableListOf()
         var counter = 0
         var curCounter = 0
+        var isOver = false
         items.forEach { item ->
             if(item.isExpandable){
                 teCollection.add(item)
             }else if(!item.isShown){
                 teCollection.add(item)
                 counter += item.allCount
+                if(item.haveCount > item.allCount){
+                    isOver = true
+                }
                 curCounter += item.haveCount
             }else{
                 otherCollection.add(item)
+                if(item.haveCount > item.allCount){
+                    isOver = true
+                }
                 counter += item.allCount
                 curCounter += item.haveCount
             }
@@ -88,6 +103,7 @@ class IncomeSessionViewModel : ViewModel() {
         _items.value = sortedCollection
         setCountOfCount(counter)
         setCurCountOfCount(curCounter)
+        setCounterValidation(isOver)
     }
     fun getSelectedItem() : Int{
         var isCorrect = _selectedItem.value

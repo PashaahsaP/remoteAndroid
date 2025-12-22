@@ -1,15 +1,19 @@
 package com.example.wmswherther.Fragments
 
+import android.annotation.SuppressLint
+import android.graphics.Color
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import androidx.core.content.ContextCompat
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
+import com.example.wmsRemote.R
 import com.example.wmsRemote.data.db.MainDB
 import com.example.wmsRemote.databinding.FragmentIncomeSessionBinding
 import com.example.wmswherther.Adapters.IncomeSessionAdapter
@@ -288,6 +292,17 @@ class IncomeSessionFragment : Fragment() {
             localViewModel.CountOfCount.observe(viewLifecycleOwner, {counter ->
                 binding.tvCounterCounter.text = counter.toString()
             })
+            localViewModel.IsOverCounter.observe(viewLifecycleOwner, {flag ->
+                if(flag) {
+                    binding.tvCounterCounter.setTextColor(ContextCompat.getColor(requireActivity(), R.color.regularRed))
+                    binding.tvLineCounter.setTextColor(ContextCompat.getColor(requireActivity(), R.color.regularRed))
+                    //binding.tvLineCounter.setTextColor(R.color.regularRed.toInt())
+                }else{
+                    binding.tvCounterCounter.setTextColor(Color.BLACK)
+                    binding.tvLineCounter.setTextColor(Color.BLACK)
+                }
+            })
+            //todo set red color or black
             lifecycleScope.launch {
                 var data: List<IncomeItem> = listOf()
                 withContext(Dispatchers.Main){
