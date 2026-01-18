@@ -5,8 +5,14 @@ import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import com.example.wmsRemote.databinding.ActivityMainBinding
+import com.example.wmswherther.Classes.UiState
 
 class MainViewModel : ViewModel() {
+    private val _uiState = MutableLiveData<UiState>(UiState.MainMenu)
+    val uiState: LiveData<UiState> = _uiState
+
+
+    // <editor-fold desc="other varible">
     private val _mainActivityBinding = MutableLiveData<ActivityMainBinding>()
     private val _isScanningActive = MutableLiveData<Boolean>(false)
     private val _isMenuActive = MutableLiveData<Boolean>(true)
@@ -23,7 +29,8 @@ class MainViewModel : ViewModel() {
     private val _searchLineData = MutableLiveData<String>(null)
     private val _searchState = MutableLiveData<String>("Barcode")
     private val _currentSupplierId = MutableLiveData<String>(null)
-
+    // </editor-fold>
+    // <editor-fold desc="otherProperty">
     val MainActivityBinding: LiveData<ActivityMainBinding> get() = _mainActivityBinding
     val WidthScanningField: LiveData<Int> get() = _widhtScanningField
     val IsScanningActive: LiveData<Boolean> get() = _isScanningActive
@@ -40,7 +47,10 @@ class MainViewModel : ViewModel() {
     val SearchLineData: LiveData<String> get() = _searchLineData
     val SearchState: LiveData<String> get() = _searchState
     val CurrentSupplierId: LiveData<String> get() = _currentSupplierId
-
+    // </editor-fold>
+    // <editor-fold desc="other func">
+        
+    
     fun setCurrentSupplierId(str: String){
         _currentSupplierId.value = str
     }
@@ -148,5 +158,13 @@ class MainViewModel : ViewModel() {
     {
         _isWorkableTE.value = false
     }
+    // </editor-fold>
+    private val _isMoveMenuActive = MutableLiveData<Boolean>(false)
+    val IsMoveMenuActive: LiveData<Boolean> get() = _isMoveMenuActive
 
+    fun setActiveUi(state: UiState){
+        _uiState.value = state
+    }
+
+    // </editor-fold>
 }

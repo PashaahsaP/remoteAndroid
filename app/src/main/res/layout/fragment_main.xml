@@ -4,68 +4,75 @@
     android:layout_height="match_parent"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:id="@+id/parent">
+    <androidx.swiperefreshlayout.widget.SwipeRefreshLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:id="@+id/swipe">
+        <androidx.constraintlayout.widget.ConstraintLayout
+            android:layout_width="match_parent"
+            android:layout_height="match_parent">
+            <Button
+                android:id="@+id/btnIncome"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:width="180dp"
+                android:backgroundTint="#0080fe"
+                android:text="@string/Income"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toTopOf="parent" />
+            <Button
+                android:id="@+id/btnMove"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:width="180dp"
+                android:backgroundTint="#0080fe"
+                android:text="@string/Move"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toBottomOf="@+id/btnIncome" />
 
-    <Button
-        android:id="@+id/btnIncome"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:width="180dp"
-        android:backgroundTint="#0080fe"
-        android:text="@string/Income"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent" />
-    <Button
-        android:id="@+id/btnMove"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:width="180dp"
-        android:backgroundTint="#0080fe"
-        android:text="@string/Move"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/btnIncome" />
+            <Button
+                android:id="@+id/btnInventory"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:width="180dp"
+                android:backgroundTint="#0080fe"
+                android:text="@string/Inventory"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toBottomOf="@+id/btnMove" />
 
-    <Button
-        android:id="@+id/btnInventory"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:width="180dp"
-        android:backgroundTint="#0080fe"
-        android:text="@string/Inventory"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/btnMove" />
-
-    <Button
-        android:id="@+id/btnAssembly"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:width="180dp"
-        android:backgroundTint="#0080fe"
-        android:text="@string/Assembly"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/btnInventory" />
-    <Button
-        android:id="@+id/btnShipment"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:width="180dp"
-        android:backgroundTint="#0080fe"
-        android:text="@string/Shipment"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/btnAssembly" />
-    <Button
-        android:id="@+id/btnLog"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:width="180dp"
-        android:backgroundTint="#0080fe"
-        android:text="@string/Log"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/btnShipment" />
-
+            <Button
+                android:id="@+id/btnAssembly"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:width="180dp"
+                android:backgroundTint="#0080fe"
+                android:text="@string/Assembly"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toBottomOf="@+id/btnInventory" />
+            <Button
+                android:id="@+id/btnShipment"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:width="180dp"
+                android:backgroundTint="#0080fe"
+                android:text="@string/Shipment"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toBottomOf="@+id/btnAssembly" />
+            <Button
+                android:id="@+id/btnLog"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:width="180dp"
+                android:backgroundTint="#0080fe"
+                android:text="@string/Log"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toBottomOf="@+id/btnShipment" />
+        </androidx.constraintlayout.widget.ConstraintLayout>
+    </androidx.swiperefreshlayout.widget.SwipeRefreshLayout>
 </androidx.constraintlayout.widget.ConstraintLayout>

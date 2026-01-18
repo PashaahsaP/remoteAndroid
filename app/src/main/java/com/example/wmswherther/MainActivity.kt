@@ -318,6 +318,13 @@ class MainActivity : AppCompatActivity() {
                 viewModel.setSearchData("result")
             }
         }
+        viewModel.IsMoveMenuActive.observe(this){ isActive ->
+            if(!isActive){
+                binding.btnBack.visibility = View.GONE
+            }else{
+                binding.btnBack.visibility = View.VISIBLE
+            }
+        }
         if(savedInstanceState == null){
             supportFragmentManager.commit {
                 setCustomAnimations(
@@ -353,7 +360,7 @@ class MainActivity : AppCompatActivity() {
                         .setNegativeButton("Нет", null)
                         .create()
                     dialog.show()
-                } else if (viewModel.IsIncomeMenuActive.value == true) {
+                } else if (viewModel.IsIncomeMenuActive.value == true || viewModel.IsMoveMenuActive.value == true) {
                     viewModel.finishIncomeMenu()
                     viewModel.showMenu()
                     super.onBackPressed()
