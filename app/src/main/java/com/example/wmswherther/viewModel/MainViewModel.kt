@@ -8,7 +8,7 @@ import com.example.wmsRemote.databinding.ActivityMainBinding
 import com.example.wmswherther.Classes.UiState
 
 class MainViewModel : ViewModel() {
-    private val _uiState = MutableLiveData<UiState>(UiState.MainMenu)
+    private val _uiState = MutableLiveData<UiState>(UiState.MainMenu())
     val uiState: LiveData<UiState> = _uiState
 
 

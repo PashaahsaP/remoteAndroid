@@ -1,4 +1,5 @@
 package com.example.wmsRemote
+import android.app.AlertDialog.*
 import android.app.Dialog
 import android.content.Context
 import android.content.Intent
@@ -43,6 +44,8 @@ import com.example.wmsRemote.data.db.Cell
 import com.example.wmsRemote.data.db.Dao
 import com.example.wmsRemote.data.db.MainDB
 import com.example.wmsRemote.viewModel.AssemblyViewModel
+import com.example.wmswherther.Classes.UiState
+import com.example.wmswherther.Classes.UiState.*
 import com.example.wmswherther.Fragments.IncomeFragment
 import com.example.wmswherther.Fragments.MainFragment
 import com.example.wmswherther.Fragments.SearchFragment
@@ -124,15 +127,31 @@ class MainActivity : AppCompatActivity() {
            }
         }*/
 
-        viewModel.IsActiveSearchWindow.observe(this){ isActive ->
+        viewModel.uiState.observe(this){ State->
+            when(State){
+                is UiState.SearchMenu ->{
+                    binding.btnBack.visibility = if (State.isBackBtnActive) View.VISIBLE else View.GONE
+                    binding.btnSearch.visibility = if (State.isSearchLoopActive) View.VISIBLE else View.GONE
+                    binding.btnBarcode.visibility = if (State.isTEModeActive) View.VISIBLE else View.GONE
+                    binding.etIncomeBarcode.visibility = if (State.isBarcodeFieldActive) View.VISIBLE else View.GONE
+                    var widthOfScanning = getWidth(binding)
+                    viewModel.setWidthScanningField(widthOfScanning)
+                    binding.etIncomeBarcode.requestFocus()
+                }
+
+                UiState.IncomeMenu -> {}
+                UiState.IncomeSessionMenu -> {}
+                is UiState.MainMenu -> {}
+                UiState.MoveMenu -> {}
+                UiState.MoveSessionMenu -> {}
+                is UiState.SearchMenu -> {}
+            }
+        }
+
+        /*viewModel.IsActiveSearchWindow.observe(this){ isActive ->
             if(isActive){
-                binding.btnBack.visibility = View.VISIBLE
-                binding.btnSearch.visibility = View.GONE
-                binding.btnBarcode.visibility = View.GONE
-                binding.etIncomeBarcode.visibility = View.VISIBLE
-                var widthOfScanning = getWidth(binding)
-                viewModel.setWidthScanningField(widthOfScanning)
-                binding.etIncomeBarcode.requestFocus()
+
+
             }else{
                 binding.btnSearch.visibility = View.VISIBLE
                 binding.etIncomeBarcode.visibility = View.GONE
@@ -144,7 +163,7 @@ class MainActivity : AppCompatActivity() {
                 }
 
             }
-        }
+        }*/
         viewModel.IsMenuActive.observe(this) { isActive ->
             if(isActive){
                 binding.btnBack.visibility = View.GONE
@@ -387,91 +406,104 @@ class MainActivity : AppCompatActivity() {
 
             }
             btnThreeDots.setOnClickListener { view ->
-                if (viewModel.IsActiveSearchWindow.value == true) {
-                    val inflater = layoutInflater
-                    val popupView = inflater.inflate(R.layout.pop_up_search_menu, null)
-                    var btnSupplier = popupView.findViewById<Button>(R.id.btnSuppliersList)
-                    var btnName = popupView.findViewById<Button>(R.id.btnName)
-                    var btnBarcode = popupView.findViewById<Button>(R.id.btnBarcode)
-                    var btnCells = popupView.findViewById<Button>(R.id.btnCells)
+                when(viewModel.uiState.value){
+                    is SearchMenu ->
+                    {
+                        val inflater = layoutInflater
+                        val popupView = inflater.inflate(R.layout.pop_up_search_menu, null)
+                        var btnSupplier = popupView.findViewById<Button>(R.id.btnSuppliersList)
+                        var btnName = popupView.findViewById<Button>(R.id.btnName)
+                        var btnBarcode = popupView.findViewById<Button>(R.id.btnBarcode)
+                        var btnCells = popupView.findViewById<Button>(R.id.btnCells)
 
-                    val popupWindow = PopupWindow(
-                        popupView,
-                        WindowManager.LayoutParams.WRAP_CONTENT,
-                        WindowManager.LayoutParams.WRAP_CONTENT,
-                        true
-                    )
-                    btnSupplier.setOnClickListener { view ->
-                        var supplierList : List<SupplierItem> = listOf()
-                        var counter = 0
-                        var selected = 0
-                        lifecycleScope.launch {
-                            Dispatchers.IO{
-                                var dao = MainDB.getDB(this@MainActivity).getDao()
+                        val popupWindow = PopupWindow(
+                            popupView,
+                            WindowManager.LayoutParams.WRAP_CONTENT,
+                            WindowManager.LayoutParams.WRAP_CONTENT,
+                            true
+                        )
+                        btnSupplier.setOnClickListener { view ->
+                            var supplierList : List<SupplierItem> = listOf()
+                            var counter = 0
+                            var selected = 0
+                            lifecycleScope.launch {
+                                Dispatchers.IO{
+                                    var dao = MainDB.getDB(this@MainActivity).getDao()
 
-                                supplierList = dao.getAllSuppliers().map { item ->
-                                    if(viewModel.CurrentSupplierId.value == item.id){
-                                        selected = counter
-                                        counter = counter + 1
-                                        SupplierItem(item.id, item.name)
-                                    }else{
-                                        counter = counter + 1
-                                        SupplierItem(item.id, item.name)
+                                    supplierList = dao.getAllSuppliers().map { item ->
+                                        if(viewModel.CurrentSupplierId.value == item.id){
+                                            selected = counter
+                                            counter = counter + 1
+                                            SupplierItem(item.id, item.name)
+                                        }else{
+                                            counter = counter + 1
+                                            SupplierItem(item.id, item.name)
+                                        }
+
+                                    }
+                                }
+                                Dispatchers.Main {
+                                    var dialog = Builder(this@MainActivity)
+                                        .create()
+                                    var spinner = Spinner(this@MainActivity)
+                                    spinner.setPadding(20, 40, 20, 0)
+                                    val adapter = ArrayAdapter(this@MainActivity, android.R.layout.simple_spinner_item, supplierList.map { it.text })
+                                    adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
+
+                                    spinner.adapter = adapter
+                                    spinner.setSelection(selected)
+
+                                    dialog.setButton(android.app.AlertDialog.BUTTON_POSITIVE, "Выбрать") { _, _ ->
+                                        val pos = spinner.selectedItemPosition
+                                        val selected = supplierList[pos]
+                                        viewModel.setCurrentSupplierId(selected.id)
+                                    }
+                                    dialog.setButton(android.app.AlertDialog.BUTTON_NEGATIVE, "Отмена") { dialogInterface, _ ->
+                                        viewModel.turnOnTeMode()
+                                        viewModel.workTe()
+                                        dialogInterface.dismiss()
                                     }
 
+                                    dialog.setView(spinner)
+                                    dialog.show()
+                                    popupWindow.dismiss()
                                 }
-                            }
-                            Dispatchers.Main {
-                                var dialog = android.app.AlertDialog.Builder(this@MainActivity)
-                                    .create()
-                                var spinner = Spinner(this@MainActivity)
-                                spinner.setPadding(20, 40, 20, 0)
-                                val adapter = ArrayAdapter(this@MainActivity, android.R.layout.simple_spinner_item, supplierList.map { it.text })
-                                adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
-
-                                spinner.adapter = adapter
-                                spinner.setSelection(selected)
-
-                                dialog.setButton(android.app.AlertDialog.BUTTON_POSITIVE, "Выбрать") { _, _ ->
-                                    val pos = spinner.selectedItemPosition
-                                    val selected = supplierList[pos]
-                                    viewModel.setCurrentSupplierId(selected.id)
-                                }
-                                dialog.setButton(android.app.AlertDialog.BUTTON_NEGATIVE, "Отмена") { dialogInterface, _ ->
-                                    viewModel.turnOnTeMode()
-                                    viewModel.workTe()
-                                    dialogInterface.dismiss()
-                                }
-
-                                dialog.setView(spinner)
-                                dialog.show()
-                                popupWindow.dismiss()
                             }
                         }
-                    }
-                    btnName.setOnClickListener { view ->
-                        viewModel.setSearchState("Name")
-                        popupWindow.dismiss()
-                    }
-                    btnCells.setOnClickListener { view ->
-                        viewModel.setSearchState("Cells")
-                        popupWindow.dismiss()
-                    }
-                    btnBarcode.setOnClickListener { view ->
-                        viewModel.setSearchState("Barcode")
-                        popupWindow.dismiss()
-                    }
+                        btnName.setOnClickListener { view ->
+                            viewModel.setSearchState("Name")
+                            popupWindow.dismiss()
+                        }
+                        btnCells.setOnClickListener { view ->
+                            viewModel.setSearchState("Cells")
+                            popupWindow.dismiss()
+                        }
+                        btnBarcode.setOnClickListener { view ->
+                            viewModel.setSearchState("Barcode")
+                            popupWindow.dismiss()
+                        }
 
-                    val location = IntArray(2)
-                    btnThreeDots.getLocationOnScreen(location)
+                        val location = IntArray(2)
+                        btnThreeDots.getLocationOnScreen(location)
 
 // Show popup to the left of the button
-                    popupWindow.showAtLocation(
-                        btnThreeDots,
-                        Gravity.NO_GRAVITY,
-                        location[0] - popupWindow.width,  // x coordinate - to the left
-                        location[1] + btnThreeDots.height // y coordinate
-                    )
+                        popupWindow.showAtLocation(
+                            btnThreeDots,
+                            Gravity.NO_GRAVITY,
+                            location[0] - popupWindow.width,  // x coordinate - to the left
+                            location[1] + btnThreeDots.height // y coordinate
+                        )
+                    }
+
+                    IncomeMenu -> {}
+                    IncomeSessionMenu -> {}
+                    is MainMenu -> {}
+                    MoveMenu -> {}
+                    MoveSessionMenu -> {}
+                    null -> {}
+                }
+                /*if (viewModel.IsActiveSearchWindow.value == true) {
+
                 } else if (viewModel.IsIncomeSessionActive.value == true) {
                     val inflater = layoutInflater
                     val popupView = inflater.inflate(R.layout.pop_up_income_menu, null)
@@ -498,9 +530,8 @@ class MainActivity : AppCompatActivity() {
                         location[0] - popupWindow.width,  // x coordinate - to the left
                         location[1] + btnThreeDots.height // y coordinate
                     )
-                }
+                }*/
             }
-
             etIncomeBarcodeScan.setOnKeyListener {v, keyCode, event ->
                 val ch = event.unicodeChar.toChar()
                 if (ch == '\u0000' || event.action == KeyEvent.ACTION_UP){
@@ -523,8 +554,7 @@ class MainActivity : AppCompatActivity() {
                 .findFragmentById(R.id.fragmentContainer)
                 if(currentFragment != null){
 
-                    viewModel.turnOffScanMode()
-                    viewModel.openSearchWindow()
+                    viewModel.setActiveUi(UiState.SearchMenu(prevState = viewModel.uiState.value))
                     currentFragment.parentFragmentManager.commit {
                         setCustomAnimations(
                             R.anim.slide_in_right, // enter
