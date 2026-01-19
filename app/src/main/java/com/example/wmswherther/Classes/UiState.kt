@@ -14,7 +14,8 @@ sealed class UiState {
         val isTEModeActive: Boolean = false,
         val isThreeDotsActive: Boolean = true,
         val isBackBtnActive: Boolean = true,
-        val prevState: UiState? = null
+        val prevState: UiState? = null,
+        val searchPattern: String = "Barcode"
     ) : UiState()
     object IncomeMenu : UiState()
     object IncomeSessionMenu : UiState()
