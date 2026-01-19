@@ -70,8 +70,7 @@ class MainFragment : Fragment(R.layout.fragment_main) {
                     addToBackStack(null)
                 }
 
-                viewModel.closeMenu()
-                viewModel.startIncomeMenu()
+                viewModel.setActiveUi(UiState.IncomeMenu(prevState = viewModel.uiState.value))
             }
             btnMove.setOnClickListener {
                 parentFragmentManager.commit {

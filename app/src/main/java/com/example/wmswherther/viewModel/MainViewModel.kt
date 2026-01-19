@@ -12,65 +12,32 @@ class MainViewModel : ViewModel() {
     val uiState: LiveData<UiState> = _uiState
 
 
-    // <editor-fold desc="other varible">
     private val _mainActivityBinding = MutableLiveData<ActivityMainBinding>()
     private val _isScanningActive = MutableLiveData<Boolean>(false)
-    private val _isMenuActive = MutableLiveData<Boolean>(true)
-    private val _isIncomeMenuActive = MutableLiveData<Boolean>(false)
-    private val _isIncomeSessionActive = MutableLiveData<Boolean>(false)
     private val _isIncomeSessionTEModeActive = MutableLiveData<Boolean>(false)
-    private val _isWorkableTE = MutableLiveData<Boolean>(false)//нужен чтобы отображать диалоговое окно
     private val _TE = MutableLiveData<String>("")
     private val _barcode = MutableLiveData<String>("")
     private val _IsCloseTE = MutableLiveData<Boolean>(true)
     private val _widhtScanningField = MutableLiveData<Int>(0)
     private val _isActiveSearchWindow = MutableLiveData<Boolean>(false)
-    private val _currFragment = MutableLiveData<Fragment>(null)
     private val _searchLineData = MutableLiveData<String>(null)
-    private val _searchState = MutableLiveData<String>("Barcode")
     private val _currentSupplierId = MutableLiveData<String>(null)
-    // </editor-fold>
-    // <editor-fold desc="otherProperty">
-    val MainActivityBinding: LiveData<ActivityMainBinding> get() = _mainActivityBinding
+
+
     val WidthScanningField: LiveData<Int> get() = _widhtScanningField
     val IsScanningActive: LiveData<Boolean> get() = _isScanningActive
-    val IsMenuActive: LiveData<Boolean> get() = _isMenuActive
-    val IsIncomeMenuActive: LiveData<Boolean> get() = _isIncomeMenuActive
-    val IsIncomeSessionActive: LiveData<Boolean> get() = _isIncomeSessionActive
     val IsIncomeSessionTEModeActive: LiveData<Boolean> get() = _isIncomeSessionTEModeActive
     val TE: LiveData<String> get() = _TE
-    val IsWorkableTE: LiveData<Boolean> get() = _isWorkableTE
     val Barcode: LiveData<String> get() = _barcode
     val IsCloseTE: LiveData<Boolean> get() = _IsCloseTE
     val IsActiveSearchWindow: LiveData<Boolean> get() = _isActiveSearchWindow
-    val CurrFragment: LiveData<Fragment> get() = _currFragment
     val SearchLineData: LiveData<String> get() = _searchLineData
-    val SearchState: LiveData<String> get() = _searchState
     val CurrentSupplierId: LiveData<String> get() = _currentSupplierId
-    // </editor-fold>
-    // <editor-fold desc="other func">
-        
-    
     fun setCurrentSupplierId(str: String){
         _currentSupplierId.value = str
     }
-    fun setSearchState(str: String){
-        _searchState.value = str
-    }
     fun setSearchData(str: String){
         _searchLineData.value = str
-    }
-    fun setCurrFragment(fragment: Fragment){
-        _currFragment.value = fragment
-    }
-    fun getCurrFragment() : Fragment?{
-        return _currFragment.value
-    }
-    fun openSearchWindow() {
-        _isActiveSearchWindow.value = true
-    }
-    fun closeSearchWindow() {
-        _isActiveSearchWindow.value = false
     }
     fun getMainBinding() : ActivityMainBinding? {
         return _mainActivityBinding.value
@@ -88,83 +55,17 @@ class MainViewModel : ViewModel() {
             _IsCloseTE.value = true
         }
     }
-    fun switchScanMode(){
-        if(_isScanningActive.value == true){
-            turnOffScanMode()
-        }else{
-            turnOnScanMode()
-        }
-    }
-    fun turnOnScanMode(){
-        _isScanningActive.value = true
-    }
-    fun turnOffScanMode(){
-        _isScanningActive.value = false
-    }
     fun setTE(text: String){
         _TE.value = text
     }
     fun setBarcode(text: String){
         _barcode.value = text
     }
-    fun getBarcode() : String? {
-        return _barcode.value
-    }
-    fun showMenu()
-    {
-        _isMenuActive.value = true
-    }
-    fun closeMenu()
-    {
-        _isMenuActive.value = false
-    }
-    fun startIncomeMenu()
-    {
-        _isIncomeMenuActive.value = true
-    }
-    fun finishIncomeMenu()
-    {
-        _isIncomeMenuActive.value = false
-    }
-    fun startIncomeSession()
-    {
-        _isIncomeSessionActive.value = true
-    }
-    fun finishIncomeSession()
-    {
-        _isIncomeSessionActive.value = false
-    }
-    fun turnOnTeMode()
-    {
-        _isIncomeSessionTEModeActive.value = true
-    }
-    fun turnOffTeMode()
-    {
-        _isIncomeSessionTEModeActive.value = false
-    }
-    fun switchTeMode()
-    {
-        if(_isIncomeSessionTEModeActive.value == true){
-            turnOffTeMode()
-        }else{
-            turnOnTeMode()
-        }
-    }
-    fun workTe()
-    {
-        _isWorkableTE.value = true
-    }
-    fun unworkTe()
-    {
-        _isWorkableTE.value = false
-    }
-    // </editor-fold>
-    private val _isMoveMenuActive = MutableLiveData<Boolean>(false)
-    val IsMoveMenuActive: LiveData<Boolean> get() = _isMoveMenuActive
+
+
 
     fun setActiveUi(state: UiState){
         _uiState.value = state
     }
 
-    // </editor-fold>
 }

@@ -16,6 +16,7 @@ import androidx.recyclerview.widget.RecyclerView
 import com.example.wmsRemote.R
 import com.example.wmsRemote.isBoxTE
 import com.example.wmswherther.Classes.IncomeItem
+import com.example.wmswherther.Classes.UiState
 import com.example.wmswherther.viewModel.IncomeSessionViewModel
 import com.example.wmswherther.viewModel.MainViewModel
 
@@ -162,7 +163,8 @@ class IncomeSessionAdapter(
                                 item.isSelected = false
                                 if(counter == position){
                                     item.haveCount = count
-                                    if(viewModel.IsIncomeSessionTEModeActive.value == true){
+
+                                    if((viewModel.uiState.value as UiState.IncomeSessionMenu).isTEModeActive){
                                         item.teCount = count
                                     }
                                 }
@@ -289,8 +291,7 @@ class IncomeSessionAdapter(
                         dialogInterface.dismiss()
                     }
                     dialog.setOnCancelListener {
-                        viewModel.turnOnTeMode()
-                        viewModel.workTe()
+                        viewModel.setActiveUi((viewModel.uiState.value as UiState.IncomeSessionMenu).copy(isTEModeActive = true))
                     }
 
                     dialog.setView(containerLocal)

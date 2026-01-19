@@ -78,28 +78,31 @@ class MainActivity : AppCompatActivity() {
     override fun onBackPressed() {
         //val count = supportFragmentManager.backStackEntryCount
 
-        if (viewModel.IsActiveSearchWindow.value == true) {
-            viewModel.closeSearchWindow()
-            super.onBackPressed()
-        }
-
-        else if (viewModel.IsIncomeSessionActive.value == true) {
-            // Если есть фрагменты в стеке
-            val dialog = AlertDialog.Builder(this@MainActivity)
-                .setTitle("Выход")
-                .setMessage("Точно закрыть текущий экран?")
-                .setPositiveButton("Да") { _, _ ->
-                    viewModel.finishIncomeSession()
-                    super.onBackPressed()
-                }
-                .setNegativeButton("Нет", null)
-                .create()
-            dialog.show()
-        }
-        else if(viewModel.IsIncomeMenuActive.value == true){
-            viewModel.finishIncomeMenu()
-            viewModel.showMenu()
-            super.onBackPressed()
+        when(val state = viewModel.uiState.value){
+            is IncomeMenu -> {
+                viewModel.setActiveUi(state.prevState!!)
+                super.onBackPressed()
+            }
+            is IncomeSessionMenu -> {
+                val dialog = AlertDialog.Builder(this@MainActivity)
+                    .setTitle("Выход")
+                    .setMessage("Точно закрыть текущий экран?")
+                    .setPositiveButton("Да") { _, _ ->
+                        viewModel.setActiveUi(state.prevState!!)
+                        super.onBackPressed()
+                    }
+                    .setNegativeButton("Нет", null)
+                    .create()
+                dialog.show()
+            }
+            is MainMenu -> {}
+            MoveMenu -> {}
+            MoveSessionMenu -> {}
+            is SearchMenu -> {
+                viewModel.setActiveUi(state.prevState!!)
+                super.onBackPressed()
+            }
+            null -> {}
         }
     }
 
@@ -129,22 +132,50 @@ class MainActivity : AppCompatActivity() {
 
         viewModel.uiState.observe(this){ State->
             when(State){
-                is UiState.SearchMenu ->{
+                is SearchMenu ->{
+                    var widthOfScanning = getWidth(binding)
+                    viewModel.setWidthScanningField(widthOfScanning)
                     binding.btnBack.visibility = if (State.isBackBtnActive) View.VISIBLE else View.GONE
                     binding.btnSearch.visibility = if (State.isSearchLoopActive) View.VISIBLE else View.GONE
                     binding.btnBarcode.visibility = if (State.isTEModeActive) View.VISIBLE else View.GONE
                     binding.etIncomeBarcode.visibility = if (State.isBarcodeFieldActive) View.VISIBLE else View.GONE
-                    var widthOfScanning = getWidth(binding)
-                    viewModel.setWidthScanningField(widthOfScanning)
                     binding.etIncomeBarcode.requestFocus()
                 }
 
-                UiState.IncomeMenu -> {}
-                UiState.IncomeSessionMenu -> {}
-                is UiState.MainMenu -> {}
-                UiState.MoveMenu -> {}
-                UiState.MoveSessionMenu -> {}
-                is UiState.SearchMenu -> {}
+                is IncomeMenu -> {
+                    binding.btnBack.visibility = if (State.isBackBtnActive) View.VISIBLE else View.GONE
+                    binding.btnSearch.visibility = if (State.isSearchLoopActive) View.VISIBLE else View.GONE
+                    binding.btnBarcode.visibility = if (State.isTEModeActive) View.VISIBLE else View.GONE
+                    binding.etIncomeBarcode.visibility = if (State.isBarcodeFieldActive) View.VISIBLE else View.GONE
+                }
+                is IncomeSessionMenu -> {
+                    var widthOfScanning = getWidth(binding)
+                    viewModel.setWidthScanningField(widthOfScanning)
+                    binding.btnBack.visibility = if (State.isBackBtnActive) View.VISIBLE else View.GONE
+                    binding.btnSearch.visibility = if (State.isSearchLoopActive) View.VISIBLE else View.GONE
+                    binding.btnBarcode.visibility = if (State.isTEBtnActive) View.VISIBLE else View.GONE
+                    binding.etIncomeBarcode.visibility = if (State.isBarcodeFieldActive) View.VISIBLE else View.GONE
+                    binding.etIncomeBarcodeScan.visibility = if (State.isBarcodeScanActive) View.VISIBLE else View.GONE
+                    if (State.isBarcodeFieldActive)
+                        binding.etIncomeBarcode.requestFocus()
+                    else binding.etIncomeBarcodeScan.requestFocus()
+                    if(State.isTEModeActive){
+                        binding.btnBarcode.setImageResource(R.drawable.barcode_selected)
+
+                    }else{
+                        binding.btnBarcode.setImageResource(R.drawable.barcode)
+                    }
+
+                }
+                is MainMenu -> {
+                    binding.btnBack.visibility = if (State.isBackBtnActive) View.VISIBLE else View.GONE
+                    binding.btnSearch.visibility = if (State.isSearchLoopActive) View.VISIBLE else View.GONE
+                    binding.btnBarcode.visibility = if (State.isTEModeActive) View.VISIBLE else View.GONE
+                    binding.etIncomeBarcode.visibility = if (State.isBarcodeFieldActive) View.VISIBLE else View.GONE
+                }
+                MoveMenu -> {}
+                MoveSessionMenu -> {}
+                is SearchMenu -> {}
             }
         }
 
@@ -164,76 +195,6 @@ class MainActivity : AppCompatActivity() {
 
             }
         }*/
-        viewModel.IsMenuActive.observe(this) { isActive ->
-            if(isActive){
-                binding.btnBack.visibility = View.GONE
-            }else{
-                binding.btnBack.visibility = View.VISIBLE
-            }
-        }
-        viewModel.IsIncomeSessionActive.observe(this) { isActive ->
-            if(isActive){
-                binding.btnBarcode.visibility = View.VISIBLE
-            }else{
-                binding.btnBarcode.visibility = View.GONE
-                binding.etIncomeBarcode.visibility = View.GONE
-            }
-        }
-        viewModel.IsIncomeSessionTEModeActive.observe(this) { isActive ->
-            if(isActive){
-                binding.btnBarcode.setImageResource(R.drawable.barcode_selected)
-            }else{
-                binding.btnBarcode.setImageResource(R.drawable.barcode)
-                if(viewModel.IsWorkableTE.value == true){
-                    var dialog = android.app.AlertDialog.Builder(this@MainActivity)
-                        .create()
-                    var text = EditText(this)
-                    text.width = 100
-                    text.setPadding(30)
-                    text.isSingleLine = true
-                    text.requestFocus()
-                    dialog.setButton(android.app.AlertDialog.BUTTON_POSITIVE, "Сохранить") { _, _ ->
-                        if(isBoxTE(text.text.toString())){
-                            viewModel.unworkTe()
-                            viewModel.setTE(text.text.toString())
-                        }else{
-                            viewModel.turnOnTeMode()
-                            viewModel.workTe()
-                            Toast.makeText(this@MainActivity, "invalid te barcode", Toast.LENGTH_SHORT).show()
-                        }
-                    }
-                    dialog.setButton(android.app.AlertDialog.BUTTON_NEGATIVE, "Закрыть") { dialogInterface, _ ->
-                        viewModel.turnOnTeMode()
-                        viewModel.workTe()
-                        dialogInterface.dismiss()
-                    }
-                    dialog.setButton(android.app.AlertDialog.BUTTON_NEUTRAL, "Отмена") { dialogInterface, _ ->
-                        viewModel.switchTeButton()
-                        dialogInterface.dismiss()
-                    }
-                    dialog.setOnCancelListener {
-                        viewModel.turnOnTeMode()
-                        viewModel.workTe()
-                    }
-
-                    dialog.setView(text)
-                    dialog.show()
-                   /* dialog.window?.clearFlags(WindowManager.LayoutParams.FLAG_ALT_FOCUSABLE_IM)// after that two line work keyboard when click update line
-                    dialog.window?.setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_STATE_ALWAYS_VISIBLE)*/
-                }
-            }
-        }
-        viewModel.IsScanningActive.observe(this){ isActive ->
-            if(isActive == true){
-                binding.etIncomeBarcode.visibility = View.VISIBLE
-                var widthOfScanning = getWidth(binding)
-                viewModel.setWidthScanningField(widthOfScanning)
-                binding.etIncomeBarcode.requestFocus()
-            }else{
-                binding.etIncomeBarcode.visibility = View.GONE
-                binding.etIncomeBarcodeScan.requestFocus()
-            }
-        }
         viewModel.WidthScanningField.observe(this){ value ->
             binding.etIncomeBarcode.width = value
         }
@@ -323,53 +284,15 @@ class MainActivity : AppCompatActivity() {
                         }
                     }
                 }
-
-                IncomeMenu -> {}
-                IncomeSessionMenu -> {
-
-
-
-
-
-
-
-
-
-
-
-
-
-                }
-                is MainMenu -> TODO()
-                MoveMenu -> TODO()
-                MoveSessionMenu -> TODO()
-                null -> TODO()
-            }
-            if(viewModel.IsActiveSearchWindow.value == true){
-                // проверить какой флаг выбран и дальше идут стратегии поиска различные
-
-
-
-                // Если по наименованию то перебрать каталоги и получить каталоги с вхождениями и дальше поиск goods и ячейки к ним
-                // Если по ячейке то получение всех goods с данной ячейкой, а дальше получение каталогов, чтобы иметь наименование
-                /*searchData.forEach{ item ->
-                    for (innerBarcode in item.second){
-                        if(barcode == innerBarcode){
-                            result += item.first
-                            break
-                        }
-                    }
-                }*/
-                viewModel.setSearchData("result")
+                is IncomeMenu -> {}
+                is IncomeSessionMenu -> {}
+                is MainMenu -> {}
+                MoveMenu -> {}
+                MoveSessionMenu -> {}
+                null -> {}
             }
         }
-        viewModel.IsMoveMenuActive.observe(this){ isActive ->
-            if(!isActive){
-                binding.btnBack.visibility = View.GONE
-            }else{
-                binding.btnBack.visibility = View.VISIBLE
-            }
-        }
+
         if(savedInstanceState == null){
             supportFragmentManager.commit {
                 setCustomAnimations(
@@ -387,36 +310,66 @@ class MainActivity : AppCompatActivity() {
         }
         with(binding) {
             btnBack.setOnClickListener {
-                //val count = supportFragmentManager.backStackEntryCount
-
-
-                if (viewModel.IsActiveSearchWindow.value == true) {
-                    viewModel.closeSearchWindow()
-                    super.onBackPressed()
-                } else if (viewModel.IsIncomeSessionActive.value == true) {
-                    // Если есть фрагменты в стеке
-                    val dialog = AlertDialog.Builder(this@MainActivity)
-                        .setTitle("Выход")
-                        .setMessage("Точно закрыть текущий экран?")
-                        .setPositiveButton("Да") { _, _ ->
-                            viewModel.finishIncomeSession()
-                            super.onBackPressed()
-                        }
-                        .setNegativeButton("Нет", null)
-                        .create()
-                    dialog.show()
-                } else if (viewModel.IsIncomeMenuActive.value == true || viewModel.IsMoveMenuActive.value == true) {
-                    viewModel.finishIncomeMenu()
-                    viewModel.showMenu()
-                    super.onBackPressed()
+                when(val state = viewModel.uiState.value){
+                    is IncomeMenu -> {
+                        viewModel.setActiveUi(state.prevState!!)
+                        super.onBackPressed()
+                    }
+                    is IncomeSessionMenu -> {
+                        val dialog = AlertDialog.Builder(this@MainActivity)
+                            .setTitle("Выход")
+                            .setMessage("Точно закрыть текущий экран?")
+                            .setPositiveButton("Да") { _, _ ->
+                                viewModel.setActiveUi(state.prevState!!)
+                                super.onBackPressed()
+                            }
+                            .setNegativeButton("Нет", null)
+                            .create()
+                        dialog.show()
+                    }
+                    is MainMenu -> {}
+                    MoveMenu -> {}
+                    MoveSessionMenu -> {}
+                    is SearchMenu -> {
+                        viewModel.setActiveUi(state.prevState!!)
+                        super.onBackPressed()
+                    }
+                    null -> {}
                 }
             }
             btnBarcode.setOnClickListener {
-                if (viewModel.IsIncomeSessionTEModeActive.value == true) {
-                    viewModel.turnOffTeMode()
-                } else {
-                    viewModel.turnOnTeMode()
-                    viewModel.workTe()
+                if ((viewModel.uiState.value as UiState.IncomeSessionMenu).isTEModeActive) {
+                    var dialog = Builder(this@MainActivity)
+                        .create()
+                    var text = EditText(this@MainActivity)
+                    text.width = 100
+                    text.setPadding(30)
+                    text.isSingleLine = true
+                    text.requestFocus()
+                    dialog.setButton(BUTTON_POSITIVE, "Сохранить") { _, _ ->
+                        if(isBoxTE(text.text.toString())){
+                            viewModel.setActiveUi((viewModel.uiState.value as IncomeSessionMenu).copy(isTEModeActive = false))
+                            viewModel.setTE(text.text.toString())
+                        }else{
+                            Toast.makeText(this@MainActivity, "invalid te barcode", Toast.LENGTH_SHORT).show()
+                        }
+                    }
+                    dialog.setButton(BUTTON_NEGATIVE, "Закрыть") { dialogInterface, _ ->
+                        dialogInterface.dismiss()
+                    }
+                    dialog.setButton(BUTTON_NEUTRAL, "Отмена") { dialogInterface, _ ->
+                        dialogInterface.dismiss()
+                    }
+                    /*dialog.setOnCancelListener {
+                        viewModel.turnOnTeMode()
+                        viewModel.workTe()
+                    }*/
+
+                    dialog.setView(text)
+                    dialog.show()
+                }
+                else {
+                    viewModel.setActiveUi((viewModel.uiState.value as UiState.IncomeSessionMenu).copy(isTEModeActive = true))
                 }
             }
             etIncomeBarcode.setOnEditorActionListener { v, actionId, event ->
@@ -432,9 +385,8 @@ class MainActivity : AppCompatActivity() {
 
             }
             btnThreeDots.setOnClickListener { view ->
-                when(viewModel.uiState.value){
-                    is SearchMenu ->
-                    {
+                when(val state = viewModel.uiState.value){
+                    is SearchMenu -> {
                         val inflater = layoutInflater
                         val popupView = inflater.inflate(R.layout.pop_up_search_menu, null)
                         var btnSupplier = popupView.findViewById<Button>(R.id.btnSuppliersList)
@@ -479,14 +431,12 @@ class MainActivity : AppCompatActivity() {
                                     spinner.adapter = adapter
                                     spinner.setSelection(selected)
 
-                                    dialog.setButton(android.app.AlertDialog.BUTTON_POSITIVE, "Выбрать") { _, _ ->
+                                    dialog.setButton(BUTTON_POSITIVE, "Выбрать") { _, _ ->
                                         val pos = spinner.selectedItemPosition
                                         val selected = supplierList[pos]
                                         viewModel.setCurrentSupplierId(selected.id)
                                     }
-                                    dialog.setButton(android.app.AlertDialog.BUTTON_NEGATIVE, "Отмена") { dialogInterface, _ ->
-                                        viewModel.turnOnTeMode()
-                                        viewModel.workTe()
+                                    dialog.setButton(BUTTON_NEGATIVE, "Отмена") { dialogInterface, _ ->
                                         dialogInterface.dismiss()
                                     }
 
@@ -497,15 +447,15 @@ class MainActivity : AppCompatActivity() {
                             }
                         }
                         btnName.setOnClickListener { view ->
-                            viewModel.setSearchState("Name")
+                            viewModel.setActiveUi(state.copy(searchPattern = "Name"))
                             popupWindow.dismiss()
                         }
                         btnCells.setOnClickListener { view ->
-                            viewModel.setSearchState("Cells")
+                            viewModel.setActiveUi(state.copy(searchPattern = "Cells"))
                             popupWindow.dismiss()
                         }
                         btnBarcode.setOnClickListener { view ->
-                            viewModel.setSearchState("Barcode")
+                            viewModel.setActiveUi(state.copy(searchPattern = "Barcode"))
                             popupWindow.dismiss()
                         }
 
@@ -520,43 +470,43 @@ class MainActivity : AppCompatActivity() {
                             location[1] + btnThreeDots.height // y coordinate
                         )
                     }
+                    is IncomeMenu -> {}
+                    is IncomeSessionMenu -> {
+                        val inflater = layoutInflater
+                        val popupView = inflater.inflate(R.layout.pop_up_income_menu, null)
+                        var scanBtn = popupView.findViewById<Button>(R.id.btnScanningMode)
 
-                    IncomeMenu -> {}
-                    IncomeSessionMenu -> {}
+                        val popupWindow = PopupWindow(
+                            popupView,
+                            WindowManager.LayoutParams.WRAP_CONTENT,
+                            WindowManager.LayoutParams.WRAP_CONTENT,
+                            true
+                        )
+                        scanBtn.setOnClickListener { view ->
+                            viewModel.setActiveUi(state.copy(
+                                isBarcodeFieldActive = !state.isBarcodeFieldActive,
+                                isBarcodeScanActive = !state.isBarcodeScanActive
+                                ))
+                            popupWindow.dismiss()
+                        }
+
+                        val location = IntArray(2)
+                        btnThreeDots.getLocationOnScreen(location)
+
+// Show popup to the left of the button
+                        popupWindow.showAtLocation(
+                            btnThreeDots,
+                            Gravity.NO_GRAVITY,
+                            location[0] - popupWindow.width,  // x coordinate - to the left
+                            location[1] + btnThreeDots.height // y coordinate
+                        )
+                    }
                     is MainMenu -> {}
                     MoveMenu -> {}
                     MoveSessionMenu -> {}
                     null -> {}
                 }
-                /*if (viewModel.IsActiveSearchWindow.value == true) {
 
-                } else if (viewModel.IsIncomeSessionActive.value == true) {
-                    val inflater = layoutInflater
-                    val popupView = inflater.inflate(R.layout.pop_up_income_menu, null)
-                    var scanBtn = popupView.findViewById<Button>(R.id.btnScanningMode)
-
-                    val popupWindow = PopupWindow(
-                        popupView,
-                        WindowManager.LayoutParams.WRAP_CONTENT,
-                        WindowManager.LayoutParams.WRAP_CONTENT,
-                        true
-                    )
-                    scanBtn.setOnClickListener { view ->
-                        viewModel.switchScanMode()
-                        popupWindow.dismiss()
-                    }
-
-                    val location = IntArray(2)
-                    btnThreeDots.getLocationOnScreen(location)
-
-// Show popup to the left of the button
-                    popupWindow.showAtLocation(
-                        btnThreeDots,
-                        Gravity.NO_GRAVITY,
-                        location[0] - popupWindow.width,  // x coordinate - to the left
-                        location[1] + btnThreeDots.height // y coordinate
-                    )
-                }*/
             }
             etIncomeBarcodeScan.setOnKeyListener {v, keyCode, event ->
                 val ch = event.unicodeChar.toChar()
@@ -574,13 +524,13 @@ class MainActivity : AppCompatActivity() {
                     return@setOnKeyListener true
                 }
             }
-            etIncomeBarcodeScan.requestFocus()
+            etIncomeBarcodeScan.requestFocus()//TODO попробовать использовать тсд и удалить, может и без этого норм работат, а то помню много раз пробовал переделать
             btnSearch.setOnClickListener {
             val currentFragment = supportFragmentManager
                 .findFragmentById(R.id.fragmentContainer)
                 if(currentFragment != null){
 
-                    viewModel.setActiveUi(UiState.SearchMenu(prevState = viewModel.uiState.value))
+                    viewModel.setActiveUi(SearchMenu(prevState = viewModel.uiState.value))
                     currentFragment.parentFragmentManager.commit {
                         setCustomAnimations(
                             R.anim.slide_in_right, // enter
@@ -852,16 +802,10 @@ fun readTextFileFromInternalStorage(context: Context, fileName: String): String 
  }
  */
 private fun isCell(cell: String): Boolean {
-    if (cell.length == 4 && cell[0] in 'A' .. 'Z' && cell[1].isDigit() && cell[2].isDigit() && cell[3].isDigit()){
-        return true
-    }
-    return false
+    return cell.length == 4 && cell[0] in 'A' .. 'Z' && cell[1].isDigit() && cell[2].isDigit() && cell[3].isDigit()
 }
 fun isBoxTE(str: String) : Boolean{
-    if(str.length == 9){
-        return true
-    }
-    return false
+    return str.length == 9
 }
 
 

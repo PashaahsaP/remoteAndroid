@@ -11,6 +11,7 @@ import androidx.fragment.app.replace
 import androidx.recyclerview.widget.RecyclerView
 import com.example.wmsRemote.R
 import com.example.wmswherther.Classes.TaskMenuItem
+import com.example.wmswherther.Classes.UiState
 import com.example.wmswherther.Fragments.IncomeFragment
 import com.example.wmswherther.Fragments.IncomeSessionFragment
 import com.example.wmswherther.viewModel.MainViewModel
@@ -48,8 +49,7 @@ class IncomeMenuAdapter(var data: List<TaskMenuItem>,var fragment: Fragment, var
                 addToBackStack(null)
 
             }
-            //viewModel.turnOnScanMode()
-            viewModel.startIncomeSession()
+            viewModel.setActiveUi(UiState.IncomeSessionMenu(prevState = viewModel.uiState.value))
         }
         var item = data[position]
         holder.tvDate.text = item.date

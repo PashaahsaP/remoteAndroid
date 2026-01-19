@@ -19,6 +19,7 @@ import com.example.wmsRemote.data.db.MainDB
 import com.example.wmsRemote.databinding.FragmentIncomeSessionBinding
 import com.example.wmswherther.Adapters.IncomeSessionAdapter
 import com.example.wmswherther.Classes.IncomeItem
+import com.example.wmswherther.Classes.UiState
 import com.example.wmswherther.data.db.Barcode
 import com.example.wmswherther.viewModel.IncomeSessionViewModel
 import com.example.wmswherther.viewModel.MainViewModel
@@ -97,7 +98,7 @@ class IncomeSessionFragment : Fragment() {
                             withContext(Dispatchers.IO) {
                                 localViewModel.items.value?.forEach { item ->
                                     var teCount = item.teCount
-                                    if(viewModel.IsIncomeSessionTEModeActive.value == true){
+                                    if((viewModel.uiState.value as UiState.IncomeSessionMenu).isTEModeActive){
                                         teCount = teCount + 1
                                     }
                                     if (item.catalogId == bar.catalogId && localViewModel.currentCellName.value.toString() == item.TE) {
