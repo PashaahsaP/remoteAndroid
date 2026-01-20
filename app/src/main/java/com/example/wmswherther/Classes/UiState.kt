@@ -35,6 +35,13 @@ sealed class UiState {
         val isBackBtnActive: Boolean = true,
         val prevState: UiState? = null,
     ) : UiState()
-    object MoveMenu : UiState()
+    data class MoveMenu(
+        val isSearchLoopActive: Boolean = true,
+        val isBarcodeFieldActive: Boolean = false,
+        val isTEModeActive: Boolean = false,
+        val isThreeDotsActive: Boolean = false,
+        val isBackBtnActive: Boolean = true,
+        val prevState: UiState? = null,
+    ) : UiState()
     object MoveSessionMenu : UiState()
 }

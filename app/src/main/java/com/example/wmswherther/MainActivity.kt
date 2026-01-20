@@ -96,7 +96,10 @@ class MainActivity : AppCompatActivity() {
                 dialog.show()
             }
             is MainMenu -> {}
-            MoveMenu -> {}
+            is MoveMenu -> {
+                viewModel.setActiveUi(state.prevState!!)
+                super.onBackPressed()
+            }
             MoveSessionMenu -> {}
             is SearchMenu -> {
                 viewModel.setActiveUi(state.prevState!!)
@@ -105,7 +108,6 @@ class MainActivity : AppCompatActivity() {
             null -> {}
         }
     }
-
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         val db = MainDB.getDB(this)
@@ -116,32 +118,18 @@ class MainActivity : AppCompatActivity() {
         setNavigationBar()
        // var searchData : MutableList<Pair<String, List<String>>> = mutableListOf()
         var barcodeBuffer: StringBuilder = StringBuilder()
-       /* lifecycleScope.launch {
-            withContext(Dispatchers.IO){
-                var dao = db.getDao()
-                var barcodes = dao.getBarcodes()
-                var goods =dao.getGoods()
-                goods.forEach { item ->
-                    var catalog = dao.getCatalogById(item.catalogId)
-                    var cell = dao.getCellById(item.cellId)
-                    var list = barcodes.filter { inner -> inner.catalogId == catalog.id }.map { locItem ->  locItem.name}
-                    searchData += Pair("${catalog.name} ${item.amount} ${cell.name}", list)
-                }
-           }
-        }*/
 
         viewModel.uiState.observe(this){ State->
             when(State){
                 is SearchMenu ->{
-                    var widthOfScanning = getWidth(binding)
-                    viewModel.setWidthScanningField(widthOfScanning)
                     binding.btnBack.visibility = if (State.isBackBtnActive) View.VISIBLE else View.GONE
                     binding.btnSearch.visibility = if (State.isSearchLoopActive) View.VISIBLE else View.GONE
                     binding.btnBarcode.visibility = if (State.isTEModeActive) View.VISIBLE else View.GONE
                     binding.etIncomeBarcode.visibility = if (State.isBarcodeFieldActive) View.VISIBLE else View.GONE
+                    var widthOfScanning = getWidth(binding)
+                    viewModel.setWidthScanningField(widthOfScanning)
                     binding.etIncomeBarcode.requestFocus()
                 }
-
                 is IncomeMenu -> {
                     binding.btnBack.visibility = if (State.isBackBtnActive) View.VISIBLE else View.GONE
                     binding.btnSearch.visibility = if (State.isSearchLoopActive) View.VISIBLE else View.GONE
@@ -149,19 +137,19 @@ class MainActivity : AppCompatActivity() {
                     binding.etIncomeBarcode.visibility = if (State.isBarcodeFieldActive) View.VISIBLE else View.GONE
                 }
                 is IncomeSessionMenu -> {
-                    var widthOfScanning = getWidth(binding)
-                    viewModel.setWidthScanningField(widthOfScanning)
+
                     binding.btnBack.visibility = if (State.isBackBtnActive) View.VISIBLE else View.GONE
                     binding.btnSearch.visibility = if (State.isSearchLoopActive) View.VISIBLE else View.GONE
                     binding.btnBarcode.visibility = if (State.isTEBtnActive) View.VISIBLE else View.GONE
                     binding.etIncomeBarcode.visibility = if (State.isBarcodeFieldActive) View.VISIBLE else View.GONE
                     binding.etIncomeBarcodeScan.visibility = if (State.isBarcodeScanActive) View.VISIBLE else View.GONE
+                    var widthOfScanning = getWidth(binding)
+                    viewModel.setWidthScanningField(widthOfScanning)
                     if (State.isBarcodeFieldActive)
                         binding.etIncomeBarcode.requestFocus()
                     else binding.etIncomeBarcodeScan.requestFocus()
                     if(State.isTEModeActive){
                         binding.btnBarcode.setImageResource(R.drawable.barcode_selected)
-
                     }else{
                         binding.btnBarcode.setImageResource(R.drawable.barcode)
                     }
@@ -173,28 +161,16 @@ class MainActivity : AppCompatActivity() {
                     binding.btnBarcode.visibility = if (State.isTEModeActive) View.VISIBLE else View.GONE
                     binding.etIncomeBarcode.visibility = if (State.isBarcodeFieldActive) View.VISIBLE else View.GONE
                 }
-                MoveMenu -> {}
+                is MoveMenu -> {
+                    binding.btnBack.visibility = if (State.isBackBtnActive) View.VISIBLE else View.GONE
+                    binding.btnSearch.visibility = if (State.isSearchLoopActive) View.VISIBLE else View.GONE
+                    binding.btnBarcode.visibility = if (State.isTEModeActive) View.VISIBLE else View.GONE
+                    binding.etIncomeBarcode.visibility = if (State.isBarcodeFieldActive) View.VISIBLE else View.GONE
+                }
                 MoveSessionMenu -> {}
                 is SearchMenu -> {}
             }
         }
-
-        /*viewModel.IsActiveSearchWindow.observe(this){ isActive ->
-            if(isActive){
-
-
-            }else{
-                binding.btnSearch.visibility = View.VISIBLE
-                binding.etIncomeBarcode.visibility = View.GONE
-                if(viewModel.IsIncomeSessionActive.value == true){
-                    binding.btnBarcode.visibility = View.VISIBLE
-                }
-                if(viewModel.IsMenuActive.value == true){
-                    binding.btnBack.visibility = View.GONE
-                }
-
-            }
-        }*/
         viewModel.WidthScanningField.observe(this){ value ->
             binding.etIncomeBarcode.width = value
         }
@@ -287,7 +263,7 @@ class MainActivity : AppCompatActivity() {
                 is IncomeMenu -> {}
                 is IncomeSessionMenu -> {}
                 is MainMenu -> {}
-                MoveMenu -> {}
+                is MoveMenu -> {}
                 MoveSessionMenu -> {}
                 null -> {}
             }
@@ -328,7 +304,10 @@ class MainActivity : AppCompatActivity() {
                         dialog.show()
                     }
                     is MainMenu -> {}
-                    MoveMenu -> {}
+                    is MoveMenu -> {
+                        viewModel.setActiveUi(state.prevState!!)
+                        super.onBackPressed()
+                    }
                     MoveSessionMenu -> {}
                     is SearchMenu -> {
                         viewModel.setActiveUi(state.prevState!!)
@@ -502,7 +481,7 @@ class MainActivity : AppCompatActivity() {
                         )
                     }
                     is MainMenu -> {}
-                    MoveMenu -> {}
+                    is MoveMenu -> {}
                     MoveSessionMenu -> {}
                     null -> {}
                 }
@@ -605,6 +584,8 @@ fun readTextFileFromInternalStorage(context: Context, fileName: String): String 
     return reader.readText()
 
 }
+// <editor-fold desc=" smth">
+
 /*fun writeDataToFile(fileName: String, context: Context, db: MainDB){
     var data = db.getDao().getAllItems()
     var str = ""
@@ -801,6 +782,7 @@ fun readTextFileFromInternalStorage(context: Context, fileName: String): String 
      return items
  }
  */
+// </editor-fold>
 private fun isCell(cell: String): Boolean {
     return cell.length == 4 && cell[0] in 'A' .. 'Z' && cell[1].isDigit() && cell[2].isDigit() && cell[3].isDigit()
 }

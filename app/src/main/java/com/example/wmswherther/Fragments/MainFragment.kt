@@ -84,7 +84,7 @@ class MainFragment : Fragment(R.layout.fragment_main) {
                     addToBackStack(null)
                 }
 
-                viewModel.setActiveUi(UiState.MoveMenu)
+                viewModel.setActiveUi(UiState.MoveMenu(prevState = viewModel.uiState.value))
             }
         }
         return binding.root
