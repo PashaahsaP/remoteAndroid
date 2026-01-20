@@ -1,39 +1,42 @@
-package com.example.wmsRemote
+package com.example.wmswherther.Fragments
 
 import android.os.Bundle
+import android.view.LayoutInflater
 import android.view.View
-import androidx.activity.enableEdgeToEdge
-import androidx.appcompat.app.AppCompatActivity
-import androidx.lifecycle.Observer
+import android.view.ViewGroup
+import androidx.fragment.app.Fragment
+import androidx.fragment.app.activityViewModels
 import androidx.lifecycle.ViewModelProvider
 import androidx.recyclerview.widget.LinearLayoutManager
-import com.example.wmsRemote.databinding.ActivityMoveBinding
+import androidx.recyclerview.widget.RecyclerView
 import com.example.wmsRemote.Adapters.MoveSessionAdapter
+import com.example.wmsRemote.MoveActivity
 import com.example.wmsRemote.data.db.MainDB
+import com.example.wmsRemote.databinding.FragmentMoveSessionBinding
 import com.example.wmsRemote.viewModel.MoveSessionViewModel
-import kotlinx.coroutines.channels.Channel
+import com.example.wmswherther.viewModel.MainViewModel
 
-class MoveActivity : AppCompatActivity() {
+class MoveSessionFragment: Fragment() {
 
-    private lateinit var viewModel: MoveSessionViewModel
-    private val textChangesChannel = Channel<String>()
-    private var _binding: ActivityMoveBinding? = null
+    private var _binding: FragmentMoveSessionBinding? = null
     private val binding
-        get() = _binding ?: throw IllegalStateException("Binding for ActivityMain")
-    //TODO maybe remove cellFrom.
-    //TODO move  the code resposible for camere into method
-    override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState)
-        enableEdgeToEdge()
-        _binding = ActivityMoveBinding.inflate(layoutInflater)
-        setContentView(binding.root)
-        var recyclerView = binding.llContainer
-        viewModel = ViewModelProvider(this).get(MoveSessionViewModel::class.java)
-        recyclerView.layoutManager = LinearLayoutManager(this)
-        var adapter = MoveSessionAdapter(mutableListOf(), this, viewModel)
+        get() = _binding ?: throw IllegalStateException("Binding for FragmentIncome")
+    private val viewModel: MainViewModel by activityViewModels()
+    val localViewModel = ViewModelProvider(requireActivity()).get(MoveSessionViewModel::class)
+
+    override fun onCreateView(
+        inflater: LayoutInflater,
+        container: ViewGroup?,
+        savedInstanceState: Bundle?
+    ): View? {
+
+        _binding = FragmentMoveSessionBinding.inflate(inflater)
+        var adapter = MoveSessionAdapter(listOf(), requireActivity(), localViewModel)
+        var recyclerView: RecyclerView = binding.rwContainer
+        recyclerView.layoutManager = LinearLayoutManager(requireActivity())
         recyclerView.adapter = adapter
 
-        viewModel.isMoving.observe(this, Observer{isMove->
+        localViewModel.isMoving.observe(requireActivity(), {isMove->
             if (isMove) {
                 binding.btnMove.visibility = View.GONE
                 binding.btnCancel.visibility = View.VISIBLE
@@ -42,10 +45,10 @@ class MoveActivity : AppCompatActivity() {
                 binding.btnCancel.visibility = View.GONE
             }
         })
-        viewModel.myData.observe(this, Observer{data ->
+        localViewModel.myData.observe(requireActivity(), {data ->
             adapter.updateData(data)
         })
-        viewModel.cell.observe(this, Observer{str ->
+        localViewModel.cell.observe(requireActivity(), {str ->
             if (str != ""){
                 binding.btnMove.visibility = View.VISIBLE
             }else{
@@ -81,10 +84,10 @@ class MoveActivity : AppCompatActivity() {
             }*/
             //TODO make that cell displayed in top, move btn collapsed, cancel btn appear, changing flag moving
             btnMove.setOnClickListener{
-                viewModel.updateIsMoving(true)
+                localViewModel.updateIsMoving(true)
             }
             btnCancel.setOnClickListener {
-                viewModel.updateIsMoving(false)
+                localViewModel.updateIsMoving(false)
             }
             /*etCell.addTextChangedListener(object : TextWatcher {
                 override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {
@@ -107,9 +110,10 @@ class MoveActivity : AppCompatActivity() {
                 CLContainer.visibility = View.VISIBLE
                 viewModel.supplier = SupplierType.Atomy.ordinal
             }*/
-            }
-
+        }
+        return binding.root
     }
+
 
 
     fun handleTextChange(
@@ -117,23 +121,26 @@ class MoveActivity : AppCompatActivity() {
         trim: String,
         moveActivity: MoveActivity,
         db: MainDB,
-        adapter: MoveSessionAdapter,
+        adapter: MoveSessionAdapter
     ) {
         if (text != "") {
-            /*viewModel.searchBtnHandler(trim, moveActivity, db, adapter, binding)*/
-           /* binding.etCell.text.clear()
-            binding.etCell.requestFocus()*/
+            localViewModel.searchBtnHandler(trim, moveActivity, db, adapter, binding)
+            /* binding.etCell.text.clear()
+             binding.etCell.requestFocus()*/
         }
     }
-    private fun isCell(cell: String): Boolean {
-        if (cell.length == 4 && cell[0] in 'A' .. 'Z' && cell[1].isDigit() && cell[2].isDigit() && cell[3].isDigit()){
-            return true
-        }
-        return false
-    }
-    fun convertToInt(nullableInt: Int?): Int {
-        return nullableInt ?: 0  // If nullableInt is null, use 0 as default
-    }
+
+
+
 }
 
 
+private fun isCell(cell: String): Boolean {
+    if (cell.length == 4 && cell[0] in 'A' .. 'Z' && cell[1].isDigit() && cell[2].isDigit() && cell[3].isDigit()){
+        return true
+    }
+    return false
+}
+fun convertToInt(nullableInt: Int?): Int {
+    return nullableInt ?: 0  // If nullableInt is null, use 0 as default
+}

@@ -100,7 +100,7 @@ class MainActivity : AppCompatActivity() {
                 viewModel.setActiveUi(state.prevState!!)
                 super.onBackPressed()
             }
-            MoveSessionMenu -> {}
+            is MoveSessionMenu -> {}
             is SearchMenu -> {
                 viewModel.setActiveUi(state.prevState!!)
                 super.onBackPressed()
@@ -167,7 +167,7 @@ class MainActivity : AppCompatActivity() {
                     binding.btnBarcode.visibility = if (State.isTEModeActive) View.VISIBLE else View.GONE
                     binding.etIncomeBarcode.visibility = if (State.isBarcodeFieldActive) View.VISIBLE else View.GONE
                 }
-                MoveSessionMenu -> {}
+                is MoveSessionMenu -> {}
                 is SearchMenu -> {}
             }
         }
@@ -264,7 +264,7 @@ class MainActivity : AppCompatActivity() {
                 is IncomeSessionMenu -> {}
                 is MainMenu -> {}
                 is MoveMenu -> {}
-                MoveSessionMenu -> {}
+                is MoveSessionMenu -> {}
                 null -> {}
             }
         }
@@ -308,7 +308,7 @@ class MainActivity : AppCompatActivity() {
                         viewModel.setActiveUi(state.prevState!!)
                         super.onBackPressed()
                     }
-                    MoveSessionMenu -> {}
+                    is MoveSessionMenu -> {}
                     is SearchMenu -> {
                         viewModel.setActiveUi(state.prevState!!)
                         super.onBackPressed()
@@ -482,7 +482,7 @@ class MainActivity : AppCompatActivity() {
                     }
                     is MainMenu -> {}
                     is MoveMenu -> {}
-                    MoveSessionMenu -> {}
+                    is MoveSessionMenu -> {}
                     null -> {}
                 }
 

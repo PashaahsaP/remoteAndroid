@@ -22,13 +22,11 @@ class MoveViewModel: ViewModel() {
 
     fun LoadSuppliersFromLocal(activity: FragmentActivity) {
         var supplierList: List<MoveItem> = listOf()
-        var counter = 0
-        var selected = 0
         viewModelScope.launch {
             withContext(Dispatchers.IO)  {
                 var dao = MainDB.getDB(activity).getDao()
                 supplierList = dao.getAllSuppliers().map { item ->
-                    MoveItem(item.name)
+                    MoveItem(item.name, item.id)
                 }
             }
             withContext(Dispatchers.Main) {

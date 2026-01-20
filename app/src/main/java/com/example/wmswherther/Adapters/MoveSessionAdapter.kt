@@ -6,16 +6,17 @@ import android.text.Editable
 import android.text.TextWatcher
 import android.view.LayoutInflater
 import android.view.ViewGroup
+import androidx.fragment.app.FragmentActivity
 import androidx.recyclerview.widget.RecyclerView
 import com.example.wmsRemote.R
 import com.example.wmsRemote.MoveActivity
 import com.example.wmsRemote.viewModel.MoveSessionItem
-import com.example.wmsRemote.viewModel.MovingViewModel
+import com.example.wmsRemote.viewModel.MoveSessionViewModel
 
 class MoveSessionAdapter(
-    var data: MutableList<MoveSessionItem>,
-    var activity: MoveActivity,
-    var viewModel: MovingViewModel,
+    var data: List<MoveSessionItem>,
+    var activity: FragmentActivity,
+    var viewModel: MoveSessionViewModel,
 ) : RecyclerView.Adapter<MoveSessionViewHolder>() {
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): MoveSessionViewHolder {
         val itemView = LayoutInflater.from(parent.context).
@@ -27,7 +28,6 @@ class MoveSessionAdapter(
         return data.size
     }
     fun getItems(): List<MoveSessionItem> {
-
         return data
     }
 

@@ -11,6 +11,7 @@ import com.example.wmsRemote.MoveActivity
 import com.example.wmsRemote.data.db.MainDB
 import com.example.wmsRemote.data.enums.SupplierType
 import com.example.wmsRemote.databinding.ActivityMoveBinding
+import com.example.wmsRemote.databinding.FragmentMoveSessionBinding
 import com.example.wmsRemote.models.processMoving
 import com.example.wmswherther.data.db.Request
 import kotlinx.coroutines.Dispatchers
@@ -18,7 +19,7 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 
 data class MoveSessionItem(val item: Triple<Int, String, Pair<Int, Int>>, val isSelected: Boolean)
-class MovingViewModel : ViewModel() {
+class MoveSessionViewModel : ViewModel() {
     private val _myData = MutableLiveData<MutableList<MoveSessionItem>>()
     private val _isMoving = MutableLiveData<Boolean>()
     private val _cell = MutableLiveData<String>()
@@ -61,7 +62,7 @@ class MovingViewModel : ViewModel() {
         context: MoveActivity,
         db: MainDB,
         adapter: MoveSessionAdapter,
-        binding: ActivityMoveBinding
+        binding: FragmentMoveSessionBinding
     ) {
         if (isMoving!!.value == true) {
             if (isCell(text)) {
