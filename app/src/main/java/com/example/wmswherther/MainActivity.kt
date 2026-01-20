@@ -100,7 +100,10 @@ class MainActivity : AppCompatActivity() {
                 viewModel.setActiveUi(state.prevState!!)
                 super.onBackPressed()
             }
-            is MoveSessionMenu -> {}
+            is MoveSessionMenu -> {
+                viewModel.setActiveUi(state.prevState!!)
+                super.onBackPressed()
+            }
             is SearchMenu -> {
                 viewModel.setActiveUi(state.prevState!!)
                 super.onBackPressed()
@@ -167,8 +170,17 @@ class MainActivity : AppCompatActivity() {
                     binding.btnBarcode.visibility = if (State.isTEModeActive) View.VISIBLE else View.GONE
                     binding.etIncomeBarcode.visibility = if (State.isBarcodeFieldActive) View.VISIBLE else View.GONE
                 }
-                is MoveSessionMenu -> {}
-                is SearchMenu -> {}
+                is MoveSessionMenu -> {
+                    binding.btnBack.visibility = if (State.isBackBtnActive) View.VISIBLE else View.GONE
+                    binding.btnSearch.visibility = if (State.isSearchLoopActive) View.VISIBLE else View.GONE
+                    binding.etIncomeBarcode.visibility = if (State.isBarcodeFieldActive) View.VISIBLE else View.GONE
+                    var widthOfScanning = getWidth(binding)
+                    viewModel.setWidthScanningField(widthOfScanning)
+                    if (State.isBarcodeFieldActive)
+                        binding.etIncomeBarcode.requestFocus()
+                    else binding.etIncomeBarcodeScan.requestFocus()
+                }
+
             }
         }
         viewModel.WidthScanningField.observe(this){ value ->
@@ -308,7 +320,18 @@ class MainActivity : AppCompatActivity() {
                         viewModel.setActiveUi(state.prevState!!)
                         super.onBackPressed()
                     }
-                    is MoveSessionMenu -> {}
+                    is MoveSessionMenu -> {
+                        val dialog = AlertDialog.Builder(this@MainActivity)
+                            .setTitle("Выход")
+                            .setMessage("Точно закрыть текущий экран?")
+                            .setPositiveButton("Да") { _, _ ->
+                                viewModel.setActiveUi(state.prevState!!)
+                                super.onBackPressed()
+                            }
+                            .setNegativeButton("Нет", null)
+                            .create()
+                        dialog.show()
+                    }
                     is SearchMenu -> {
                         viewModel.setActiveUi(state.prevState!!)
                         super.onBackPressed()
@@ -482,7 +505,36 @@ class MainActivity : AppCompatActivity() {
                     }
                     is MainMenu -> {}
                     is MoveMenu -> {}
-                    is MoveSessionMenu -> {}
+                    is MoveSessionMenu -> {
+                        val inflater = layoutInflater
+                        val popupView = inflater.inflate(R.layout.pop_up_income_menu, null)
+                        var scanBtn = popupView.findViewById<Button>(R.id.btnScanningMode)
+
+                        val popupWindow = PopupWindow(
+                            popupView,
+                            WindowManager.LayoutParams.WRAP_CONTENT,
+                            WindowManager.LayoutParams.WRAP_CONTENT,
+                            true
+                        )
+                        scanBtn.setOnClickListener { view ->
+                            viewModel.setActiveUi(state.copy(
+                                isBarcodeFieldActive = !state.isBarcodeFieldActive,
+                                isBarcodeScanActive = !state.isBarcodeScanActive
+                            ))
+                            popupWindow.dismiss()
+                        }
+
+                        val location = IntArray(2)
+                        btnThreeDots.getLocationOnScreen(location)
+
+// Show popup to the left of the button
+                        popupWindow.showAtLocation(
+                            btnThreeDots,
+                            Gravity.NO_GRAVITY,
+                            location[0] - popupWindow.width,  // x coordinate - to the left
+                            location[1] + btnThreeDots.height // y coordinate
+                        )
+                    }
                     null -> {}
                 }
 

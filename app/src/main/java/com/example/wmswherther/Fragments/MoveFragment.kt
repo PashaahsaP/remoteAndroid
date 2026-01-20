@@ -38,7 +38,7 @@ class MoveFragment : Fragment() {
 
         val localViewModel = ViewModelProvider(requireActivity()).get(MoveViewModel::class)
         _binding = FragmentMoveBinding.inflate(inflater)
-        var adapter = MoveAdapter(mutableListOf())
+        var adapter = MoveAdapter(mutableListOf(), this, viewModel)
         var recyclerView: RecyclerView = binding.rwIncomeMenu
         recyclerView.layoutManager = LinearLayoutManager(requireActivity())
         recyclerView.adapter = adapter
@@ -48,6 +48,8 @@ class MoveFragment : Fragment() {
         })
 
         localViewModel.LoadSuppliersFromLocal(requireActivity())
+
+
         return  binding.root
     }
 }

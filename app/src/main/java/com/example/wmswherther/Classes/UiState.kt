@@ -44,6 +44,7 @@ sealed class UiState {
         val prevState: UiState? = null,
     ) : UiState()
     data class MoveSessionMenu(
+        val supplierId: String = "",
         val isSearchLoopActive: Boolean = true,
         val isBarcodeFieldActive: Boolean = false,
         val isBarcodeScanActive: Boolean = true,

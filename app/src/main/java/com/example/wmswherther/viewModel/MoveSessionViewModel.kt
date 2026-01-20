@@ -13,12 +13,13 @@ import com.example.wmsRemote.data.enums.SupplierType
 import com.example.wmsRemote.databinding.ActivityMoveBinding
 import com.example.wmsRemote.databinding.FragmentMoveSessionBinding
 import com.example.wmsRemote.models.processMoving
+import com.example.wmswherther.Classes.MoveSessionItem
 import com.example.wmswherther.data.db.Request
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 
-data class MoveSessionItem(val item: Triple<Int, String, Pair<Int, Int>>, val isSelected: Boolean)
+
 class MoveSessionViewModel : ViewModel() {
     private val _myData = MutableLiveData<MutableList<MoveSessionItem>>()
     private val _isMoving = MutableLiveData<Boolean>()
@@ -36,7 +37,7 @@ class MoveSessionViewModel : ViewModel() {
         _myData.value = collection
     }
     fun updateItem(moveSessionItem: MoveSessionItem){
-        viewModelScope.launch {
+       /* viewModelScope.launch {
             withContext(Dispatchers.Main) {
                 var list: MutableList<MoveSessionItem> = mutableListOf()
                 _myData.value!!.forEach { item ->
@@ -49,7 +50,7 @@ class MoveSessionViewModel : ViewModel() {
                 }
                 _myData.value = list
             }
-        }
+        }*/
     }
     fun updateIsMoving(isMoving: Boolean){
         _isMoving.value = isMoving
@@ -110,12 +111,12 @@ class MoveSessionViewModel : ViewModel() {
             } else if (text != "") {
                 viewModelScope.launch {
                     withContext(Dispatchers.IO) {
-                        var listOfItems = _myData.value
+                       /* var listOfItems = _myData.value
                         var func = AdapterHelper.getUpdatedMoveSessionItems[supplier]
                         var list = func!!.invoke(db, supplier, listOfItems, text, context)
                         withContext(Dispatchers.Main) {
                             updateMyData(list.sortedByDescending { it.item.third.first }.toMutableList())
-                        }
+                        }*/
                     }
                 }
             }

@@ -10,8 +10,8 @@ import androidx.fragment.app.FragmentActivity
 import androidx.recyclerview.widget.RecyclerView
 import com.example.wmsRemote.R
 import com.example.wmsRemote.MoveActivity
-import com.example.wmsRemote.viewModel.MoveSessionItem
 import com.example.wmsRemote.viewModel.MoveSessionViewModel
+import com.example.wmswherther.Classes.MoveSessionItem
 
 class MoveSessionAdapter(
     var data: List<MoveSessionItem>,
@@ -33,11 +33,10 @@ class MoveSessionAdapter(
 
     override fun onBindViewHolder(holder: MoveSessionViewHolder, @SuppressLint("RecyclerView") position: Int) {
         val item = data[position]
-        holder.container.tag = item.item.first
-        holder.tvLeft.text = item.item.second
-        holder.tvRight.text = "/${item.item.third.second}"
-        holder.etRight.setText("${item.item.third.first}")
-        val textWatcher = object : TextWatcher {
+        holder.tvLeft.text = item.name
+        holder.tvRight.text = "/${item.allCount}"
+        holder.etRight.setText("${item.haveCount}")
+        /*val textWatcher = object : TextWatcher {
             override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {
                 // Called before the text is changed
             }
@@ -49,20 +48,20 @@ class MoveSessionAdapter(
 
             override fun afterTextChanged(s: Editable?) {
                 //TODO don't understand why collection is changed when change data[position], two-side binnding in  MoveActivity?
-          /*      // Called after the text has been changed
+          *//*      // Called after the text has been changed
                 if(holder.etRight.text.toString() != "") {
                     val etData = holder.etRight.text.toString().toIntOrNull()
                     if (etData != null) {
                         if (etData > item.item.third.second) {
                             holder.etRight.setText(item.item.third.second)
-                                *//*viewModel.updateItem(
+                                *//**//*viewModel.updateItem(
                                     MoveItem(
                                         Triple(item.item.first,
                                             item.item.second,
                                             Pair(holder.etRight.text.toString().toInt(), item.item.third.second)),
                                         true
                                     )
-                                )*//*
+                                )*//**//*
                         }else if(etData < 0){
                             holder.etRight.setText("0")
                         }else{
@@ -75,11 +74,11 @@ class MoveSessionAdapter(
                             )
                         }
                     }
-                }*/
+                }*//*
             }
-        }
-        holder.etRight.addTextChangedListener(textWatcher)
-        holder.textWatcher = textWatcher
+        }*/
+        /*holder.etRight.addTextChangedListener(textWatcher)
+        holder.textWatcher = textWatcher*/
        /* if (item.isSelected){
             holder.etRight.requestFocus()
             val imm = activity.getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager

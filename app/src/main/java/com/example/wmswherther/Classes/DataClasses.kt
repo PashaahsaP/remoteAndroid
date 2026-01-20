@@ -17,4 +17,13 @@ data class IncomeItem(
     var isExpanded: Boolean = false,
     var isExpandable: Boolean = false,
     var isShown: Boolean = true
-    )
+)
+data class MoveItem(
+    val name: String,
+    val id: String
+)
+data class MoveSessionItem(
+    var name: String,
+    var haveCount: Int,
+    var allCount: Int,
+    val isSelected: Boolean)

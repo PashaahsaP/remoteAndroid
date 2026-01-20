@@ -3,12 +3,18 @@ package com.example.wmswherther.Adapters
 import android.annotation.SuppressLint
 import android.view.LayoutInflater
 import android.view.ViewGroup
+import androidx.fragment.app.Fragment
+import androidx.fragment.app.commit
 import androidx.recyclerview.widget.RecyclerView
 import com.example.wmsRemote.R
+import com.example.wmswherther.Classes.MoveItem
+import com.example.wmswherther.Classes.UiState
+import com.example.wmswherther.Fragments.MoveSessionFragment
+import com.example.wmswherther.viewModel.MainViewModel
 
-data class MoveItem(val name: String, val id: String)
 
-class MoveAdapter(var data: MutableList<MoveItem>
+
+class MoveAdapter(var data: MutableList<MoveItem>, var fragment: Fragment, var viewModel: MainViewModel
 ) : RecyclerView.Adapter<MoveViewHolder>() {
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): MoveViewHolder {
         val itemView = LayoutInflater.from(parent.context).
@@ -28,7 +34,20 @@ class MoveAdapter(var data: MutableList<MoveItem>
         holder.btn.text = item.name
 
         holder.btn.setOnClickListener {
+            var newFragment = MoveSessionFragment()
 
+            fragment.parentFragmentManager.commit {
+                setCustomAnimations(
+                    R.anim.slide_in_right, // enter
+                    R.anim.slide_out_left,  // exit
+                    R.anim.slide_in_left,   // popEnter
+                    R.anim.slide_out_right  // popExit
+                )
+                replace(R.id.fragmentContainer, newFragment)
+                addToBackStack(null)
+
+            }
+            viewModel.setActiveUi(UiState.MoveSessionMenu(prevState = viewModel.uiState.value, supplierId = item.id))
         }
     }
 

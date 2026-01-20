@@ -9,8 +9,7 @@ import androidx.lifecycle.viewModelScope
 import com.example.wmsRemote.MainActivity
 import com.example.wmsRemote.SupplierItem
 import com.example.wmsRemote.data.db.MainDB
-import com.example.wmsRemote.viewModel.MoveSessionItem
-import com.example.wmswherther.Adapters.MoveItem
+import com.example.wmswherther.Classes.MoveItem
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext

@@ -3,7 +3,7 @@ package com.example.wmsRemote.models
 import android.content.Context
 import androidx.lifecycle.LiveData
 import com.example.wmsRemote.data.db.MainDB
-import com.example.wmsRemote.viewModel.MoveSessionItem
+import com.example.wmswherther.Classes.MoveSessionItem
 import kotlinx.coroutines.CoroutineScope
 
 
@@ -16,8 +16,8 @@ suspend fun processMoving(
     supplier: Int,
     context: Context
 ): MutableList<MoveSessionItem> {
-    val stayItem =  collection!!.filter { inventoryItem -> inventoryItem.item.third.first == 0 }
-    val movingItem = collection.filter { inventoryItem -> inventoryItem.item.third.first != 0 }
+    val stayItem =  collection!!.filter { inventoryItem -> inventoryItem.haveCount == 0 }
+    val movingItem = collection.filter { inventoryItem -> inventoryItem.haveCount != 0 }
     //var func = AdapterHelper.MoveItems[supplier]
     //var resultMoving = func!!.invoke(movingItem, db, text, context)
     //return (stayItem + resultMoving).toMutableList()

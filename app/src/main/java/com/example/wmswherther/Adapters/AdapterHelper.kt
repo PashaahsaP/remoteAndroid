@@ -20,7 +20,6 @@ import com.example.wmsRemote.Classes.IInventoryItem
 import com.example.wmsRemote.data.db.MainDB
 
 import com.example.wmsRemote.viewModel.InventoryViewModel
-import com.example.wmsRemote.viewModel.MoveSessionItem
 import com.example.wmswherther.data.db.Request
 import org.json.JSONObject
 
@@ -754,16 +753,16 @@ object AdapterHelper {
     )
     // </editor-fold>
     // <editor-fold desc="move code">
-    val getMoveSessionItem: Map<Int,(id: Int, name: String, count: Pair<Int, Int>)->MoveSessionItem> = mapOf(
+   /* val getMoveSessionItem: Map<Int,(id: Int, name: String, count: Pair<Int, Int>)->MoveSessionItem> = mapOf(
         0 to { id, name, count ->
             MoveSessionItem(Triple(id ?: 0,name , count), false)
         },
        1 to { id, name, count ->
            MoveSessionItem(Triple(id ?: 0,name , count), false)
        }
-    )
-    val getMoveSessionItems: Map<Int,suspend (db: MainDB, supplier: Int, cell:JSONObject, context:Context) -> List<MoveSessionItem>> = mapOf(
-       /* 0 to { db, supplier, cell, context ->
+    )*/
+   /* val getMoveSessionItems: Map<Int,suspend (db: MainDB, supplier: Int, cell:JSONObject, context:Context) -> List<MoveSessionItem>> = mapOf(
+       *//* 0 to { db, supplier, cell, context ->
             var cellId = cell["id"].toString()
             var listOfItems :MutableList<MoveItem> = mutableListOf()
             var result =HelperFunction.retryRequest(context){client.getAllAtomyGoodsByCellId(ip, cellId)}
@@ -777,8 +776,8 @@ object AdapterHelper {
             }
                 //TODO make after creating session and moveElement
             listOfItems.toList()
-        },*/
-      /*  1 to { db, supplier, cell, context ->
+        },*//*
+      *//*  1 to { db, supplier, cell, context ->
             var cellId = cell["id"].toString()
             var listOfItems :MutableList<MoveItem> = mutableListOf()
             var result = HelperFunction.retryRequest(context){client.getAllBorkGoodsByCellId(ip, cellId)}
@@ -793,10 +792,10 @@ object AdapterHelper {
             }
             //TODO make after creating session and moveElement
             listOfItems.toList()
-        }*/
-    )
-    val getUpdatedMoveSessionItems: Map<Int, suspend (db: MainDB, supplier: Int, list: MutableList<MoveSessionItem>?, text: String, context:Context) -> List<MoveSessionItem>> = mapOf(
-       /* 0 to {db, supplier, list, text, context ->
+        }*//*
+    )*/
+    /*val getUpdatedMoveSessionItems: Map<Int, suspend (db: MainDB, supplier: Int, list: MutableList<MoveSessionItem>?, text: String, context:Context) -> List<MoveSessionItem>> = mapOf(
+       *//* 0 to {db, supplier, list, text, context ->
             val listNew = list!!.map { item ->
                 //var goods = db.getDao().getGoodsAtomy(item.item.first)
                 var updatedMoveItem = getUpdatedAtomyMoveItem(item.item.first, text,item.item.second, item)
@@ -812,8 +811,8 @@ object AdapterHelper {
                 updatedMoveItem
             }
             list
-        }*/
-    )
+        }*//*
+    )*/
 /*    val MoveItems: Map<Int, suspend (movingItem: List<MoveItem>, db: MainDB, text: String, context: Context) -> List<MoveItem>> = mapOf(
         0 to { moveItem, db, text, context ->
             val result: MutableList<MoveItem> = mutableListOf()
@@ -1069,7 +1068,7 @@ object AdapterHelper {
 fun convertToInt(nullableInt: Int?): Int {
     return nullableInt ?: 0  // If nullableInt is null, use 0 as default
 }
-fun getUpdatedAtomyMoveItem(id: Int?, left: String, catalogName: String, moveSessionItem: MoveSessionItem) : MoveSessionItem {
+/*fun getUpdatedAtomyMoveItem(id: Int?, left: String, catalogName: String, moveSessionItem: MoveSessionItem) : MoveSessionItem {
     if(catalogName.contains(left) && moveSessionItem.item.third.first < moveSessionItem.item.third.second){
         return MoveSessionItem(Triple(id ?: 0, catalogName , Pair(moveSessionItem.item.third.first + 1,moveSessionItem.item.third.second)), true)
     }else{
@@ -1082,7 +1081,7 @@ fun getUpdatedBorkMoveItem(id: Int?, left: String, catalogName: String, moveSess
     }else{
         return MoveSessionItem(Triple(id ?: 0, left, Pair(moveSessionItem.item.third.first, moveSessionItem.item.third.second)), false)
     }
-}
+}*/
 /*fun getGoodsBorkFromJsonArray(list: JSONArray) : List<GoodsBork>{
     var result: MutableList<GoodsBork> = mutableListOf()
     for(i in 0 until list.length()){
