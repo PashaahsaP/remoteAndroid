@@ -12,32 +12,17 @@ import android.widget.LinearLayout
 import android.widget.TextView
 import android.widget.Toast
 import androidx.core.content.ContextCompat
-import androidx.lifecycle.ViewModel
-import androidx.swiperefreshlayout.widget.SwipeRefreshLayout
 import com.example.wmsRemote.R
 import com.example.wmsRemote.Classes.AssemblyItem
 import com.example.wmsRemote.Classes.AtomyInventoryItem
 import com.example.wmsRemote.Classes.BorkInventoryItem
 import com.example.wmsRemote.Classes.IInventoryItem
-import com.example.wmsRemote.data.db.Cell
 import com.example.wmsRemote.data.db.MainDB
-import com.example.wmsRemote.data.enums.StatusType
-import com.example.wmsRemote.data.enums.SupplierType
 
-import com.example.wmsRemote.viewModel.InventoryItem
 import com.example.wmsRemote.viewModel.InventoryViewModel
-import com.example.wmsRemote.viewModel.MoveItem
-import com.example.wmsRemote.viewModel.retryRequest
-import com.example.wmswherther.HelperFunction
+import com.example.wmsRemote.viewModel.MoveSessionItem
 import com.example.wmswherther.data.db.Request
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
-import org.json.JSONArray
 import org.json.JSONObject
-import java.time.LocalDate
-import java.time.LocalDateTime
 
 object AdapterHelper {
     var client = Request()
@@ -769,15 +754,15 @@ object AdapterHelper {
     )
     // </editor-fold>
     // <editor-fold desc="move code">
-    val getMoveItem: Map<Int,(id: Int, name: String, count: Pair<Int, Int>)->MoveItem> = mapOf(
+    val getMoveSessionItem: Map<Int,(id: Int, name: String, count: Pair<Int, Int>)->MoveSessionItem> = mapOf(
         0 to { id, name, count ->
-            MoveItem(Triple(id ?: 0,name , count), false)
+            MoveSessionItem(Triple(id ?: 0,name , count), false)
         },
        1 to { id, name, count ->
-           MoveItem(Triple(id ?: 0,name , count), false)
+           MoveSessionItem(Triple(id ?: 0,name , count), false)
        }
     )
-    val getMoveItems: Map<Int,suspend (db: MainDB, supplier: Int, cell:JSONObject, context:Context) -> List<MoveItem>> = mapOf(
+    val getMoveSessionItems: Map<Int,suspend (db: MainDB, supplier: Int, cell:JSONObject, context:Context) -> List<MoveSessionItem>> = mapOf(
        /* 0 to { db, supplier, cell, context ->
             var cellId = cell["id"].toString()
             var listOfItems :MutableList<MoveItem> = mutableListOf()
@@ -810,7 +795,7 @@ object AdapterHelper {
             listOfItems.toList()
         }*/
     )
-    val getUpdatedMoveItems: Map<Int, suspend (db: MainDB, supplier: Int, list: MutableList<MoveItem>?, text: String, context:Context) -> List<MoveItem>> = mapOf(
+    val getUpdatedMoveSessionItems: Map<Int, suspend (db: MainDB, supplier: Int, list: MutableList<MoveSessionItem>?, text: String, context:Context) -> List<MoveSessionItem>> = mapOf(
        /* 0 to {db, supplier, list, text, context ->
             val listNew = list!!.map { item ->
                 //var goods = db.getDao().getGoodsAtomy(item.item.first)
@@ -1084,18 +1069,18 @@ object AdapterHelper {
 fun convertToInt(nullableInt: Int?): Int {
     return nullableInt ?: 0  // If nullableInt is null, use 0 as default
 }
-fun getUpdatedAtomyMoveItem(id: Int?, left: String, catalogName: String,  moveItem: MoveItem) : MoveItem {
-    if(catalogName.contains(left) && moveItem.item.third.first < moveItem.item.third.second){
-        return MoveItem(Triple(id ?: 0, catalogName , Pair(moveItem.item.third.first + 1,moveItem.item.third.second)), true)
+fun getUpdatedAtomyMoveItem(id: Int?, left: String, catalogName: String, moveSessionItem: MoveSessionItem) : MoveSessionItem {
+    if(catalogName.contains(left) && moveSessionItem.item.third.first < moveSessionItem.item.third.second){
+        return MoveSessionItem(Triple(id ?: 0, catalogName , Pair(moveSessionItem.item.third.first + 1,moveSessionItem.item.third.second)), true)
     }else{
-      return MoveItem(Triple(id ?: 0, catalogName, Pair(moveItem.item.third.first, moveItem.item.third.second)), false)
+      return MoveSessionItem(Triple(id ?: 0, catalogName, Pair(moveSessionItem.item.third.first, moveSessionItem.item.third.second)), false)
     }
 }
-fun getUpdatedBorkMoveItem(id: Int?, left: String, catalogName: String,  moveItem: MoveItem) : MoveItem {
-    if(catalogName.contains(left) && moveItem.item.third.first < moveItem.item.third.second){
-        return MoveItem(Triple(id ?: 0, left , Pair(moveItem.item.third.first + 1,moveItem.item.third.second)), true)
+fun getUpdatedBorkMoveItem(id: Int?, left: String, catalogName: String, moveSessionItem: MoveSessionItem) : MoveSessionItem {
+    if(catalogName.contains(left) && moveSessionItem.item.third.first < moveSessionItem.item.third.second){
+        return MoveSessionItem(Triple(id ?: 0, left , Pair(moveSessionItem.item.third.first + 1,moveSessionItem.item.third.second)), true)
     }else{
-        return MoveItem(Triple(id ?: 0, left, Pair(moveItem.item.third.first, moveItem.item.third.second)), false)
+        return MoveSessionItem(Triple(id ?: 0, left, Pair(moveSessionItem.item.third.first, moveSessionItem.item.third.second)), false)
     }
 }
 /*fun getGoodsBorkFromJsonArray(list: JSONArray) : List<GoodsBork>{

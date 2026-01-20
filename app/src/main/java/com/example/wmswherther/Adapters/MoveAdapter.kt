@@ -1,28 +1,24 @@
-package com.example.wmsRemote.Adapters
+package com.example.wmswherther.Adapters
 
 import android.annotation.SuppressLint
-import android.content.Context
-
 import android.text.Editable
 import android.text.TextWatcher
 import android.view.LayoutInflater
 import android.view.ViewGroup
-import android.view.inputmethod.InputMethodManager
 import androidx.recyclerview.widget.RecyclerView
-import com.example.wmsRemote.R
+import com.example.wmsRemote.Adapters.MoveSessionViewHolder
 import com.example.wmsRemote.MoveActivity
-import com.example.wmsRemote.viewModel.MoveItem
+import com.example.wmsRemote.R
+import com.example.wmsRemote.viewModel.MoveSessionItem
 import com.example.wmsRemote.viewModel.MovingViewModel
-import com.google.android.material.circularreveal.CircularRevealHelper.Strategy
 
-class MoveAdapter(
-    var data: MutableList<MoveItem>,
-    var activity: MoveActivity,
-    var viewModel: MovingViewModel,
+data class MoveItem(val name: String)
+
+class MoveAdapter(var data: MutableList<MoveItem>
 ) : RecyclerView.Adapter<MoveViewHolder>() {
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): MoveViewHolder {
         val itemView = LayoutInflater.from(parent.context).
-                inflate(R.layout.list_items,parent,false)
+        inflate(R.layout.supplier_menu_item,parent,false)
         return MoveViewHolder(itemView)
     }
 
@@ -30,65 +26,12 @@ class MoveAdapter(
         return data.size
     }
     fun getItems(): List<MoveItem> {
-
         return data
     }
 
     override fun onBindViewHolder(holder: MoveViewHolder, @SuppressLint("RecyclerView") position: Int) {
         val item = data[position]
-        holder.container.tag = item.item.first
-        holder.tvLeft.text = item.item.second
-        holder.tvRight.text = "/${item.item.third.second}"
-        holder.etRight.setText("${item.item.third.first}")
-        val textWatcher = object : TextWatcher {
-            override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {
-                // Called before the text is changed
-            }
-
-            override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {
-                // Called as the text is being changed
-                //println("Text changed to: $s")
-            }
-
-            override fun afterTextChanged(s: Editable?) {
-                //TODO don't understand why collection is changed when change data[position], two-side binnding in  MoveActivity?
-          /*      // Called after the text has been changed
-                if(holder.etRight.text.toString() != "") {
-                    val etData = holder.etRight.text.toString().toIntOrNull()
-                    if (etData != null) {
-                        if (etData > item.item.third.second) {
-                            holder.etRight.setText(item.item.third.second)
-                                *//*viewModel.updateItem(
-                                    MoveItem(
-                                        Triple(item.item.first,
-                                            item.item.second,
-                                            Pair(holder.etRight.text.toString().toInt(), item.item.third.second)),
-                                        true
-                                    )
-                                )*//*
-                        }else if(etData < 0){
-                            holder.etRight.setText("0")
-                        }else{
-                            data[position] = item.copy(
-                                item = Triple(
-                                    item.item.first,
-                                    item.item.second,
-                                    Pair(etData, item.item.third.second)
-                                )
-                            )
-                        }
-                    }
-                }*/
-            }
-        }
-        holder.etRight.addTextChangedListener(textWatcher)
-        holder.textWatcher = textWatcher
-       /* if (item.isSelected){
-            holder.etRight.requestFocus()
-            val imm = activity.getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager
-            imm.showSoftInput(holder.etRight, InputMethodManager.SHOW_IMPLICIT)
-            holder.etRight.setSelection(0, holder.etRight.text.length)
-        }*/
+        holder.btn.text = item.name
     }
 
 

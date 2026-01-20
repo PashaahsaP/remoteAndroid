@@ -12,7 +12,7 @@ import androidx.lifecycle.ViewModelProvider
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.example.wmsRemote.databinding.ActivityMoveBinding
 import com.example.wmsRemote.viewModel.MovingViewModel
-import com.example.wmsRemote.Adapters.MoveAdapter
+import com.example.wmsRemote.Adapters.MoveSessionAdapter
 import com.example.wmsRemote.data.db.MainDB
 import com.example.wmsRemote.data.enums.SupplierType
 import kotlinx.coroutines.channels.Channel
@@ -47,7 +47,7 @@ class MoveActivity : AppCompatActivity() {
         var recyclerView = binding.llContainer
         viewModel = ViewModelProvider(this).get(MovingViewModel::class.java)
         recyclerView.layoutManager = LinearLayoutManager(this)
-        var adapter = MoveAdapter(mutableListOf(), this, viewModel)
+        var adapter = MoveSessionAdapter(mutableListOf(), this, viewModel)
 
         recyclerView.adapter = adapter
 
@@ -135,7 +135,7 @@ class MoveActivity : AppCompatActivity() {
         trim: String,
         moveActivity: MoveActivity,
         db: MainDB,
-        adapter: MoveAdapter,
+        adapter: MoveSessionAdapter,
     ) {
         if (text != "") {
             viewModel.searchBtnHandler(trim, moveActivity, db, adapter, binding)

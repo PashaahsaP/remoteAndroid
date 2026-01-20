@@ -1,36 +1,17 @@
 package com.example.wmsRemote
 
 import android.os.Bundle
-import android.text.SpannableString
-import android.text.Spanned
-import android.text.style.ForegroundColorSpan
-import android.view.View
-import android.view.inputmethod.EditorInfo
-import android.widget.TextView
 import androidx.activity.enableEdgeToEdge
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.content.ContextCompat
-import androidx.core.view.children
-import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.example.wmsRemote.Adapters.AssemblyAdapter
-import com.example.wmsRemote.Adapters.InventoryAdapter
-import com.example.wmsRemote.R
 import com.example.wmsRemote.databinding.ActivityAssemblyBinding
-import com.example.wmsRemote.Adapters.MoveAdapter
-import com.example.wmsRemote.Classes.AssemblyItem
-import com.example.wmsRemote.ControlsClasses.AssemblyMenu
 import com.example.wmsRemote.data.db.MainDB
-import com.example.wmsRemote.data.enums.StatusType
-import com.example.wmsRemote.data.enums.SupplierType
 import com.example.wmsRemote.viewModel.AssemblyViewModel
-import com.example.wmswherther.data.db.Request
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
 import java.util.UUID
 
 class AssemblyActivity : AppCompatActivity() {

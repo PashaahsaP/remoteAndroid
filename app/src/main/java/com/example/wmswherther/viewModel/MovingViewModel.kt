@@ -6,42 +6,41 @@ import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.wmsRemote.Adapters.AdapterHelper
-import com.example.wmsRemote.Adapters.MoveAdapter
+import com.example.wmsRemote.Adapters.MoveSessionAdapter
 import com.example.wmsRemote.MoveActivity
 import com.example.wmsRemote.data.db.MainDB
 import com.example.wmsRemote.data.enums.SupplierType
 import com.example.wmsRemote.databinding.ActivityMoveBinding
 import com.example.wmsRemote.models.processMoving
-import com.example.wmswherther.HelperFunction
 import com.example.wmswherther.data.db.Request
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 
-data class MoveItem(val item: Triple<Int, String, Pair<Int, Int>>, val isSelected: Boolean)
+data class MoveSessionItem(val item: Triple<Int, String, Pair<Int, Int>>, val isSelected: Boolean)
 class MovingViewModel : ViewModel() {
-    private val _myData = MutableLiveData<MutableList<MoveItem>>()
+    private val _myData = MutableLiveData<MutableList<MoveSessionItem>>()
     private val _isMoving = MutableLiveData<Boolean>()
     private val _cell = MutableLiveData<String>()
 
     val isMoving: LiveData<Boolean> get() =_isMoving
-    val myData: LiveData<MutableList<MoveItem>> get() = _myData
+    val myData: LiveData<MutableList<MoveSessionItem>> get() = _myData
     val cell : LiveData<String> get() = _cell
 
     var supplier : Int =SupplierType.Bork.ordinal
     var client = Request()
     var ip = "192.168.6.208"
 
-    fun updateMyData(collection: MutableList<MoveItem>){
+    fun updateMyData(collection: MutableList<MoveSessionItem>){
         _myData.value = collection
     }
-    fun updateItem(moveItem: MoveItem){
+    fun updateItem(moveSessionItem: MoveSessionItem){
         viewModelScope.launch {
             withContext(Dispatchers.Main) {
-                var list: MutableList<MoveItem> = mutableListOf()
+                var list: MutableList<MoveSessionItem> = mutableListOf()
                 _myData.value!!.forEach { item ->
-                    if (item.item.first == moveItem.item.first) {
-                        list += moveItem
+                    if (item.item.first == moveSessionItem.item.first) {
+                        list += moveSessionItem
                     } else {
                         list += item
                     }
@@ -61,12 +60,12 @@ class MovingViewModel : ViewModel() {
         text: String,
         context: MoveActivity,
         db: MainDB,
-        adapter: MoveAdapter,
+        adapter: MoveSessionAdapter,
         binding: ActivityMoveBinding
     ) {
         if (isMoving!!.value == true) {
             if (isCell(text)) {
-                var result: MutableList<MoveItem> = mutableListOf()
+                var result: MutableList<MoveSessionItem> = mutableListOf()
                 viewModelScope.launch {
                     withContext(Dispatchers.Main) {
                         binding.swipe.isRefreshing = true
@@ -89,7 +88,7 @@ class MovingViewModel : ViewModel() {
             if (isCell(text)) {
 
                 updateCell(text)
-                var result: List<MoveItem> = listOf()
+                var result: List<MoveSessionItem> = listOf()
                 viewModelScope.launch {
                     withContext(Dispatchers.Main) {
                         binding.swipe.isRefreshing = true
@@ -111,7 +110,7 @@ class MovingViewModel : ViewModel() {
                 viewModelScope.launch {
                     withContext(Dispatchers.IO) {
                         var listOfItems = _myData.value
-                        var func = AdapterHelper.getUpdatedMoveItems[supplier]
+                        var func = AdapterHelper.getUpdatedMoveSessionItems[supplier]
                         var list = func!!.invoke(db, supplier, listOfItems, text, context)
                         withContext(Dispatchers.Main) {
                             updateMyData(list.sortedByDescending { it.item.third.first }.toMutableList())

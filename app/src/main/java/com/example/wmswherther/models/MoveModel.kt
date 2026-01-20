@@ -1,26 +1,21 @@
 package com.example.wmsRemote.models
 
 import android.content.Context
-import android.os.Build
-import androidx.annotation.RequiresApi
 import androidx.lifecycle.LiveData
-import com.example.wmsRemote.Adapters.AdapterHelper
-import com.example.wmsRemote.data.db.Cell
 import com.example.wmsRemote.data.db.MainDB
-import com.example.wmsRemote.viewModel.MoveItem
+import com.example.wmsRemote.viewModel.MoveSessionItem
 import kotlinx.coroutines.CoroutineScope
-import java.time.LocalDateTime
 
 
 suspend fun processMoving(
-    collection: MutableList<MoveItem>?,
+    collection: MutableList<MoveSessionItem>?,
     cell: LiveData<String>,
     db: MainDB,
     viewModelScope: CoroutineScope,
     text: String,
     supplier: Int,
     context: Context
-): MutableList<MoveItem> {
+): MutableList<MoveSessionItem> {
     val stayItem =  collection!!.filter { inventoryItem -> inventoryItem.item.third.first == 0 }
     val movingItem = collection.filter { inventoryItem -> inventoryItem.item.third.first != 0 }
     //var func = AdapterHelper.MoveItems[supplier]
