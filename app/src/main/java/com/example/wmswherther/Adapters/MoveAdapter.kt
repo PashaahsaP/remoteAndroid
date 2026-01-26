@@ -6,6 +6,7 @@ import android.view.ViewGroup
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.commit
 import androidx.recyclerview.widget.RecyclerView
+import com.example.wmsRemote.Adapters.MoveViewHolder
 import com.example.wmsRemote.R
 import com.example.wmswherther.Classes.MoveItem
 import com.example.wmswherther.Classes.UiState
@@ -21,6 +22,8 @@ class MoveAdapter(var data: MutableList<MoveItem>, var fragment: Fragment, var v
         inflate(R.layout.supplier_menu_item,parent,false)
         return MoveViewHolder(itemView)
     }
+
+
 
     override fun getItemCount(): Int {
         return data.size

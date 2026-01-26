@@ -146,8 +146,7 @@ class IncomeSessionAdapter(
                 }
                 holder.bind(item)
             }
-            is IncomeSessionSelectedViewHolder ->
-            {
+            is IncomeSessionSelectedViewHolder -> {
                 holder.etSelectedCount.setOnKeyListener{ _, keyCode, event ->
                     if (event.action == KeyEvent.ACTION_DOWN) {
                         val char = event.unicodeChar.toChar()

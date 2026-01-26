@@ -26,4 +26,4 @@ data class MoveSessionItem(
     var name: String,
     var haveCount: Int,
     var allCount: Int,
-    val isSelected: Boolean)
+    var isSelected: Boolean)

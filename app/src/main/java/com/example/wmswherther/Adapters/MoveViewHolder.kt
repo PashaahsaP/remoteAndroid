@@ -1,4 +1,4 @@
-package com.example.wmswherther.Adapters
+package com.example.wmsRemote.Adapters
 
 import android.text.TextWatcher
 import android.view.View
