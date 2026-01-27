@@ -38,13 +38,14 @@ class MoveSessionFragment: Fragment() {
     ): View? {
         val localViewModel = ViewModelProvider(requireActivity()).get(MoveSessionViewModel::class)
         _binding = FragmentMoveSessionBinding.inflate(inflater)
-        var adapter = MoveSessionAdapter(listOf(), requireActivity(), localViewModel)
+
         var recyclerView: RecyclerView = binding.rwContainer
+        var adapter = MoveSessionAdapter(listOf(), requireActivity(), localViewModel, recyclerView)
         recyclerView.layoutManager = LinearLayoutManager(requireActivity())
         recyclerView.adapter = adapter
 
         localViewModel.myData.observe(requireActivity(), {data ->
-            adapter.updateData(data)
+            adapter.updateData(data, localViewModel.getSelectedItem())
         })
 
         viewModel.Barcode.observe(viewLifecycleOwner, { barcode ->
@@ -157,7 +158,7 @@ class MoveSessionFragment: Fragment() {
             }
         })
         localViewModel.myData.observe(requireActivity(), {data ->
-            adapter.updateData(data)
+            adapter.updateData(data, localViewModel.getSelectedItem())
         })
         localViewModel.cell.observe(requireActivity(), {str ->
             if (str != ""){

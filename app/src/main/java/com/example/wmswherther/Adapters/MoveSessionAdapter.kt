@@ -1,98 +1,109 @@
 package com.example.wmsRemote.Adapters
 
 import android.annotation.SuppressLint
+import android.content.Context
 import android.view.KeyEvent
-
 import android.view.LayoutInflater
 import android.view.ViewGroup
-import android.widget.TextView
+import android.view.inputmethod.InputMethodManager
 import androidx.core.content.ContextCompat
-import androidx.core.view.setPadding
 import androidx.fragment.app.FragmentActivity
 import androidx.recyclerview.widget.RecyclerView
 import com.example.wmsRemote.R
 import com.example.wmsRemote.viewModel.MoveSessionViewModel
-import com.example.wmswherther.Adapters.IncomeSessionCollapsedViewHolder
-import com.example.wmswherther.Adapters.IncomeSessionExpandedViewHolder
-import com.example.wmswherther.Adapters.IncomeSessionInvisibleViewHolder
-import com.example.wmswherther.Adapters.IncomeSessionSelectedViewHolder
-import com.example.wmswherther.Adapters.IncomeSessionViewHolder
-import com.example.wmswherther.Classes.IncomeItem
+import com.example.wmswherther.Adapters.MoveSessionSelectedViewHolder
 import com.example.wmswherther.Classes.MoveSessionItem
-import com.example.wmswherther.Classes.UiState
 
 class MoveSessionAdapter(
     var data: List<MoveSessionItem>,
     var activity: FragmentActivity,
     var viewModel: MoveSessionViewModel,
+    var recyclerView: RecyclerView,
 
 ) : RecyclerView.Adapter<RecyclerView.ViewHolder>() {
-    override fun onCreateViewHolder(parent: ViewGroup, viewType: Int) : RecyclerView.ViewHolder {
+
+    private var barcodeBuffer = StringBuilder()
+    override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): RecyclerView.ViewHolder {
         val inflater = LayoutInflater.from(parent.context)
         return when (viewType) {
             0 -> {
                 val view = inflater.inflate(R.layout.income_session, parent, false)
-                IncomeSessionViewHolder(view)
+                MoveSessionViewHolder(view)
             }
 
             1 -> {
                 val view = inflater.inflate(R.layout.income_session_selected, parent, false)
-                IncomeSessionSelectedViewHolder(view)
+                MoveSessionSelectedViewHolder(view)
             }
 
             else -> throw IllegalArgumentException("Invalid view type")
         }
     }
+
     override fun getItemViewType(position: Int): Int {
-        if(data[position].isSelected == true){
+        if (data[position].isSelected == true) {
             return 1
         }
         return 0
     }
+
     override fun getItemCount(): Int {
         return data.size
     }
+
     fun getItems(): List<MoveSessionItem> {
         return data
     }
 
-
-    override fun onBindViewHolder(holder: RecyclerView.ViewHolder, @SuppressLint("RecyclerView") position: Int) {
+    fun updateData(items: List<MoveSessionItem>, selectedItem: Int){
+        data = items
+        notifyDataSetChanged()
+        focusOnItem(recyclerView, selectedItem)
+    }
+    override fun onBindViewHolder(
+        holder: RecyclerView.ViewHolder,
+        @SuppressLint("RecyclerView") position: Int
+    ) {
         val item = data[position]
         when (holder) {
-            is IncomeSessionViewHolder -> {
+            is MoveSessionViewHolder -> {
                 var counter = 0
-                var listIncome : List<IncomeItem> = listOf()
+                var listIncome: List<MoveSessionItem> = listOf()
                 holder.container.setOnClickListener {
 
-                    viewModel.myData.value?.forEach{ item ->
+                    viewModel.myData.value?.forEach { item ->
                         item.isSelected = false
-                        if(counter == position){
+                        if (counter == position) {
                             item.isSelected = true
                         }
-                        listIncome+= item
+                        listIncome += item
                         counter = counter + 1
                     }
                     viewModel.setSelectedItem(position)
-                    viewModel.updateItems(listIncome)
+                    viewModel.updateMyData(listIncome.toMutableList())
 
                 }
-
                 holder.tvLeft.setTextColor(ContextCompat.getColor(activity, R.color.black))
                 holder.tvRight.setTextColor(ContextCompat.getColor(activity, R.color.black))
-                holder.tvTE.setTextColor(ContextCompat.getColor(activity, R.color.regularBack))
-                if(item.haveCount > item.allCount) {
+                /*holder.tvTE.setTextColor(ContextCompat.getColor(activity, R.color.regularBack))*/
+                if (item.haveCount > item.allCount) {
                     holder.tvLeft.setTextColor(ContextCompat.getColor(activity, R.color.regularRed))
-                    holder.tvRight.setTextColor(ContextCompat.getColor(activity, R.color.regularRed))
+                    holder.tvRight.setTextColor(
+                        ContextCompat.getColor(
+                            activity,
+                            R.color.regularRed
+                        )
+                    )
                 }
-                if (item.teCount != 0){
+                /*if (item.teCount != 0){
                     holder.tvTE.setTextColor(ContextCompat.getColor(activity, R.color.regularRed))
                     holder.tvTE.text
-                }
+                }*/
                 holder.bind(item)
             }
-            is IncomeSessionSelectedViewHolder -> {
-                holder.etSelectedCount.setOnKeyListener{ _, keyCode, event ->
+
+            is MoveSessionSelectedViewHolder -> {
+                holder.etSelectedCount.setOnKeyListener { _, keyCode, event ->
                     if (event.action == KeyEvent.ACTION_DOWN) {
                         val char = event.unicodeChar.toChar()
 
@@ -101,27 +112,32 @@ class MoveSessionAdapter(
                             barcodeBuffer.clear()
                             var t = holder.etSelectedCount.text.trim()
                             var counter = 0
-                            var listIncome : List<IncomeItem> = listOf()
+                            var listIncome: List<MoveSessionItem> = listOf()
                             var count = t.toString().toInt()
-                            localViewModel.items.value?.forEach{ item ->
+                            viewModel.myData.value?.forEach { item ->
                                 item.isSelected = false
-                                if(counter == position){
+                                if (counter == position) {
+                                    if (count > item.allCount){
+                                        item.haveCount = item.allCount
+                                    }else{
                                     item.haveCount = count
-
-                                    if((viewModel.uiState.value as UiState.IncomeSessionMenu).isTEModeActive){
-                                        item.teCount = count
                                     }
+
+
+                                    /*if((viewModel.uiState.value as UiState.IncomeSessionMenu).isTEModeActive){
+                                        item.teCount = count
+                                    }*/
                                 }
-                                listIncome+= item
+                                listIncome += item
                                 counter = counter + 1
                             }
-                            localViewModel.updateItems(listIncome)
+                            viewModel.updateMyData(listIncome.toMutableList())
                             return@setOnKeyListener true
                         }
                     }
                     false
                 }
-                if(item.haveCount > item.allCount) {
+                if (item.haveCount > item.allCount) {
                     holder.tvLeft.setTextColor(ContextCompat.getColor(activity, R.color.regularRed))
                     holder.tvRight.setTextColor(
                         ContextCompat.getColor(
@@ -139,13 +155,28 @@ class MoveSessionAdapter(
                 holder.bind(item)
             }
 
+        }
+
+
+
+        fun updateData(newData: MutableList<MoveSessionItem>) {
+            data = newData
+            notifyDataSetChanged()
+        }
+
+
     }
-
-
-
-    fun updateData(newData: MutableList<MoveSessionItem>){
-        data = newData
-        notifyDataSetChanged()
+    fun focusOnItem(recyclerView: RecyclerView, position: Int) {
+        recyclerView.post {
+            val vh = recyclerView.findViewHolderForAdapterPosition(position)
+            if (vh is MoveSessionSelectedViewHolder) {
+                vh.etSelectedCount.requestFocus()
+                vh.etSelectedCount.post {
+                    vh.etSelectedCount.selectAll()
+                    val imm = vh.itemView.context.getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager
+                    imm.showSoftInput(vh.etSelectedCount, InputMethodManager.SHOW_IMPLICIT)
+                }
+            }
+        }
     }
-
 }

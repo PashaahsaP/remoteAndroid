@@ -24,10 +24,13 @@ class MoveSessionViewModel : ViewModel() {
     private val _myData = MutableLiveData<MutableList<MoveSessionItem>>()
     private val _isMoving = MutableLiveData<Boolean>()
     private val _cell = MutableLiveData<String>()
+    private val _selectedItem = MutableLiveData<Int>()
+
 
     val isMoving: LiveData<Boolean> get() =_isMoving
     val myData: LiveData<MutableList<MoveSessionItem>> get() = _myData
     val cell : LiveData<String> get() = _cell
+    val selectedItem: LiveData<Int> get() = _selectedItem
 
     var supplier : Int =SupplierType.Bork.ordinal
     var client = Request()
@@ -51,6 +54,16 @@ class MoveSessionViewModel : ViewModel() {
                 _myData.value = list
             }
         }*/
+    }
+    fun getSelectedItem() : Int{
+        var isCorrect = _selectedItem.value
+        if (isCorrect != null)
+            return isCorrect
+        else
+            return  0
+    }
+    fun setSelectedItem(selectedItemCount: Int){
+        _selectedItem.value = selectedItemCount
     }
     fun updateIsMoving(isMoving: Boolean){
         _isMoving.value = isMoving
