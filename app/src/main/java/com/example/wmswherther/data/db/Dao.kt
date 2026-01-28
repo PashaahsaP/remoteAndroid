@@ -43,6 +43,10 @@ interface Dao {
     /*@Delete
     suspend fun deleteCell(cell: Cell)*/
     // </editor-fold>
+    // <editor-fold desc="cellTypes">
+    @Query("SELECT * FROM cell_types")
+    suspend fun getCellTypes(): List<CellType>
+    // </editor-fold>
     // <editor-fold desc="IncomeSession">
     @Insert
     fun insertIncomeSession(incomeSession: SessionIncome)

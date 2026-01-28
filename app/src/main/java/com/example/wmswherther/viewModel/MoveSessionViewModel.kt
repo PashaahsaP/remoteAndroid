@@ -4,17 +4,22 @@ import android.widget.Toast
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
+import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.viewModelScope
 import com.example.wmsRemote.Adapters.AdapterHelper
 import com.example.wmsRemote.Adapters.MoveSessionAdapter
 import com.example.wmsRemote.MoveActivity
+import com.example.wmsRemote.data.db.Dao
 import com.example.wmsRemote.data.db.MainDB
 import com.example.wmsRemote.data.enums.SupplierType
 import com.example.wmsRemote.databinding.ActivityMoveBinding
 import com.example.wmsRemote.databinding.FragmentMoveSessionBinding
 import com.example.wmsRemote.models.processMoving
 import com.example.wmswherther.Classes.MoveSessionItem
+import com.example.wmswherther.Classes.UiState
+import com.example.wmswherther.data.db.Goods
 import com.example.wmswherther.data.db.Request
+import com.example.wmswherther.viewModel.MainViewModel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
@@ -39,21 +44,25 @@ class MoveSessionViewModel : ViewModel() {
     fun updateMyData(collection: MutableList<MoveSessionItem>){
         _myData.value = collection
     }
-    fun updateItem(moveSessionItem: MoveSessionItem){
-       /* viewModelScope.launch {
-            withContext(Dispatchers.Main) {
-                var list: MutableList<MoveSessionItem> = mutableListOf()
-                _myData.value!!.forEach { item ->
-                    if (item.item.first == moveSessionItem.item.first) {
-                        list += moveSessionItem
-                    } else {
-                        list += item
-                    }
+    fun changeList(barcode: String, dao: Dao){
+        viewModelScope.launch {
+            var list: MutableList<MoveSessionItem> = mutableListOf()
+            withContext(Dispatchers.IO) {
+                var dbBarcode = dao.getBarcodeByName(barcode)
+                var catalog = dao.getCatalogById(dbBarcode.catalogId)
 
+                myData.value?.forEach { item ->
+                    if(item.catalogId == catalog.id && item.haveCount < item.allCount){
+                        list.add(item.copy(haveCount = item.haveCount + 1))
+                    }else {
+                        list.add((item))
+                    }
                 }
-                _myData.value = list
             }
-        }*/
+            withContext(Dispatchers.Main){
+                updateMyData(list)
+            }
+        }
     }
     fun getSelectedItem() : Int{
         var isCorrect = _selectedItem.value
@@ -140,6 +149,37 @@ class MoveSessionViewModel : ViewModel() {
             return true
         }
         return false
+    }
+    fun loadData(
+        dao: Dao,
+        barcode: String,
+        viewModel: MainViewModel
+    ) {
+        viewModelScope.launch {
+            var list: MutableList<MoveSessionItem> = mutableListOf()
+            withContext(Dispatchers.IO) {
+                var cell = dao.getCellByName(barcode)
+                if (cell != null) {
+                    dao.getGoodsByCellId(cell.id).forEach { goods: Goods ->
+                        var catalog = dao.getCatalogById(goods.catalogId)
+                        if (catalog.supplierId == (viewModel.uiState.value as UiState.MoveSessionMenu).supplierId) {
+                            list.add(
+                                MoveSessionItem(
+                                    isSelected = false,
+                                    haveCount = 0,
+                                    allCount = goods.amount,
+                                    name = catalog.name,
+                                    catalogId = catalog.id
+                                )
+                            )
+                        }
+                    }
+                }
+            }
+            withContext(Dispatchers.Main) {
+                updateMyData(list)
+            }
+        }
     }
     fun convertToInt(nullableInt: Int?): Int {
         return nullableInt ?: 0  // If nullableInt is null, use 0 as default

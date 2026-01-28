@@ -118,6 +118,7 @@ class IncomeSessionViewModel : ViewModel() {
             setFinishValidation(false)
         }
     }
+
     fun getSelectedItem() : Int{
         var isCorrect = _selectedItem.value
         if (isCorrect != null)
