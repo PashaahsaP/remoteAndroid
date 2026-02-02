@@ -4,25 +4,28 @@ import android.widget.Toast
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
-import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.viewModelScope
-import com.example.wmsRemote.Adapters.AdapterHelper
 import com.example.wmsRemote.Adapters.MoveSessionAdapter
 import com.example.wmsRemote.MoveActivity
+import com.example.wmsRemote.data.db.Cell
 import com.example.wmsRemote.data.db.Dao
 import com.example.wmsRemote.data.db.MainDB
+import com.example.wmsRemote.data.enums.OperationType
+import com.example.wmsRemote.data.enums.StatusType
 import com.example.wmsRemote.data.enums.SupplierType
-import com.example.wmsRemote.databinding.ActivityMoveBinding
 import com.example.wmsRemote.databinding.FragmentMoveSessionBinding
 import com.example.wmsRemote.models.processMoving
 import com.example.wmswherther.Classes.MoveSessionItem
 import com.example.wmswherther.Classes.UiState
+import com.example.wmswherther.data.db.Change
 import com.example.wmswherther.data.db.Goods
 import com.example.wmswherther.data.db.Request
 import com.example.wmswherther.viewModel.MainViewModel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import java.time.LocalDateTime
+import java.util.UUID
 
 
 class MoveSessionViewModel : ViewModel() {
@@ -37,7 +40,7 @@ class MoveSessionViewModel : ViewModel() {
     val cell : LiveData<String> get() = _cell
     val selectedItem: LiveData<Int> get() = _selectedItem
 
-    var supplier : Int =SupplierType.Bork.ordinal
+    var supplier : Int = SupplierType.Bork.ordinal
     var client = Request()
     var ip = "192.168.6.208"
 
@@ -162,14 +165,15 @@ class MoveSessionViewModel : ViewModel() {
                 if (cell != null) {
                     dao.getGoodsByCellId(cell.id).forEach { goods: Goods ->
                         var catalog = dao.getCatalogById(goods.catalogId)
-                        if (catalog.supplierId == (viewModel.uiState.value as UiState.MoveSessionMenu).supplierId) {
+                        if (catalog.supplierId == (viewModel.uiState.value as UiState.MoveSessionMenu).supplierId && goods.isAvailable) {
                             list.add(
                                 MoveSessionItem(
                                     isSelected = false,
                                     haveCount = 0,
                                     allCount = goods.amount,
                                     name = catalog.name,
-                                    catalogId = catalog.id
+                                    catalogId = catalog.id,
+                                    goodsId = goods.id
                                 )
                             )
                         }
@@ -183,5 +187,94 @@ class MoveSessionViewModel : ViewModel() {
     }
     fun convertToInt(nullableInt: Int?): Int {
         return nullableInt ?: 0  // If nullableInt is null, use 0 as default
+    }
+
+    fun moveItems(barcode: String, dao: Dao, viewModel: MainViewModel) {
+        var listItems : List<MoveSessionItem> = listOf()
+        viewModelScope.launch {
+            withContext(Dispatchers.IO) {
+                myData.value?.forEach { item ->
+                    var cell = getCell(dao, barcode, viewModel)
+                    if (item.haveCount == item.allCount) {
+                        var goods = dao.getGoodsById(item.goodsId)
+                        var changes = Change(
+                            id = UUID.randomUUID().toString(),
+                            entityId = goods.id,
+                            operationType = OperationType.UpdateGoods.ordinal,
+                            status = StatusType.Created.ordinal,
+                            supplierId = (viewModel.uiState.value as UiState.MoveSessionMenu).supplierId,
+                            other = null
+                        )
+                        dao.updateGoodsAsync(goods.copy(cellId = cell.id), changes)
+                    } else if (item.haveCount != 0){
+                        // создать новый goods
+                        var goods = Goods(
+                            id = UUID.randomUUID().toString(),
+                            amount = item.haveCount,
+                            cellId = getCell(dao, barcode, viewModel).id,
+                            catalogId = item.catalogId,
+                            createdAt = System.currentTimeMillis(),
+                            false,
+                            other = null
+                        )
+                        var changes = Change(
+                            id = UUID.randomUUID().toString(),
+                            entityId = goods.id,
+                            operationType = OperationType.InsertGoods.ordinal,
+                            status = StatusType.Created.ordinal,
+                            supplierId = (viewModel.uiState.value as UiState.MoveSessionMenu).supplierId,
+                            other = null
+                        )
+                        dao.insertGoodsAsync(goods,changes)
+                        // обновить старый goods
+                        var oldGoods = dao.getGoodsById(item.goodsId)
+                        var oldGoodsChanges = Change(
+                            id = UUID.randomUUID().toString(),
+                            entityId = item.goodsId,
+                            operationType = OperationType.UpdateGoods.ordinal,
+                            status = StatusType.Created.ordinal,
+                            supplierId = (viewModel.uiState.value as UiState.MoveSessionMenu).supplierId,
+                            other = null
+                        )
+                        dao.updateGoodsAsync(oldGoods.copy(amount = item.allCount - item.haveCount), oldGoodsChanges)
+                        listItems += item.copy(haveCount = item.allCount - item.haveCount)
+                    }else{
+                        listItems += item
+                    }
+
+                }
+            }
+            withContext(Dispatchers.Main){
+                updateMyData(listItems.toMutableList())
+            }
+        }
+    }
+
+    private suspend fun getCell(
+        dao: Dao,
+        barcode: String,
+        viewModel: MainViewModel
+    ): Cell {
+        var cell = dao.getCellByName(barcode)
+        if (cell == null) {
+            var curCell = dao.getCellByName(cell) // откуда идет перемещение
+            var newCell = Cell(
+                id = UUID.randomUUID().toString(),
+                typeCellId = curCell.typeCellId,
+                parentCellId = curCell.parentCellId,
+                name = barcode
+            )
+            var changes = Change(
+                id = UUID.randomUUID().toString(),
+                entityId = newCell.id,
+                operationType = OperationType.InsertCell.ordinal,
+                status = StatusType.Created.ordinal,
+                supplierId = (viewModel.uiState.value as UiState.MoveSessionMenu).supplierId,
+                other = null
+            )
+            dao.insertCellSync(newCell, changes)
+            cell = newCell
+        }
+        return cell
     }
 }

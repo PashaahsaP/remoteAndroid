@@ -47,7 +47,7 @@ class IncomeFragment : Fragment() {
         container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View? {
-        /*lifecycleScope.launch {
+       /* lifecycleScope.launch {
             withContext(Dispatchers.IO){
                 appendDummyData(MainDB.getDB(requireActivity()))
             }
@@ -227,6 +227,7 @@ fun appendDummyData(db: MainDB){
             IN01.id,
             catalog.id,
             System.currentTimeMillis(),
+            false,
             null
         )
         var goodsChange = Change(
@@ -315,6 +316,7 @@ fun appendDummyData(db: MainDB){
             N00000001.id,
             catalog.id,
             System.currentTimeMillis(),
+            false,
             null
         )
         var goodsChange = Change(

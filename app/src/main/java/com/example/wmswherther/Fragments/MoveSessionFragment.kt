@@ -7,20 +7,15 @@ import android.view.ViewGroup
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
 import androidx.lifecycle.ViewModelProvider
-import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.viewModelScope
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.example.wmsRemote.Adapters.MoveSessionAdapter
 import com.example.wmsRemote.MoveActivity
-import com.example.wmsRemote.data.db.Dao
 import com.example.wmsRemote.data.db.MainDB
 import com.example.wmsRemote.databinding.FragmentMoveSessionBinding
 import com.example.wmsRemote.viewModel.MoveSessionViewModel
-import com.example.wmswherther.Classes.MoveSessionItem
-import com.example.wmswherther.Classes.UiState
 import com.example.wmswherther.data.db.CellType
-import com.example.wmswherther.data.db.Goods
 import com.example.wmswherther.viewModel.MainViewModel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -60,6 +55,9 @@ class MoveSessionFragment: Fragment() {
             if(barcode != "") {
                 if (isCell(barcode, listTypes)) {
                     if (localViewModel.isMoving.value != null && localViewModel.isMoving.value!!) {
+                        localViewModel.moveItems(barcode, dao, viewModel)
+                        // если числа равны то смена ячейки
+                        // иначе создается новый goods
                         //TODO перемещение элементов если нажата клавиша
                     } else {
                         localViewModel.updateCell(barcode)

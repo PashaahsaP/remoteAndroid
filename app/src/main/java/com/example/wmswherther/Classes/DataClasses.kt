@@ -26,5 +26,6 @@ data class MoveSessionItem(
     var name: String,
     var haveCount: Int,
     var catalogId: String,
+    var goodsId: String,
     var allCount: Int,
     var isSelected: Boolean)
