@@ -189,12 +189,15 @@ val MIGRATION_1_2 = object : Migration(1, 2) {
                 id TEXT NOT NULL PRIMARY KEY,
                 cellFromId TEXT NOT NULL,
                 cellToId TEXT NOT NULL,
+                qty TEXT NOT NULL,
+                catalogId TEXT NOT NULL,
                 userId TEXT,
                 executedAt INTEGER NOT NULL,
                 operationType INTEGER NOT NULL,
                 FOREIGN KEY(cellFromId) REFERENCES Cell(id),
                 FOREIGN KEY(cellToId) REFERENCES Cell(id),
                 FOREIGN KEY(userId) REFERENCES User(id),
+                FOREIGN KEY(catalogId) REFERENCES Catalog(id),
             )
         """)
 

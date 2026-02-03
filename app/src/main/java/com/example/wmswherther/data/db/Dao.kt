@@ -173,8 +173,8 @@ interface Dao {
     fun insertBarcodeChanges(change: Change)
     @Insert
     suspend fun updateGoodsChanges(change: Change)
-
-
+    // </editor-fold>
+    // <editor-fold desc="Movement">
 
     // </editor-fold>
 
