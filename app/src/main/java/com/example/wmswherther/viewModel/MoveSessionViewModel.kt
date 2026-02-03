@@ -21,6 +21,7 @@ import kotlinx.coroutines.withContext
 
 
 class MoveSessionViewModel : ViewModel() {
+    private val _selectedItem = MutableLiveData<Int>()
     private val _myData = MutableLiveData<MutableList<MoveSessionItem>>()
     private val _isMoving = MutableLiveData<Boolean>()
     private val _cell = MutableLiveData<String>()
@@ -51,6 +52,16 @@ class MoveSessionViewModel : ViewModel() {
                 _myData.value = list
             }
         }*/
+    }
+    fun setSelectedItem(selectedItemCount: Int){
+        _selectedItem.value = selectedItemCount
+    }
+    fun getSelectedItem() : Int{
+        var isCorrect = _selectedItem.value
+        if (isCorrect != null)
+            return isCorrect
+        else
+            return  0
     }
     fun updateIsMoving(isMoving: Boolean){
         _isMoving.value = isMoving

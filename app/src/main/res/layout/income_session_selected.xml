@@ -18,7 +18,6 @@
         android:id="@+id/etSelectedCount"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="1"
         app:layout_constraintEnd_toStartOf="@+id/tvCount"
         app:layout_constraintTop_toTopOf="parent"
         app:layout_constraintBottom_toBottomOf="parent">
@@ -29,7 +28,6 @@
         android:id="@+id/tvCount"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="/6"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintTop_toTopOf="parent">

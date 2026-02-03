@@ -30,8 +30,8 @@ class MoveActivity : AppCompatActivity() {
         var recyclerView = binding.llContainer
         viewModel = ViewModelProvider(this).get(MoveSessionViewModel::class.java)
         recyclerView.layoutManager = LinearLayoutManager(this)
-        var adapter = MoveSessionAdapter(mutableListOf(), this, viewModel)
-        recyclerView.adapter = adapter
+        /*var adapter = MoveSessionAdapter(mutableListOf(), this, MoveSessionViewModel(),  , recyclerView)*/
+        /*recyclerView.adapter = adapter*/
 
         viewModel.isMoving.observe(this, Observer{isMove->
             if (isMove) {
@@ -43,7 +43,7 @@ class MoveActivity : AppCompatActivity() {
             }
         })
         viewModel.myData.observe(this, Observer{data ->
-            adapter.updateData(data)
+            /*adapter.updateCollection(data, 1)*/
         })
         viewModel.cell.observe(this, Observer{str ->
             if (str != ""){
