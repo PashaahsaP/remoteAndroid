@@ -29,6 +29,7 @@ import com.example.wmswherther.data.db.Supplier
 import com.example.wmswherther.viewModel.IncomeMenuViewModel
 import com.example.wmswherther.viewModel.MainViewModel
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import java.util.UUID
@@ -47,11 +48,12 @@ class IncomeFragment : Fragment() {
         container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View? {
-       /* lifecycleScope.launch {
+        lifecycleScope.launch {
             withContext(Dispatchers.IO){
-                appendDummyData(MainDB.getDB(requireActivity()))
+                //appendDummyData(MainDB.getDB(requireActivity()))
+                appendMoveDummyData(MainDB.getDB(requireActivity()))
             }
-        }*/
+        }
         //viewModel.setCurrFragment(this)
         val localViewModel = ViewModelProvider(requireActivity()).get(IncomeMenuViewModel::class)
         _binding = FragmentIncomeBinding.inflate(inflater)
@@ -345,6 +347,186 @@ fun appendDummyData(db: MainDB){
             null
         )
         dao.insertIncomeItemSync(incomeItem, incomeItemChange)
+    }
+
+
+}
+fun appendMoveDummyData(db: MainDB){
+    val dao = db.getDao()
+    val vitekSupplier = Supplier(
+        UUID.randomUUID().toString(),
+        "Vitek",
+        null
+    )
+
+    dao.insertSupplier(vitekSupplier)
+
+    val incomeType = CellType(
+        UUID.randomUUID().toString(),
+        "Income",
+        "#####",
+        null
+    )
+    dao.insertCellType(incomeType)
+
+    val teType = CellType(
+        UUID.randomUUID().toString(),
+        "BoxTE",
+        "#########",
+        null
+    )
+    dao.insertCellType(teType)
+    val pickerType = CellType(
+        UUID.randomUUID().toString(),
+        "Picker",
+        "####",
+        null
+    )
+    dao.insertCellType(pickerType)
+
+    var A111 = Cell(
+        UUID.randomUUID().toString(),
+        pickerType.id,
+        null,
+        "A111"
+    )
+    var cellChange = Change(
+        UUID.randomUUID().toString(),
+        A111.id,
+        OperationType.InsertCell.ordinal,
+        StatusType.Created.ordinal,
+        null,
+        null
+    )
+    dao.insertCellSync(A111, cellChange)
+    var N00000001 = Cell(
+        UUID.randomUUID().toString(),
+        teType.id,
+        A111.id,
+        "N00000001"
+    )
+    var teChange = Change(
+        UUID.randomUUID().toString(),
+        N00000001.id,
+        OperationType.InsertCell.ordinal,
+        StatusType.Created.ordinal,
+        null,
+        null
+    )
+
+    dao.insertCellSync(N00000001, teChange)
+
+
+    for (enum in 10 .. 29){
+        var catalog = Catalog(
+            UUID.randomUUID().toString(),
+            "Kettle k5${enum}",
+            "3241223",
+            vitekSupplier.id,
+            null
+        )
+        var catalogChange = Change(
+            UUID.randomUUID().toString(),
+            catalog.id,
+            OperationType.InsertCatalog.ordinal,
+            StatusType.Created.ordinal,
+            vitekSupplier.id,
+            null
+        )
+
+        var barcode = Barcode(
+            UUID.randomUUID().toString(),
+            "46654537764${enum}",
+            catalog.id,
+            vitekSupplier.id,
+            null
+        )
+        var barcodeChanges = Change(
+            UUID.randomUUID().toString(),
+            barcode.id,
+            OperationType.InsertBarcode.ordinal,
+            StatusType.Created.ordinal,
+            vitekSupplier.id,
+            null
+        )
+        dao.insertCatalogSync(catalog, catalogChange)
+        dao.insertBarcodeAsync(barcode, barcodeChanges)
+
+
+        var goods = Goods(
+            UUID.randomUUID().toString(),
+            3 + enum,
+            A111.id,
+            catalog.id,
+            System.currentTimeMillis(),
+            true,
+            null
+        )
+        var goodsChange = Change(
+            UUID.randomUUID().toString(),
+            goods.id,
+            OperationType.InsertGoods.ordinal,
+            status = StatusType.Created.ordinal,
+            vitekSupplier.id,
+            null
+        )
+        dao.insertGoodsAsync(goods, goodsChange)
+    }
+
+    for(enum in 50..52){
+        var catalog = Catalog(
+            UUID.randomUUID().toString(),
+            "Kettle k5${enum}",
+            "3241223",
+            vitekSupplier.id,
+            null
+        )
+        var catalogChange = Change(
+            UUID.randomUUID().toString(),
+            catalog.id,
+            OperationType.InsertCatalog.ordinal,
+            StatusType.Created.ordinal,
+            vitekSupplier.id,
+            null
+        )
+
+        var barcode = Barcode(
+            UUID.randomUUID().toString(),
+            "46654537764${enum}",
+            catalog.id,
+            vitekSupplier.id,
+            null
+        )
+        var barcodeChanges = Change(
+            UUID.randomUUID().toString(),
+            barcode.id,
+            OperationType.InsertBarcode.ordinal,
+            StatusType.Created.ordinal,
+            vitekSupplier.id,
+            null
+        )
+        dao.insertCatalogSync(catalog, catalogChange)
+        dao.insertBarcodeAsync(barcode, barcodeChanges)
+
+
+        var goods = Goods(
+            UUID.randomUUID().toString(),
+            3 + enum,
+            N00000001.id,
+            catalog.id,
+            System.currentTimeMillis(),
+            true,
+            null
+        )
+        var goodsChange = Change(
+            UUID.randomUUID().toString(),
+            goods.id,
+            OperationType.InsertGoods.ordinal,
+            status = StatusType.Created.ordinal,
+            vitekSupplier.id,
+            null
+        )
+        dao.insertGoodsAsync(goods, goodsChange)
     }
 
 

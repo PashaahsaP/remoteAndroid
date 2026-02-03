@@ -194,7 +194,7 @@ class MoveSessionViewModel : ViewModel() {
         viewModelScope.launch {
             withContext(Dispatchers.IO) {
                 myData.value?.forEach { item ->
-                    var cell = getCell(dao, barcode, viewModel)
+                    var cell = getCell(dao, barcode, viewModel, _cell.value.toString())
                     if (item.haveCount == item.allCount) {
                         var goods = dao.getGoodsById(item.goodsId)
                         var changes = Change(
@@ -211,10 +211,10 @@ class MoveSessionViewModel : ViewModel() {
                         var goods = Goods(
                             id = UUID.randomUUID().toString(),
                             amount = item.haveCount,
-                            cellId = getCell(dao, barcode, viewModel).id,
+                            cellId = getCell(dao, barcode, viewModel, _cell.value.toString()).id,
                             catalogId = item.catalogId,
                             createdAt = System.currentTimeMillis(),
-                            false,
+                            true,
                             other = null
                         )
                         var changes = Change(
@@ -237,7 +237,7 @@ class MoveSessionViewModel : ViewModel() {
                             other = null
                         )
                         dao.updateGoodsAsync(oldGoods.copy(amount = item.allCount - item.haveCount), oldGoodsChanges)
-                        listItems += item.copy(haveCount = item.allCount - item.haveCount)
+                        listItems += item.copy(haveCount = 0, allCount = item.allCount - item.haveCount)
                     }else{
                         listItems += item
                     }
@@ -247,17 +247,19 @@ class MoveSessionViewModel : ViewModel() {
             withContext(Dispatchers.Main){
                 updateMyData(listItems.toMutableList())
             }
+            updateIsMoving(false)
         }
     }
 
     private suspend fun getCell(
         dao: Dao,
         barcode: String,
-        viewModel: MainViewModel
+        viewModel: MainViewModel,
+        sourceCellName: String
     ): Cell {
         var cell = dao.getCellByName(barcode)
         if (cell == null) {
-            var curCell = dao.getCellByName(cell) // откуда идет перемещение
+            var curCell = dao.getCellByName(sourceCellName) // откуда идет перемещение
             var newCell = Cell(
                 id = UUID.randomUUID().toString(),
                 typeCellId = curCell.typeCellId,
