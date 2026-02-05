@@ -28,7 +28,6 @@ import java.util.UUID
 
 
 class MoveSessionViewModel : ViewModel() {
-    private val _selectedItem = MutableLiveData<Int>()
     private val _myData = MutableLiveData<MutableList<MoveSessionItem>>()
     private val _isMoving = MutableLiveData<Boolean>()
     private val _cell = MutableLiveData<String>()
@@ -66,16 +65,6 @@ class MoveSessionViewModel : ViewModel() {
                 updateMyData(list)
             }
         }
-    }
-    fun getSelectedItem() : Int{
-        var isCorrect = _selectedItem.value
-        if (isCorrect != null)
-            return isCorrect
-        else
-            return  0
-    }
-    fun setSelectedItem(selectedItemCount: Int){
-        _selectedItem.value = selectedItemCount
     }
     fun setSelectedItem(selectedItemCount: Int){
         _selectedItem.value = selectedItemCount
@@ -199,13 +188,14 @@ class MoveSessionViewModel : ViewModel() {
         return nullableInt ?: 0  // If nullableInt is null, use 0 as default
     }
 
+    //Если количество равно то надо полностью изменить
     fun moveItems(barcode: String, dao: Dao, viewModel: MainViewModel) {
         var listItems : List<MoveSessionItem> = listOf()
         viewModelScope.launch {
             withContext(Dispatchers.IO) {
-                var allGoods: List<Goods> = dao.getGoods()
+                var cell = getCell(dao, barcode, viewModel, _cell.value.toString())
+                var allGoods: List<Goods> = dao.getGoods().filter { goods -> goods.cellId == cell.id }
                 myData.value?.forEach { item ->
-                    var cell = getCell(dao, barcode, viewModel, _cell.value.toString())
                     if (item.haveCount == item.allCount) {
                         updateGoods(dao, item, cell, viewModel, barcode, allGoods)
                     } else if (item.haveCount != 0){
@@ -268,6 +258,9 @@ class MoveSessionViewModel : ViewModel() {
             viewModel = viewModel,
             sourceCellName = _cell.value.toString()
         )
+        // коллекция элементов в ячейке куда идет перемещение,
+        // нужно если в целевой ячейке есть такой же каталог товара, чтобы просто изменить количество товара(и удалить элемент если осталось 0 в
+        // ячейке откуда идет перемещение)
         var listOfGoodsInCellTo : List<Goods> = allGoods.filter {
             goodsItem -> goodsItem.cellId == cellTo.id && goodsItem.catalogId == catalog.id
         }
