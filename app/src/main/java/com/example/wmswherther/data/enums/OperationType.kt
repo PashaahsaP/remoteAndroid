@@ -7,5 +7,6 @@ enum class OperationType {
     InsertIncomeSession,
     InsertIncomeItem,
     InsertBarcode,
-    UpdateGoods
+    UpdateGoods,
+    DeleteGoods
 }

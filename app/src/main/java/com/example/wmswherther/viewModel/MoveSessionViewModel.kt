@@ -193,44 +193,23 @@ class MoveSessionViewModel : ViewModel() {
         var listItems : List<MoveSessionItem> = listOf()
         viewModelScope.launch {
             withContext(Dispatchers.IO) {
-                var cell = getCell(dao, barcode, viewModel, _cell.value.toString())
-                var allGoods: List<Goods> = dao.getGoods().filter { goods -> goods.cellId == cell.id }
+                var cellTo = getCell(dao, barcode, viewModel, _cell.value.toString())
+                var allGoods: List<Goods> = dao.getGoods().filter { goods -> goods.cellId == cellTo.id }
+
                 myData.value?.forEach { item ->
-                    if (item.haveCount == item.allCount) {
-                        updateGoods(dao, item, cell, viewModel, barcode, allGoods)
-                    } else if (item.haveCount != 0){
-                        // создать новый goods
-                        var goods = Goods(
-                            id = UUID.randomUUID().toString(),
-                            amount = item.haveCount,
-                            cellId = getCell(dao, barcode, viewModel, _cell.value.toString()).id,
-                            catalogId = item.catalogId,
-                            createdAt = System.currentTimeMillis(),
-                            true,
-                            other = null
-                        )
-                        var changes = Change(
-                            id = UUID.randomUUID().toString(),
-                            entityId = goods.id,
-                            operationType = OperationType.InsertGoods.ordinal,
-                            status = StatusType.Created.ordinal,
-                            supplierId = (viewModel.uiState.value as UiState.MoveSessionMenu).supplierId,
-                            other = null
-                        )
-                        dao.insertGoodsAsync(goods,changes)
-                        // обновить старый goods
-                        var oldGoods = dao.getGoodsById(item.goodsId)
-                        var oldGoodsChanges = Change(
-                            id = UUID.randomUUID().toString(),
-                            entityId = item.goodsId,
-                            operationType = OperationType.UpdateGoods.ordinal,
-                            status = StatusType.Created.ordinal,
-                            supplierId = (viewModel.uiState.value as UiState.MoveSessionMenu).supplierId,
-                            other = null
-                        )
-                        dao.updateGoodsAsync(oldGoods.copy(amount = item.allCount - item.haveCount), oldGoodsChanges)
-                        listItems += item.copy(haveCount = 0, allCount = item.allCount - item.haveCount)
+                    var catalog = dao.getCatalogById(item.catalogId)
+                    var listOfGoodsInCellTo : List<Goods> = allGoods.filter {
+                            goodsItem -> goodsItem.cellId == cellTo.id && goodsItem.catalogId == catalog.id
+                    }
+                    if(listOfGoodsInCellTo.isEmpty()){
+                        createGoods(dao, item, cellTo, viewModel)
                     }else{
+                        updateGoods(dao, item, cellTo, viewModel, barcode, allGoods)
+                    }
+                    //update ui
+                    if (item.haveCount != item.allCount &&  item.haveCount != 0) {
+                        listItems += item.copy(haveCount = 0, allCount = item.allCount - item.haveCount)
+                    } else if (item.haveCount == 0){
                         listItems += item
                     }
 
@@ -243,32 +222,60 @@ class MoveSessionViewModel : ViewModel() {
         }
     }
 
-    suspend fun updateGoods(
-        dao: Dao,
-        item: MoveSessionItem,
-        cell: Cell,
-        viewModel: MainViewModel,
-        barcode: String,
-        allGoods: List<Goods>
-    ) {
-        var catalog = dao.getCatalogById(item.catalogId)
-        var goods = dao.getGoodsById(item.goodsId)
-        var cellTo = getCell(dao = dao,
-            barcode = barcode,
-            viewModel = viewModel,
-            sourceCellName = _cell.value.toString()
+    suspend  fun createGoods(dao: Dao, item: MoveSessionItem, cellTo: Cell, viewModel: MainViewModel) {
+        var goods = Goods(
+            id = UUID.randomUUID().toString(),
+            amount = item.haveCount,
+            cellId = cellTo.id,
+            catalogId = item.catalogId,
+            createdAt = System.currentTimeMillis(),
+            true,
+            other = null
         )
+        var changes = Change(
+            id = UUID.randomUUID().toString(),
+            entityId = goods.id,
+            operationType = OperationType.InsertGoods.ordinal,
+            status = StatusType.Created.ordinal,
+            supplierId = (viewModel.uiState.value as UiState.MoveSessionMenu).supplierId,
+            other = null
+        )
+        dao.insertGoodsAsync(goods,changes)
+
+        val changedElement = dao.getGoodsById(item.goodsId)
+        if(item.haveCount == item.allCount){
+            //удалить запись
+            val localChanges = Change(
+                id = UUID.randomUUID().toString(),
+                entityId = item.goodsId,
+                operationType = OperationType.DeleteGoods.ordinal,
+                status = StatusType.Created.ordinal,
+                supplierId = (viewModel.uiState.value as UiState.MoveSessionMenu).supplierId,
+                other = null
+            )
+            dao.deleteGoodsAsync(changedElement, localChanges)
+        }else{
+            //изменить запись
+            val localChanges = Change(
+                id = UUID.randomUUID().toString(),
+                entityId = item.goodsId,
+                operationType = OperationType.UpdateGoods.ordinal,
+                status = StatusType.Created.ordinal,
+                supplierId = (viewModel.uiState.value as UiState.MoveSessionMenu).supplierId,
+                other = null
+            )
+
+            dao.updateGoodsAsync(changedElement.copy(amount = changedElement.amount - item.haveCount), localChanges)
+        }
+    }
+    suspend fun updateGoods(dao: Dao, item: MoveSessionItem, cell: Cell, viewModel: MainViewModel, barcode: String, allGoods: List<Goods>) {
+
+        var goods = dao.getGoodsById(item.goodsId)
+
         // коллекция элементов в ячейке куда идет перемещение,
         // нужно если в целевой ячейке есть такой же каталог товара, чтобы просто изменить количество товара(и удалить элемент если осталось 0 в
         // ячейке откуда идет перемещение)
-        var listOfGoodsInCellTo : List<Goods> = allGoods.filter {
-            goodsItem -> goodsItem.cellId == cellTo.id && goodsItem.catalogId == catalog.id
-        }
-        if(listOfGoodsInCellTo.isEmpty()){
-            // то создается новый элемент либо меняет id ячейки у старого goods если все количество товара перемещается
-        }else{
-            // Прибавить количество к goods в целевой ячейке, Дальше если весь товар уходит то удалить запись иначе просто уменьшить количество
-        }
+
         var changes = Change(
             id = UUID.randomUUID().toString(),
             entityId = goods.id,

@@ -133,10 +133,18 @@ interface Dao {
         suspend fun getGoods(): List<Goods>
         @Update
         suspend fun updateGoods(goods: Goods)
+        @Delete
+        suspend fun deleteGoods(goods: Goods)
         @Transaction
         suspend fun updateGoodsAsync(goods: Goods, change: Change) : Pair<Unit, Unit>{
             val from = updateGoods(goods)
             val to = updateGoodsChanges(change)
+            return from to to
+        }
+        @Transaction
+        suspend fun deleteGoodsAsync(goods: Goods, change: Change) : Pair<Unit, Unit>{
+            val from = deleteGoods(goods)
+            val to = deleteGoodsChanges(change)
             return from to to
         }
     // </editor-fold>
@@ -173,6 +181,8 @@ interface Dao {
     fun insertBarcodeChanges(change: Change)
     @Insert
     suspend fun updateGoodsChanges(change: Change)
+    @Delete
+    suspend fun deleteGoodsChanges(change: Change)
     // </editor-fold>
     // <editor-fold desc="Movement">
 
