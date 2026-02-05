@@ -48,7 +48,6 @@ class IncomeSessionAdapter(
                 val view = inflater.inflate(R.layout.income_session, parent, false)
                 IncomeSessionViewHolder(view)
             }
-
             1 -> {
                 val view = inflater.inflate(R.layout.income_session_selected, parent, false)
                 IncomeSessionSelectedViewHolder(view)

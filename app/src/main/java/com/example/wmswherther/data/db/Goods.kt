@@ -20,5 +20,6 @@ data class Goods(
     val cellId: String,
     val catalogId: String,
     val createdAt: Long,
+    val isAvailable: Boolean,
     val other: String? // JSON
 )

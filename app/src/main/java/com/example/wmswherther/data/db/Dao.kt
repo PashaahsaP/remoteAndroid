@@ -43,6 +43,10 @@ interface Dao {
     /*@Delete
     suspend fun deleteCell(cell: Cell)*/
     // </editor-fold>
+    // <editor-fold desc="cellTypes">
+    @Query("SELECT * FROM cell_types")
+    suspend fun getCellTypes(): List<CellType>
+    // </editor-fold>
     // <editor-fold desc="IncomeSession">
     @Insert
     fun insertIncomeSession(incomeSession: SessionIncome)
@@ -127,6 +131,14 @@ interface Dao {
         suspend fun getGoodsByCellId(cellId: String): List<Goods>
         @Query("SELECT * FROM goods ")
         suspend fun getGoods(): List<Goods>
+        @Update
+        suspend fun updateGoods(goods: Goods)
+        @Transaction
+        suspend fun updateGoodsAsync(goods: Goods, change: Change) : Pair<Unit, Unit>{
+            val from = updateGoods(goods)
+            val to = updateGoodsChanges(change)
+            return from to to
+        }
     // </editor-fold>
     // <editor-fold desc="Barcodes">
     @Insert
@@ -159,8 +171,10 @@ interface Dao {
     fun insertGoodsChanges(change: Change)
     @Insert
     fun insertBarcodeChanges(change: Change)
-
-
+    @Insert
+    suspend fun updateGoodsChanges(change: Change)
+    // </editor-fold>
+    // <editor-fold desc="Movement">
 
     // </editor-fold>
 

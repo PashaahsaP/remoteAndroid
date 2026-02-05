@@ -22,6 +22,7 @@ class MainViewModel : ViewModel() {
     private val _isActiveSearchWindow = MutableLiveData<Boolean>(false)
     private val _searchLineData = MutableLiveData<String>(null)
     private val _currentSupplierId = MutableLiveData<String>(null)
+   // private val _moveSupplierId = MutableLiveData<String>(null)
 
 
     val WidthScanningField: LiveData<Int> get() = _widhtScanningField
@@ -33,6 +34,8 @@ class MainViewModel : ViewModel() {
     val IsActiveSearchWindow: LiveData<Boolean> get() = _isActiveSearchWindow
     val SearchLineData: LiveData<String> get() = _searchLineData
     val CurrentSupplierId: LiveData<String> get() = _currentSupplierId
+  //  val MoveSupplierId: LiveData<String> get() = _moveSupplierId
+
     fun setCurrentSupplierId(str: String){
         _currentSupplierId.value = str
     }
@@ -61,9 +64,6 @@ class MainViewModel : ViewModel() {
     fun setBarcode(text: String){
         _barcode.value = text
     }
-
-
-
     fun setActiveUi(state: UiState){
         _uiState.value = state
     }
