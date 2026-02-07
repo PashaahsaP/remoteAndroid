@@ -14,7 +14,7 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.example.wmsRemote.databinding.ActivityInventoryBinding
 import com.example.wmsRemote.Adapters.InventoryAdapter
-import com.example.wmsRemote.data.db.Cell
+import com.example.wmswherther.data.db.Entityes.Cell
 import com.example.wmsRemote.data.db.MainDB
 import com.example.wmsRemote.data.enums.SupplierType
 import com.example.wmsRemote.viewModel.InventoryViewModel

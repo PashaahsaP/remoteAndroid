@@ -3,19 +3,18 @@ package com.example.wmsRemote.data.db
 import androidx.room.Dao
 import androidx.room.Delete
 import androidx.room.Insert
-import androidx.room.OnConflictStrategy
 import androidx.room.Query
 import androidx.room.Transaction
 import androidx.room.Update
-import com.example.wmswherther.data.db.Barcode
-import com.example.wmswherther.data.db.Catalog
-import com.example.wmswherther.data.db.CellType
-import com.example.wmswherther.data.db.Change
-import com.example.wmswherther.data.db.Goods
-import com.example.wmswherther.data.db.IncomeItem
-import com.example.wmswherther.data.db.SessionIncome
-import com.example.wmswherther.data.db.Supplier
-import kotlinx.coroutines.flow.Flow
+import com.example.wmswherther.data.db.Entityes.Barcode
+import com.example.wmswherther.data.db.Entityes.Catalog
+import com.example.wmswherther.data.db.Entityes.CellType
+import com.example.wmswherther.data.db.Entityes.Cell
+import com.example.wmswherther.data.db.Entityes.Change
+import com.example.wmswherther.data.db.Entityes.Goods
+import com.example.wmswherther.data.db.Entityes.IncomeItem
+import com.example.wmswherther.data.db.Entityes.SessionIncome
+import com.example.wmswherther.data.db.Entityes.Supplier
 
 @Dao
 interface Dao {
@@ -152,7 +151,7 @@ interface Dao {
     @Insert
     fun insertBarcode(barcode: Barcode)
     @Transaction
-    fun insertBarcodeAsync(barcode:Barcode, change: Change) : Pair<Unit, Unit>{
+    fun insertBarcodeAsync(barcode: Barcode, change: Change) : Pair<Unit, Unit>{
         val from = insertBarcode(barcode)
         var to = insertBarcodeChanges(change)
         return from to to

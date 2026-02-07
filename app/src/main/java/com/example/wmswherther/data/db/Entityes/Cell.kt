@@ -1,11 +1,10 @@
-package com.example.wmsRemote.data.db
+package com.example.wmswherther.data.db.Entityes
 
 import androidx.room.ColumnInfo
 import androidx.room.Entity
 import androidx.room.ForeignKey
 import androidx.room.Index
 import androidx.room.PrimaryKey
-import com.example.wmswherther.data.db.CellType
 
 @Entity(
     tableName = "cells",

@@ -1,4 +1,4 @@
-package com.example.wmswherther.data.db
+package com.example.wmswherther.data.db.Entityes
 
 import androidx.room.Entity
 import androidx.room.PrimaryKey

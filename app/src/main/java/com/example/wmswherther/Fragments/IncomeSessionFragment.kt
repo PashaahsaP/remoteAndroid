@@ -1,16 +1,13 @@
 package com.example.wmswherther.Fragments
 
-import android.annotation.SuppressLint
 import android.graphics.Color
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.core.content.ContextCompat
-import androidx.core.view.setPadding
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
-import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
@@ -20,7 +17,7 @@ import com.example.wmsRemote.databinding.FragmentIncomeSessionBinding
 import com.example.wmswherther.Adapters.IncomeSessionAdapter
 import com.example.wmswherther.Classes.IncomeItem
 import com.example.wmswherther.Classes.UiState
-import com.example.wmswherther.data.db.Barcode
+import com.example.wmswherther.data.db.Entityes.Barcode
 import com.example.wmswherther.viewModel.IncomeSessionViewModel
 import com.example.wmswherther.viewModel.MainViewModel
 import kotlinx.coroutines.Dispatchers

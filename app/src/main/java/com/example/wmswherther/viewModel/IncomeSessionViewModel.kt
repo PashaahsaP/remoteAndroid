@@ -4,11 +4,11 @@ import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.example.wmsRemote.data.db.Cell
+import com.example.wmswherther.data.db.Entityes.Cell
 import com.example.wmsRemote.data.db.MainDB
 import com.example.wmswherther.Classes.IncomeItem
-import com.example.wmswherther.data.db.Barcode
-import com.example.wmswherther.data.db.Goods
+import com.example.wmswherther.data.db.Entityes.Barcode
+import com.example.wmswherther.data.db.Entityes.Goods
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
@@ -217,7 +217,7 @@ class IncomeSessionViewModel : ViewModel() {
 
         return  result
     }
-    suspend fun getBarcode(db : MainDB, barcode: String) : Barcode{
+    suspend fun getBarcode(db : MainDB, barcode: String) : Barcode {
         return db.getDao().getBarcodeByName(barcode)
     }
 }

@@ -3,16 +3,10 @@ package com.example.wmsRemote.models
 import android.content.Context
 import android.os.Build
 import androidx.annotation.RequiresApi
-import androidx.swiperefreshlayout.widget.SwipeRefreshLayout
-import com.example.wmsRemote.Adapters.AdapterHelper
 import com.example.wmsRemote.Classes.IInventoryItem
 import com.example.wmsRemote.InventoryActivity
-import com.example.wmsRemote.data.db.Cell
 import com.example.wmsRemote.data.db.MainDB
-import com.example.wmsRemote.viewModel.InventoryItem
 import com.example.wmsRemote.viewModel.InventoryViewModel
-import com.example.wmsRemote.viewModel.retryRequest
-import com.example.wmswherther.HelperFunction
 import com.example.wmswherther.data.db.Request
 import kotlinx.coroutines.CoroutineScope
 

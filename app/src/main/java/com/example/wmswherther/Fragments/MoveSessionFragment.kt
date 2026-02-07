@@ -11,11 +11,10 @@ import androidx.lifecycle.viewModelScope
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.example.wmsRemote.Adapters.MoveSessionAdapter
-import com.example.wmsRemote.MoveActivity
 import com.example.wmsRemote.data.db.MainDB
 import com.example.wmsRemote.databinding.FragmentMoveSessionBinding
 import com.example.wmsRemote.viewModel.MoveSessionViewModel
-import com.example.wmswherther.data.db.CellType
+import com.example.wmswherther.data.db.Entityes.CellType
 import com.example.wmswherther.viewModel.MainViewModel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -147,19 +146,7 @@ class MoveSessionFragment: Fragment() {
             }*/
         }
 
-        fun handleTextChange(
-            text: String,
-            trim: String,
-            moveActivity: MoveActivity,
-            db: MainDB,
-            adapter: MoveSessionAdapter
-        ) {
-            if (text != "") {
-                localViewModel.searchBtnHandler(trim, moveActivity, db, adapter, binding)
-                /* binding.etCell.text.clear()
-                 binding.etCell.requestFocus()*/
-            }
-        }
+
         return binding.root
     }
 

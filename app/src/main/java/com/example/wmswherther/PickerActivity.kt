@@ -4,22 +4,13 @@ import android.os.Bundle
 import android.view.WindowManager
 import android.widget.TextView
 import androidx.activity.enableEdgeToEdge
-import android.widget.Toast
 
 import androidx.appcompat.app.AppCompatActivity
 import android.widget.EditText
 import androidx.annotation.RequiresApi
-import androidx.lifecycle.lifecycleScope
 import com.example.wmsRemote.databinding.ActivityPickerBinding
-import com.example.wmsRemote.data.db.Cell
 import com.example.wmsRemote.data.db.MainDB
-import com.example.wmswherther.HelperFunction
 import com.example.wmswherther.data.db.Request
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.delay
-import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
-import java.time.LocalDateTime
 
 class PickerActivity : AppCompatActivity() {
     private var _binding: ActivityPickerBinding? = null

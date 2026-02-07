@@ -6,24 +6,17 @@ import android.os.Looper
 import android.text.SpannableString
 import android.text.Spanned
 import android.text.style.ForegroundColorSpan
-import android.view.View
 import android.view.inputmethod.EditorInfo
 import android.view.inputmethod.InputMethodManager
 import androidx.activity.enableEdgeToEdge
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.content.ContextCompat
 import androidx.lifecycle.lifecycleScope
-import com.example.wmsRemote.R
 import com.example.wmsRemote.databinding.ActivitySearchByCellBinding
-import com.example.wmsRemote.data.db.Cell
 import com.example.wmsRemote.data.db.MainDB
-import com.example.wmswherther.HelperFunction
-import com.example.wmswherther.data.db.Request
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
-import org.json.JSONObject
 
 class SearchActivity : AppCompatActivity() {
     private var _binding: ActivitySearchByCellBinding? = null
