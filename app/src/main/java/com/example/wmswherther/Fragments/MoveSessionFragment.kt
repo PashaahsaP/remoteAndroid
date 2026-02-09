@@ -4,6 +4,7 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import androidx.appcompat.app.AlertDialog
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
 import androidx.lifecycle.ViewModelProvider
@@ -60,8 +61,25 @@ class MoveSessionFragment: Fragment() {
                         // иначе создается новый goods
                         //TODO перемещение элементов если нажата клавиша
                     } else {
-                        localViewModel.updateCell(barcode)
-                        localViewModel.loadData(dao, barcode, viewModel)
+                        if(viewModel.uiState.value is UiState.MoveSessionMenu) {
+                            val uiState = viewModel.uiState.value as UiState.MoveSessionMenu
+                            if (!uiState.isEmptyList){
+                                val dialog = AlertDialog.Builder(requireActivity())
+                                    .setTitle("Выход")
+                                    .setMessage("Есть остканированный товар, при переходе в другую ячейку прогресс сбросится!")
+                                    .setPositiveButton("Да") { _, _ ->
+                                        localViewModel.updateCell(barcode)
+                                        localViewModel.loadData(dao, barcode, viewModel)
+                                        localViewModel.setCounter(0)
+                                    }
+                                    .setNegativeButton("Нет", null)
+                                    .create()
+                                dialog.show()
+                            }else {
+                                localViewModel.updateCell(barcode)
+                                localViewModel.loadData(dao, barcode, viewModel)
+                            }
+                        }
                     }
                 } else {
                     localViewModel.changeList(barcode, dao)
@@ -77,6 +95,16 @@ class MoveSessionFragment: Fragment() {
             }else {
                 binding.btnMove.visibility = View.VISIBLE
                 binding.btnCancel.visibility = View.GONE
+            }
+        })
+        localViewModel.counter.observe(requireActivity(), { count ->
+            if(viewModel.uiState.value is UiState.MoveSessionMenu) {
+                val ui = viewModel.uiState.value as UiState.MoveSessionMenu
+                if (count == 0) {
+                    viewModel.setActiveUi(ui.copy(isEmptyList = true))
+                } else {
+                    viewModel.setActiveUi(ui.copy(isEmptyList = false))
+                }
             }
         })
         localViewModel.cell.observe(requireActivity(), {str ->

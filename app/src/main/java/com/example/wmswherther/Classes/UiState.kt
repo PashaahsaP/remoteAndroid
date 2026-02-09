@@ -51,6 +51,7 @@ sealed class UiState {
         val isMovingModeActive: Boolean = false,
         val isThreeDotsActive: Boolean = false,
         val isBackBtnActive: Boolean = true,
+        var isEmptyList: Boolean = true,
         val isProtectionModeActive: Boolean = false,
         val prevState: UiState? = null,
     ) : UiState()

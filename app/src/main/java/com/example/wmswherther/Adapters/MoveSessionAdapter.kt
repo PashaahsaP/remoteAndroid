@@ -106,7 +106,6 @@ class MoveSessionAdapter(
                 holder.etSelectedCount.setOnKeyListener { _, keyCode, event ->
                     if (event.action == KeyEvent.ACTION_DOWN) {
                         val char = event.unicodeChar.toChar()
-
                         if (char == '\n') { // Enter — значит скан закончен
                             val scannedBarcode = barcodeBuffer.toString().trim()
                             barcodeBuffer.clear()
@@ -120,7 +119,9 @@ class MoveSessionAdapter(
                                     if (count > item.allCount){
                                         item.haveCount = item.allCount
                                     }else{
-                                    item.haveCount = count
+                                        val diff = count - item.haveCount
+                                        item.haveCount = count
+                                        viewModel.setCounter(viewModel.getCounter() + diff)
                                     }
 
 

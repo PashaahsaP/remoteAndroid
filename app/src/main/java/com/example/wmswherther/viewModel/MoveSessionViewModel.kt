@@ -29,13 +29,16 @@ class MoveSessionViewModel : ViewModel() {
     private val _myData = MutableLiveData<MutableList<MoveSessionItem>>()
     private val _isMoving = MutableLiveData<Boolean>()
     private val _cell = MutableLiveData<String>()
+    private val _counter = MutableLiveData(0)
     private val _selectedItem = MutableLiveData<Int>()
-// </editor-fold>
+    // </editor-fold>
     // <editor-fold desc="properties">
         val isMoving: LiveData<Boolean> get() =_isMoving
         val myData: LiveData<MutableList<MoveSessionItem>> get() = _myData
         val cell : LiveData<String> get() = _cell
-        val selectedItem: LiveData<Int> get() = _selectedItem
+        val counter : LiveData<Int> get() = _counter
+
+    val selectedItem: LiveData<Int> get() = _selectedItem
     // </editor-fold>
     // <editor-fold desc="propertiesMethods">
         fun updateMyData(collection: MutableList<MoveSessionItem>){
@@ -44,13 +47,14 @@ class MoveSessionViewModel : ViewModel() {
         fun changeList(barcode: String, dao: Dao){
             viewModelScope.launch {
                 var list: MutableList<MoveSessionItem> = mutableListOf()
+                var localCounter = 0
                 withContext(Dispatchers.IO) {
                     var dbBarcode = dao.getBarcodeByName(barcode)
                     var catalog = dao.getCatalogById(dbBarcode.catalogId)
-
                     myData.value?.forEach { item ->
                         if(item.catalogId == catalog.id && item.haveCount < item.allCount){
                             list.add(item.copy(haveCount = item.haveCount + 1))
+                            localCounter += 1
                         }else {
                             list.add((item))
                         }
@@ -58,6 +62,8 @@ class MoveSessionViewModel : ViewModel() {
                 }
                 withContext(Dispatchers.Main){
                     updateMyData(list)
+                    setCounter(getCounter() + localCounter)
+
                 }
             }
         }
@@ -70,6 +76,12 @@ class MoveSessionViewModel : ViewModel() {
                 return isCorrect
             else
                 return  0
+        }
+        fun getCounter() : Int{
+            return _counter.value ?: 0
+        }
+        fun setCounter(value: Int) {
+            _counter.value = value
         }
         fun updateIsMoving(isMoving: Boolean){
             _isMoving.value = isMoving
