@@ -8,5 +8,6 @@ enum class OperationType {
     InsertIncomeItem,
     InsertBarcode,
     UpdateGoods,
-    DeleteGoods
+    DeleteGoods,
+    UpdateCell
 }

@@ -63,7 +63,33 @@ class MoveRepository(
         var destinationChange: Change = createChangeForGoods(destinationGoods.id, viewModel, OperationType.UpdateGoods)
         dao.updateGoodsAsync(destinationGoods.copy(amount = item.haveCount + destinationGoods.amount), destinationChange)
     }
+    suspend fun moveGoodsToCell(
+        dao: Dao,
+        item: MoveSessionItem,
+        allGoods: List<Goods>,
+        cellTo: Cell,
+        moveRepo: MoveRepository,
+        viewModel: MainViewModel
+    ) {
 
+        var catalog = dao.getCatalogById(item.catalogId)
+        var listOfGoodsInCellTo: List<Goods> = allGoods
+            .filter { goodsItem -> goodsItem.cellId == cellTo.id && goodsItem.catalogId == catalog.id }
+        // update db
+        if (listOfGoodsInCellTo.isEmpty() && item.haveCount != 0) {
+            moveRepo.createGoodsInDestinationCell(dao, item, cellTo, viewModel)
+            moveRepo.updateOrRemoveGoodsInSource(item, viewModel, dao)
+        } else if (listOfGoodsInCellTo.isNotEmpty() && item.haveCount != 0) {
+            moveRepo.updateGoodsInDestinationCell(
+                allGoods,
+                item,
+                viewModel,
+                dao
+            )
+            moveRepo.updateOrRemoveGoodsInSource(item, viewModel, dao)
+        }
+
+    }
     /**
      * @param entityId Получение id сущности над которым будет происходить какое то действие
      * @param viewModel Нужна для получения id поставщика
@@ -103,5 +129,18 @@ class MoveRepository(
             cell = newCell
         }
         return cell
+    }
+
+    suspend fun moveCellToCell(item: MoveSessionItem, cellTo: Cell, dao: Dao, viewModel: MainViewModel) {
+        var changes = Change(
+            id = UUID.randomUUID().toString(),
+            entityId = item.catalogId,
+            operationType = OperationType.UpdateCell.ordinal,
+            status = StatusType.Created.ordinal,
+            supplierId = (viewModel.uiState.value as UiState.MoveSessionMenu).supplierId,
+            other = null
+        )
+        var cell = dao.getCellById(item.catalogId)
+        dao.updateCellAsync(cell.copy(parentCellId = cellTo.id), changes)
     }
 }

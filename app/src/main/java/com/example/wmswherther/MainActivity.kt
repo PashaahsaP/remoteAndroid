@@ -535,7 +535,6 @@ class MainActivity : AppCompatActivity() {
             val currentFragment = supportFragmentManager
                 .findFragmentById(R.id.fragmentContainer)
                 if(currentFragment != null){
-
                     viewModel.setActiveUi(SearchMenu(prevState = viewModel.uiState.value))
                     currentFragment.parentFragmentManager.commit {
                         setCustomAnimations(

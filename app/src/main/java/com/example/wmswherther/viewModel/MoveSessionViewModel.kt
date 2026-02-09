@@ -99,11 +99,28 @@ class MoveSessionViewModel : ViewModel() {
                                         allCount = goods.amount,
                                         name = catalog.name,
                                         catalogId = catalog.id,
-                                        goodsId = goods.id
+                                        goodsId = goods.id,
+                                        isCell = false
+
                                     )
                                 )
                             }
                         }
+                        dao.getAllCells()
+                            .filter { innerCell-> innerCell.parentCellId == cell.id }
+                            .forEach { inner ->
+                                list.add(
+                                    MoveSessionItem(
+                                        name = inner.name,
+                                        haveCount = 0,
+                                        catalogId = inner.id,//TODO создать новый класс в котором будет свойство cellID
+                                        goodsId = "",
+                                        allCount = 1,
+                                        isSelected = false,
+                                        isCell = true
+                                    )
+                                )
+                            }
                     }
                 }
                 withContext(Dispatchers.Main) {
@@ -121,26 +138,24 @@ class MoveSessionViewModel : ViewModel() {
                 withContext(Dispatchers.IO) {
                     var cellTo = moveRepo.getCell(dao, barcode, viewModel, _cell.value.toString())
                     var allGoods: List<Goods> = dao.getGoods().filter { goods -> goods.cellId == cellTo.id }
-
                     myData.value?.forEach { item ->
-                        var catalog = dao.getCatalogById(item.catalogId)
-                        var listOfGoodsInCellTo : List<Goods> = allGoods
-                            .filter { goodsItem -> goodsItem.cellId == cellTo.id && goodsItem.catalogId == catalog.id }
-                        // update db
-                        if(listOfGoodsInCellTo.isEmpty()){
-                            moveRepo.createGoodsInDestinationCell(dao, item, cellTo, viewModel)
-                            moveRepo.updateOrRemoveGoodsInSource(item, viewModel, dao)
-                        }else{
-                            moveRepo.updateGoodsInDestinationCell(allGoods, item, viewModel, dao)
-                            moveRepo.updateOrRemoveGoodsInSource(item, viewModel, dao)
+                        if (item.isCell){
+                            moveRepo.moveCellToCell(item, cellTo, dao, viewModel)//TODO make validation is Cell
+                        }else {
+                            moveRepo.moveGoodsToCell(dao, item, allGoods, cellTo, moveRepo, viewModel)
                         }
                         // update ui
-                        if (item.haveCount != item.allCount &&  item.haveCount != 0) {
-                            listItems += item.copy(haveCount = 0, allCount = item.allCount - item.haveCount)
-                        } else if (item.haveCount == 0){
+                        if(item.allCount == item.haveCount){
+
+                        }
+                        else if (item.haveCount != item.allCount && item.haveCount != 0) {
+                            listItems += item.copy(
+                                haveCount = 0,
+                                allCount = item.allCount - item.haveCount
+                            )
+                        } else if (item.haveCount == 0) {
                             listItems += item
                         }
-
                     }
                 }
                 withContext(Dispatchers.Main){
@@ -149,6 +164,8 @@ class MoveSessionViewModel : ViewModel() {
                 updateIsMoving(false)
             }
         }
+
+
     // </editor-fold>
     // <editor-fold desc="helper function">
 

@@ -23,6 +23,8 @@ interface Dao {
     // <editor-fold desc="Cell">
     @Insert
     fun insertCell(cell: Cell)
+    @Update
+    suspend fun updateCell(cell: Cell)
     @Transaction
     fun insertCellSync(cell: Cell, change: Change) : Pair<Unit, Unit> {
         val from = insertCell(cell)
@@ -39,6 +41,12 @@ interface Dao {
     suspend fun getCellByName(cellName: String): Cell
     @Query("SELECT * FROM cells WHERE parentCellId =:parentCellId")
     suspend fun getChildrenCells(parentCellId: String): List<Cell>
+    @Transaction
+    suspend fun updateCellAsync(cell: Cell, change: Change) : Pair<Unit, Unit>{
+        val from = updateCell(cell)
+        val to = updateCellChanges(change)
+        return from to to
+    }
     /*@Delete
     suspend fun deleteCell(cell: Cell)*/
     // </editor-fold>
@@ -180,6 +188,8 @@ interface Dao {
     fun insertBarcodeChanges(change: Change)
     @Insert
     suspend fun updateGoodsChanges(change: Change)
+    @Insert
+    suspend fun updateCellChanges(change: Change)
     @Delete
     suspend fun deleteGoodsChanges(change: Change)
     // </editor-fold>

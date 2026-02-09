@@ -28,4 +28,6 @@ data class MoveSessionItem(
     var catalogId: String,
     var goodsId: String,
     var allCount: Int,
-    var isSelected: Boolean)
+    var isSelected: Boolean,
+    var isCell: Boolean
+)

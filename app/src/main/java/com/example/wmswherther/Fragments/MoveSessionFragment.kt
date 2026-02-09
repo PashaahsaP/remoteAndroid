@@ -14,6 +14,7 @@ import com.example.wmsRemote.Adapters.MoveSessionAdapter
 import com.example.wmsRemote.data.db.MainDB
 import com.example.wmsRemote.databinding.FragmentMoveSessionBinding
 import com.example.wmsRemote.viewModel.MoveSessionViewModel
+import com.example.wmswherther.Classes.UiState
 import com.example.wmswherther.data.db.Entityes.CellType
 import com.example.wmswherther.viewModel.MainViewModel
 import kotlinx.coroutines.Dispatchers
@@ -51,7 +52,7 @@ class MoveSessionFragment: Fragment() {
         viewModel.Barcode.observe(viewLifecycleOwner, { barcode ->
             //TODO сделать чтобы была сортировка по те, количеству и прочему перед добавлением
             //TODO  Если нажал ТЕ надо сделать чтобы можно было отменить добавление товара в те.
-            if(barcode != "") {
+            if(barcode != "" && viewModel.uiState.value is UiState.MoveSessionMenu) {
                 if (isCell(barcode, listTypes)) {
                     if (localViewModel.isMoving.value != null && localViewModel.isMoving.value!!) {
                         localViewModel.moveItems(barcode, dao, viewModel)
