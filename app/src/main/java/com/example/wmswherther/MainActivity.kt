@@ -142,10 +142,16 @@ class MainActivity : AppCompatActivity() {
                 is MoveMenu -> {
                     binding.btnBack.visibility = if (State.isBackBtnActive) View.VISIBLE else View.GONE
                     binding.btnSearch.visibility = if (State.isSearchLoopActive) View.VISIBLE else View.GONE
-                    binding.btnBarcode.visibility = if (State.isTEModeActive) View.VISIBLE else View.GONE
                     binding.etIncomeBarcode.visibility = if (State.isBarcodeFieldActive) View.VISIBLE else View.GONE
+                    binding.btnCheck.visibility = if (State.isCheckModeActive) View.VISIBLE else View.GONE
                 }
                 is MoveSessionMenu -> {
+                    binding.btnCheck.visibility = if (State.isCheckModeActive) View.VISIBLE else View.GONE
+                    if(State.isChecked){
+                        binding.btnCheck.setImageResource(R.drawable.checkbox_checked)
+                    }else{
+                        binding.btnBarcode.setImageResource(R.drawable.checkbox_unchecked)
+                    }
                     binding.btnBack.visibility = if (State.isBackBtnActive) View.VISIBLE else View.GONE
                     binding.btnSearch.visibility = if (State.isSearchLoopActive) View.VISIBLE else View.GONE
                     binding.etIncomeBarcode.visibility = if (State.isBarcodeFieldActive) View.VISIBLE else View.GONE
@@ -597,6 +603,13 @@ private fun getWidth(binding: ActivityMainBinding) : Int {
     if(binding.btnSearch.isVisible){
         if(binding.btnSearch.width != 0){
             width += binding.btnSearch.width
+        }else{
+            width += 144
+        }
+    }
+    if(binding.btnCheck.isVisible){
+        if(binding.btnCheck.width != 0){
+            width += binding.btnCheck.width
         }else{
             width += 144
         }

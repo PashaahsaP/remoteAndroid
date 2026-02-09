@@ -12,6 +12,7 @@ sealed class UiState {
         val isSearchLoopActive: Boolean = false,
         val isBarcodeFieldActive: Boolean = true,
         val isTEModeActive: Boolean = false,
+        val isCheckModeActive : Boolean = false,
         val isThreeDotsActive: Boolean = true,
         val isBackBtnActive: Boolean = true,
         val prevState: UiState? = null,
@@ -38,9 +39,9 @@ sealed class UiState {
     data class MoveMenu(
         val isSearchLoopActive: Boolean = true,
         val isBarcodeFieldActive: Boolean = false,
-        val isTEModeActive: Boolean = false,
         val isThreeDotsActive: Boolean = false,
         val isBackBtnActive: Boolean = true,
+        val isCheckModeActive : Boolean = false,
         val prevState: UiState? = null,
     ) : UiState()
     data class MoveSessionMenu(
@@ -52,7 +53,8 @@ sealed class UiState {
         val isThreeDotsActive: Boolean = false,
         val isBackBtnActive: Boolean = true,
         var isEmptyList: Boolean = true,
-        val isProtectionModeActive: Boolean = false,
+        val isChecked: Boolean = false,
+        val isCheckModeActive : Boolean = true,
         val prevState: UiState? = null,
     ) : UiState()
 }

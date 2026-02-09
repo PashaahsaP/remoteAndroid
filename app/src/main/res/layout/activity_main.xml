@@ -50,6 +50,17 @@
             android:layout_marginBottom="3dp"
             app:layout_constraintRight_toLeftOf="@+id/btnSearch"
             app:layout_constraintBottom_toBottomOf="parent" />
+        <ImageButton
+            android:id="@+id/btnCheck"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:background="@drawable/selector_background"
+            android:src="@drawable/checkbox_unchecked"
+            android:padding="2dp"
+            android:layout_marginBottom="3dp"
+            android:visibility="gone"
+            app:layout_constraintRight_toLeftOf="@+id/btnBarcode"
+            app:layout_constraintBottom_toBottomOf="parent" />
 
         <ImageButton
             android:id="@+id/btnBack"
