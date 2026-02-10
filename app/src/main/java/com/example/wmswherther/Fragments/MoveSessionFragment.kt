@@ -63,7 +63,7 @@ class MoveSessionFragment: Fragment() {
                     } else {
                         if(viewModel.uiState.value is UiState.MoveSessionMenu) {
                             val uiState = viewModel.uiState.value as UiState.MoveSessionMenu
-                            if (!uiState.isEmptyList){
+                            if (!localViewModel.getIsEmptyList()){
                                 val dialog = AlertDialog.Builder(requireActivity())
                                     .setTitle("Выход")
                                     .setMessage("Есть остканированный товар, при переходе в другую ячейку прогресс сбросится!")
@@ -88,12 +88,10 @@ class MoveSessionFragment: Fragment() {
             }
         })
         viewModel.uiState.observe(viewLifecycleOwner, { uiState ->
-            val state = uiState
             if(uiState is UiState.MoveSessionMenu){
                 localViewModel.setSelection(uiState.isChecked)
             }
         })
-
         localViewModel.isMoving.observe(requireActivity(), {isMove->
             if (isMove) {
                 binding.btnMove.visibility = View.GONE
@@ -105,17 +103,11 @@ class MoveSessionFragment: Fragment() {
         })
         localViewModel.counter.observe(requireActivity(), { count ->
             if(viewModel.uiState.value is UiState.MoveSessionMenu) {
-                val ui = viewModel.uiState.value as UiState.MoveSessionMenu
                 if (count == 0) {
-                    viewModel.setActiveUi(ui.copy(isEmptyList = true))
+                    localViewModel.setIsEmptyList(true)
                 } else {
-                    viewModel.setActiveUi(ui.copy(isEmptyList = false))
+                    localViewModel.setIsEmptyList(false)
                 }
-                /*if(count == localViewModel.totalCount.value){
-                    viewModel.setActiveUi(ui.copy(isChecked = true))
-                }else{
-                    viewModel.setActiveUi(ui.copy(isChecked = false))
-                }*/
             }
         })
         localViewModel.cell.observe(requireActivity(), {str ->

@@ -50,7 +50,7 @@ class IncomeFragment : Fragment() {
         lifecycleScope.launch {
             withContext(Dispatchers.IO){
                 //appendDummyData(MainDB.getDB(requireActivity()))
-                //appendMoveDummyData(MainDB.getDB(requireActivity()))
+                appendMoveDummyData(MainDB.getDB(requireActivity()))
             }
         }
         //viewModel.setCurrFragment(this)
@@ -223,13 +223,13 @@ fun appendDummyData(db: MainDB){
 
 
         var goods = Goods(
-            UUID.randomUUID().toString(),
-            3 + enum,
-            A111.id,
-            catalog.id,
-            System.currentTimeMillis(),
-            false,
-            null
+            id =UUID.randomUUID().toString(),
+            amount = 3 + enum,
+            cellId = A111.id,
+            catalogId = catalog.id,
+            createdAt = System.currentTimeMillis(),
+            isAvailable = false,
+            other = null
         )
         var goodsChange = Change(
             UUID.randomUUID().toString(),
@@ -312,13 +312,13 @@ fun appendDummyData(db: MainDB){
 
 
         var goods = Goods(
-            UUID.randomUUID().toString(),
-            3 + enum,
-            N00000001.id,
-            catalog.id,
-            System.currentTimeMillis(),
-            false,
-            null
+            id = UUID.randomUUID().toString(),
+            amount = 3 + enum,
+            cellId = N00000001.id,
+            catalogId = catalog.id,
+            createdAt = System.currentTimeMillis(),
+            isAvailable = false,
+            other = null
         )
         var goodsChange = Change(
             UUID.randomUUID().toString(),
@@ -453,13 +453,13 @@ fun appendMoveDummyData(db: MainDB){
 
 
         var goods = Goods(
-            UUID.randomUUID().toString(),
-            3 + enum,
-            A111.id,
-            catalog.id,
-            System.currentTimeMillis(),
-            true,
-            null
+            id = UUID.randomUUID().toString(),
+            amount = 3 + enum,
+            cellId = A111.id,
+            catalogId = catalog.id,
+            createdAt = System.currentTimeMillis(),
+            isAvailable = true,
+            other = null
         )
         var goodsChange = Change(
             UUID.randomUUID().toString(),
@@ -509,13 +509,13 @@ fun appendMoveDummyData(db: MainDB){
 
 
         var goods = Goods(
-            UUID.randomUUID().toString(),
-            3 + enum,
-            N00000001.id,
-            catalog.id,
-            System.currentTimeMillis(),
-            true,
-            null
+            id = UUID.randomUUID().toString(),
+            amount = 3 + enum,
+            cellId = N00000001.id,
+            catalogId = catalog.id,
+            createdAt = System.currentTimeMillis(),
+            isAvailable = true,
+            other = null
         )
         var goodsChange = Change(
             UUID.randomUUID().toString(),
