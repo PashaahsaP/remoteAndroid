@@ -87,6 +87,12 @@ class MoveSessionFragment: Fragment() {
                 }
             }
         })
+        viewModel.uiState.observe(viewLifecycleOwner, { uiState ->
+            val state = uiState
+            if(uiState is UiState.MoveSessionMenu){
+                localViewModel.setSelection(uiState.isChecked)
+            }
+        })
 
         localViewModel.isMoving.observe(requireActivity(), {isMove->
             if (isMove) {
@@ -105,6 +111,11 @@ class MoveSessionFragment: Fragment() {
                 } else {
                     viewModel.setActiveUi(ui.copy(isEmptyList = false))
                 }
+                /*if(count == localViewModel.totalCount.value){
+                    viewModel.setActiveUi(ui.copy(isChecked = true))
+                }else{
+                    viewModel.setActiveUi(ui.copy(isChecked = false))
+                }*/
             }
         })
         localViewModel.cell.observe(requireActivity(), {str ->

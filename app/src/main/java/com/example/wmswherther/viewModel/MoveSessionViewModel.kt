@@ -26,19 +26,20 @@ class MoveSessionViewModel : ViewModel() {
    /* var supplier : Int = SupplierType.Bork.ordinal
     var client = Request()
     var ip = "192.168.6.208"*/
-    private val _myData = MutableLiveData<MutableList<MoveSessionItem>>()
-    private val _isMoving = MutableLiveData<Boolean>()
-    private val _cell = MutableLiveData<String>()
-    private val _counter = MutableLiveData(0)
-    private val _selectedItem = MutableLiveData<Int>()
+        private val _myData = MutableLiveData<MutableList<MoveSessionItem>>()
+        private val _isMoving = MutableLiveData<Boolean>()
+        private val _cell = MutableLiveData<String>()
+        private val _counter = MutableLiveData(0)
+        private val _totalCount = MutableLiveData(99999999)
+        private val _selectedItem = MutableLiveData<Int>()
     // </editor-fold>
     // <editor-fold desc="properties">
         val isMoving: LiveData<Boolean> get() =_isMoving
         val myData: LiveData<MutableList<MoveSessionItem>> get() = _myData
         val cell : LiveData<String> get() = _cell
         val counter : LiveData<Int> get() = _counter
-
-    val selectedItem: LiveData<Int> get() = _selectedItem
+        val totalCount : LiveData<Int> get() = _totalCount
+        val selectedItem: LiveData<Int> get() = _selectedItem
     // </editor-fold>
     // <editor-fold desc="propertiesMethods">
         fun updateMyData(collection: MutableList<MoveSessionItem>){
@@ -98,12 +99,15 @@ class MoveSessionViewModel : ViewModel() {
         ) {
             viewModelScope.launch {
                 var list: MutableList<MoveSessionItem> = mutableListOf()
+                var totalCount = 0
                 withContext(Dispatchers.IO) {
                     var cell = dao.getCellByName(barcode)
                     if (cell != null) {
                         dao.getGoodsByCellId(cell.id).forEach { goods: Goods ->
                             var catalog = dao.getCatalogById(goods.catalogId)
                             if (catalog.supplierId == (viewModel.uiState.value as UiState.MoveSessionMenu).supplierId && goods.isAvailable) {
+                                totalCount +=  goods.amount
+
                                 list.add(
                                     MoveSessionItem(
                                         isSelected = false,
@@ -121,6 +125,7 @@ class MoveSessionViewModel : ViewModel() {
                         dao.getAllCells()
                             .filter { innerCell-> innerCell.parentCellId == cell.id }
                             .forEach { inner ->
+                                totalCount +=  1
                                 list.add(
                                     MoveSessionItem(
                                         name = inner.name,
@@ -137,6 +142,7 @@ class MoveSessionViewModel : ViewModel() {
                 }
                 withContext(Dispatchers.Main) {
                     updateMyData(list)
+                    _totalCount.value = totalCount
                 }
             }
         }
@@ -187,6 +193,19 @@ class MoveSessionViewModel : ViewModel() {
             return true
         }
         return false
+    }
+
+    fun setSelection(checked: Boolean) {
+        /*var list: MutableList<MoveSessionItem> = mutableListOf()
+        if (checked){
+            setCounter(_totalCount.value?: 0)
+            myData.value?.forEach { item -> list.add(item.copy(haveCount = item.allCount))}
+            updateMyData(list)
+        }else{
+            setCounter(0)
+            myData.value?.forEach { item -> list.add(item.copy(haveCount = 0))}
+            updateMyData(list)
+        }*/
     }
     // </editor-fold>
 

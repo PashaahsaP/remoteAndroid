@@ -150,7 +150,7 @@ class MainActivity : AppCompatActivity() {
                     if(State.isChecked){
                         binding.btnCheck.setImageResource(R.drawable.checkbox_checked)
                     }else{
-                        binding.btnBarcode.setImageResource(R.drawable.checkbox_unchecked)
+                        binding.btnCheck.setImageResource(R.drawable.checkbox_unchecked)
                     }
                     binding.btnBack.visibility = if (State.isBackBtnActive) View.VISIBLE else View.GONE
                     binding.btnSearch.visibility = if (State.isSearchLoopActive) View.VISIBLE else View.GONE
@@ -160,6 +160,7 @@ class MainActivity : AppCompatActivity() {
                     if (State.isBarcodeFieldActive)
                         binding.etIncomeBarcode.requestFocus()
                     else binding.etIncomeBarcodeScan.requestFocus()
+
                 }
 
             }
@@ -353,6 +354,12 @@ class MainActivity : AppCompatActivity() {
                 }
                 else {
                     viewModel.setActiveUi((viewModel.uiState.value as UiState.IncomeSessionMenu).copy(isTEModeActive = true))
+                }
+            }
+            btnCheck.setOnClickListener {
+                val ui = viewModel.uiState.value
+                if (ui is UiState.MoveSessionMenu) {
+                    viewModel.setActiveUi(ui.copy(isChecked = !ui.isChecked))
                 }
             }
             etIncomeBarcode.setOnEditorActionListener { v, actionId, event ->
