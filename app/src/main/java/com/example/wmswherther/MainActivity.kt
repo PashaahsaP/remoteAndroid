@@ -147,11 +147,6 @@ class MainActivity : AppCompatActivity() {
                 }
                 is MoveSessionMenu -> {
                     binding.btnCheck.visibility = if (State.isCheckModeActive) View.VISIBLE else View.GONE
-                    if(State.isChecked){
-                        binding.btnCheck.setImageResource(R.drawable.checkbox_checked)
-                    }else{
-                        binding.btnCheck.setImageResource(R.drawable.checkbox_unchecked)
-                    }
                     binding.btnBack.visibility = if (State.isBackBtnActive) View.VISIBLE else View.GONE
                     binding.btnSearch.visibility = if (State.isSearchLoopActive) View.VISIBLE else View.GONE
                     binding.etIncomeBarcode.visibility = if (State.isBarcodeFieldActive) View.VISIBLE else View.GONE
@@ -163,6 +158,13 @@ class MainActivity : AppCompatActivity() {
 
                 }
 
+            }
+        }
+        viewModel.IsSelectedMoveList.observe(this){ flag ->
+            if(flag){
+                binding.btnCheck.setImageResource(R.drawable.checkbox_checked)
+            }else{
+                binding.btnCheck.setImageResource(R.drawable.checkbox_unchecked)
             }
         }
         viewModel.WidthScanningField.observe(this){ value ->
@@ -357,9 +359,11 @@ class MainActivity : AppCompatActivity() {
                 }
             }
             btnCheck.setOnClickListener {
-                val ui = viewModel.uiState.value
-                if (ui is UiState.MoveSessionMenu) {
-                    viewModel.setActiveUi(ui.copy(isChecked = !ui.isChecked))
+                var flag : Boolean = viewModel.getIsSelectedMoveList()
+                if (flag) {
+                    viewModel.deselectMoveList()
+                }else{
+                    viewModel.selectMoveList()
                 }
             }
             etIncomeBarcode.setOnEditorActionListener { v, actionId, event ->

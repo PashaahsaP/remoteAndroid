@@ -196,7 +196,7 @@ class MoveSessionViewModel : ViewModel() {
     }
 
     fun setSelection(checked: Boolean) {
-        /*var list: MutableList<MoveSessionItem> = mutableListOf()
+        var list: MutableList<MoveSessionItem> = mutableListOf()
         if (checked){
             setCounter(_totalCount.value?: 0)
             myData.value?.forEach { item -> list.add(item.copy(haveCount = item.allCount))}
@@ -205,7 +205,7 @@ class MoveSessionViewModel : ViewModel() {
             setCounter(0)
             myData.value?.forEach { item -> list.add(item.copy(haveCount = 0))}
             updateMyData(list)
-        }*/
+        }
     }
     // </editor-fold>
 
