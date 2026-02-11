@@ -161,7 +161,7 @@ val MIGRATION_1_2 = object : Migration(1, 2) {
                 cellId TEXT NOT NULL,
                 catalogId TEXT NOT NULL,
                 createdAt INTEGER NOT NULL,
-                isAvailable BOOLEAN
+                isAvailable BOOLEAN NOT NULL,
                 other TEXT,
                 FOREIGN KEY(cellId) REFERENCES Cell(id),
                 FOREIGN KEY(catalogId) REFERENCES Catalog(id)
