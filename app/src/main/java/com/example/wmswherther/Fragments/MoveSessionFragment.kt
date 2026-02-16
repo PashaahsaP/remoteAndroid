@@ -44,6 +44,7 @@ class MoveSessionFragment: Fragment() {
         var adapter = MoveSessionAdapter(listOf(), requireActivity(), localViewModel, recyclerView)
         recyclerView.layoutManager = LinearLayoutManager(requireActivity())
         recyclerView.adapter = adapter
+        localViewModel.setSelectionForAll(viewModel.IsSelectedMoveList.value ?: false)
 
         localViewModel.viewModelScope.launch {
             withContext(Dispatchers.IO) {
@@ -90,7 +91,6 @@ class MoveSessionFragment: Fragment() {
         viewModel.IsSelectedMoveList.observe(viewLifecycleOwner, { state ->
             localViewModel.setSelection(state)
         })
-
         localViewModel.isMoving.observe(requireActivity(), {isMove->
             if (isMove) {
                 binding.btnMove.visibility = View.GONE
@@ -100,21 +100,7 @@ class MoveSessionFragment: Fragment() {
                 binding.btnCancel.visibility = View.GONE
             }
         })
-        localViewModel.counter.observe(requireActivity(), { count ->
-            if(viewModel.uiState.value is UiState.MoveSessionMenu) {
-                val ui = viewModel.uiState.value as UiState.MoveSessionMenu
-                if (count == 0) {
-                    viewModel.setActiveUi(ui.copy(isEmptyList = true))
-                } else {
-                    viewModel.setActiveUi(ui.copy(isEmptyList = false))
-                }
-                if(count == localViewModel.totalCount.value){
-                    viewModel.selectMoveList()
-                }else{
-                    viewModel.deselectMoveList()
-                }
-            }
-        })
+
         localViewModel.cell.observe(requireActivity(), {str ->
             if (str != ""){
                 binding.btnMove.visibility = View.VISIBLE
@@ -126,9 +112,6 @@ class MoveSessionFragment: Fragment() {
         localViewModel.myData.observe(requireActivity(), {data ->
             adapter.updateData(data, localViewModel.getSelectedItem())
         })
-
-
-
 
         with(binding){
             /*etCell.setOnEditorActionListener { textView, actionId, event ->
@@ -183,12 +166,8 @@ class MoveSessionFragment: Fragment() {
             }*/
         }
 
-
         return binding.root
     }
-
-
-
 
 }
 

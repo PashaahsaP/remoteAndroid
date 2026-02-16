@@ -146,7 +146,7 @@ class MainActivity : AppCompatActivity() {
                     binding.btnCheck.visibility = if (State.isCheckModeActive) View.VISIBLE else View.GONE
                 }
                 is MoveSessionMenu -> {
-                    binding.btnCheck.visibility = if (State.isCheckModeActive) View.VISIBLE else View.GONE
+                    //binding.btnCheck.visibility = if (State.isCheckModeActive) View.VISIBLE else View.GONE
                     binding.btnBack.visibility = if (State.isBackBtnActive) View.VISIBLE else View.GONE
                     binding.btnSearch.visibility = if (State.isSearchLoopActive) View.VISIBLE else View.GONE
                     binding.etIncomeBarcode.visibility = if (State.isBarcodeFieldActive) View.VISIBLE else View.GONE
@@ -161,11 +161,11 @@ class MainActivity : AppCompatActivity() {
             }
         }
         viewModel.IsSelectedMoveList.observe(this){ flag ->
-            if(flag){
+            /*if(flag){
                 binding.btnCheck.setImageResource(R.drawable.checkbox_checked)
             }else{
                 binding.btnCheck.setImageResource(R.drawable.checkbox_unchecked)
-            }
+            }*/
         }
         viewModel.WidthScanningField.observe(this){ value ->
             binding.etIncomeBarcode.width = value
@@ -501,6 +501,8 @@ class MainActivity : AppCompatActivity() {
                         val inflater = layoutInflater
                         val popupView = inflater.inflate(R.layout.pop_up_income_menu, null)
                         var scanBtn = popupView.findViewById<Button>(R.id.btnScanningMode)
+                        var selectBtn = popupView.findViewById<Button>(R.id.btnSelectAll)
+                        var deselectBtn = popupView.findViewById<Button>(R.id.btnDeselectAll)
 
                         val popupWindow = PopupWindow(
                             popupView,
@@ -513,6 +515,14 @@ class MainActivity : AppCompatActivity() {
                                 isBarcodeFieldActive = !state.isBarcodeFieldActive,
                                 isBarcodeScanActive = !state.isBarcodeScanActive
                             ))
+                            popupWindow.dismiss()
+                        }
+                        selectBtn.setOnClickListener { view ->
+                            viewModel.selectMoveList()
+                            popupWindow.dismiss()
+                        }
+                        deselectBtn.setOnClickListener { view ->
+                            viewModel.deselectMoveList()
                             popupWindow.dismiss()
                         }
 

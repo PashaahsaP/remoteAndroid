@@ -33,6 +33,7 @@ class MoveSessionViewModel : ViewModel() {
         private val _totalCount = MutableLiveData(99999999)
         private val _selectedItem = MutableLiveData<Int>()
         private  val  _isEmptyList = MutableLiveData<Boolean>(true)
+        private  val  _isAllSelected = MutableLiveData<Boolean>(true)
     // </editor-fold>
     // <editor-fold desc="properties">
         val isMoving: LiveData<Boolean> get() =_isMoving
@@ -42,9 +43,14 @@ class MoveSessionViewModel : ViewModel() {
         val totalCount : LiveData<Int> get() = _totalCount
         val selectedItem: LiveData<Int> get() = _selectedItem
         val isEmptyList: LiveData<Boolean> get() = _isEmptyList
+        val isAllSelected : LiveData<Boolean> get() = _isAllSelected
 
     // </editor-fold>
     // <editor-fold desc="propertiesMethods">
+        fun setSelectionForAll(select: Boolean){
+            _isAllSelected.value = select
+        }
+
         fun updateMyData(collection: MutableList<MoveSessionItem>){
             _myData.value = collection
         }
@@ -90,7 +96,6 @@ class MoveSessionViewModel : ViewModel() {
         fun setIsEmptyList(value: Boolean) {
             _isEmptyList.value = value
     }
-
         fun setCounter(value: Int) {
             _counter.value = value
         }
