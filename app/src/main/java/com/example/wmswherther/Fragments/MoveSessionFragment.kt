@@ -51,6 +51,16 @@ class MoveSessionFragment: Fragment() {
                 listTypes = dao.getCellTypes()
             }
         }
+        localViewModel.counter.observe(requireActivity(), { count ->
+            if(viewModel.uiState.value is UiState.MoveSessionMenu) {
+                val ui = viewModel.uiState.value as UiState.MoveSessionMenu
+                if (count == 0) {
+                    viewModel.setActiveUi(ui.copy(isEmptyList = true))
+                } else {
+                    viewModel.setActiveUi(ui.copy(isEmptyList = false))
+                }
+            }
+        })
         viewModel.Barcode.observe(viewLifecycleOwner, { barcode ->
             //TODO сделать чтобы была сортировка по те, количеству и прочему перед добавлением
             //TODO  Если нажал ТЕ надо сделать чтобы можно было отменить добавление товара в те.
