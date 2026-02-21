@@ -168,6 +168,7 @@ class MoveSessionViewModel : ViewModel() {
             var listItems : List<MoveSessionItem> = listOf()
             var moveRepo = MoveRepository(dao)
             viewModelScope.launch {
+                var localCounter : Int = counter.value ?: 0
                 withContext(Dispatchers.IO) {
                     var cellTo = moveRepo.getCell(dao, barcode, viewModel, _cell.value.toString())
                     var allGoods: List<Goods> = dao.getGoods().filter { goods -> goods.cellId == cellTo.id }
@@ -189,10 +190,12 @@ class MoveSessionViewModel : ViewModel() {
                         } else if (item.haveCount == 0) {
                             listItems += item
                         }
+                        localCounter -= item.haveCount// for know that need show dialog window when switch to other cell
                     }
                 }
                 withContext(Dispatchers.Main){
                     updateMyData(listItems.toMutableList())
+                    setCounter(localCounter)// for know that need show dialog window when switch to other cell
                 }
                 updateIsMoving(false)
             }
