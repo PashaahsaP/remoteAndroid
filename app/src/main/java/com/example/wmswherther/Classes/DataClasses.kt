@@ -22,6 +22,12 @@ data class MoveItem(
     val name: String,
     val id: String
 )
+
+data class InventoryItem(
+    val name: String,
+    val id: String
+)
+
 data class MoveSessionItem(
     var name: String,
     var catalogId: String,

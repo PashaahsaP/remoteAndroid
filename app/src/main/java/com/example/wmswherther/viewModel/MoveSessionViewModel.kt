@@ -50,7 +50,6 @@ class MoveSessionViewModel : ViewModel() {
         fun setSelectionForAll(select: Boolean){
             _isAllSelected.value = select
         }
-
         fun updateMyData(collection: MutableList<MoveSessionItem>){
             _myData.value = collection
         }

@@ -86,6 +86,20 @@ class MainFragment : Fragment(R.layout.fragment_main) {
 
                 viewModel.setActiveUi(UiState.MoveMenu(prevState = viewModel.uiState.value))
             }
+            btnInventory.setOnClickListener {
+                parentFragmentManager.commit {
+                    setCustomAnimations(
+                        R.anim.slide_in_right, // enter
+                        R.anim.slide_out_left,  // exit
+                        R.anim.slide_in_left,   // popEnter
+                        R.anim.slide_out_right  // popExit
+                    )
+                    replace<InventoryFragment>(R.id.fragmentContainer)
+                    addToBackStack(null)
+                }
+
+                viewModel.setActiveUi(UiState.InventoryMenu(prevState = viewModel.uiState.value))
+            }
         }
         return binding.root
     }

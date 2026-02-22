@@ -83,6 +83,14 @@ class MainActivity : AppCompatActivity() {
                 viewModel.setActiveUi(state.prevState!!)
                 super.onBackPressed()
             }
+            is InventoryMenu -> {
+                viewModel.setActiveUi(state.prevState!!)
+                super.onBackPressed()
+            }
+            is InventorySessionMenu -> {
+                viewModel.setActiveUi(state.prevState!!)
+                super.onBackPressed()
+            }
             null -> {}
         }
     }
@@ -158,6 +166,24 @@ class MainActivity : AppCompatActivity() {
 
                 }
 
+                is InventoryMenu -> {
+                    binding.btnBack.visibility = if (State.isBackBtnActive) View.VISIBLE else View.GONE
+                    binding.btnSearch.visibility = if (State.isSearchLoopActive) View.VISIBLE else View.GONE
+                    binding.etIncomeBarcode.visibility = if (State.isBarcodeFieldActive) View.VISIBLE else View.GONE
+                    binding.btnCheck.visibility = if (State.isCheckModeActive) View.VISIBLE else View.GONE
+                }
+                is InventorySessionMenu -> {
+                    binding.btnBack.visibility = if (State.isBackBtnActive) View.VISIBLE else View.GONE
+                    binding.btnSearch.visibility = if (State.isSearchLoopActive) View.VISIBLE else View.GONE
+                    binding.etIncomeBarcode.visibility = if (State.isBarcodeFieldActive) View.VISIBLE else View.GONE
+                    binding.etIncomeBarcodeScan.visibility = if (State.isBarcodeScanActive) View.VISIBLE else View.GONE
+                    var widthOfScanning = getWidth(binding)
+                    viewModel.setWidthScanningField(widthOfScanning)
+                    if (State.isBarcodeFieldActive)
+                        binding.etIncomeBarcode.requestFocus()
+                    else binding.etIncomeBarcodeScan.requestFocus()
+
+                }
             }
         }
         viewModel.IsSelectedMoveList.observe(this){ flag ->
@@ -262,6 +288,8 @@ class MainActivity : AppCompatActivity() {
                 is MoveMenu -> {}
                 is MoveSessionMenu -> {}
                 null -> {}
+                is InventoryMenu -> TODO()
+                is InventorySessionMenu -> TODO()
             }
         }
 
@@ -321,6 +349,8 @@ class MainActivity : AppCompatActivity() {
                         super.onBackPressed()
                     }
                     null -> {}
+                    is InventoryMenu -> TODO()
+                    is InventorySessionMenu -> TODO()
                 }
             }
             btnBarcode.setOnClickListener {
@@ -538,6 +568,8 @@ class MainActivity : AppCompatActivity() {
                         )
                     }
                     null -> {}
+                    is InventoryMenu -> TODO()
+                    is InventorySessionMenu -> TODO()
                 }
 
             }

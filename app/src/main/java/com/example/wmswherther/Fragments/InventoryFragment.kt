@@ -9,16 +9,15 @@ import androidx.fragment.app.activityViewModels
 import androidx.lifecycle.ViewModelProvider
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
-import com.example.wmsRemote.databinding.FragmentMoveBinding
-import com.example.wmswherther.Adapters.MoveAdapter
-import com.example.wmswherther.Classes.UiState
+import com.example.wmsRemote.databinding.FragmentInventoryBinding
+import com.example.wmswherther.Adapters.InventoryAdapter
+import com.example.wmswherther.viewModel.InventoryViewModel
 import com.example.wmswherther.viewModel.MainViewModel
-import com.example.wmswherther.viewModel.MoveViewModel
 
-class MoveFragment : Fragment() {
-    private var _binding: FragmentMoveBinding? = null
+class InventoryFragment: Fragment() {
+    private var _binding: FragmentInventoryBinding? = null
     private val binding
-        get() = _binding ?: throw IllegalStateException("Binding for FragmentMove")
+        get() = _binding ?: throw IllegalStateException("Binding for FragmentInventory")
     private val viewModel: MainViewModel by activityViewModels()
 
     override fun onCreateView(
@@ -27,9 +26,9 @@ class MoveFragment : Fragment() {
         savedInstanceState: Bundle?
     ): View? {
 
-        val localViewModel = ViewModelProvider(requireActivity()).get(MoveViewModel::class)
-        _binding = FragmentMoveBinding.inflate(inflater)
-        var adapter = MoveAdapter(mutableListOf(), this, viewModel)
+        val localViewModel = ViewModelProvider(requireActivity()).get(InventoryViewModel::class)
+        _binding = FragmentInventoryBinding.inflate(inflater)
+        var adapter = InventoryAdapter(mutableListOf(), this, viewModel)
         var recyclerView: RecyclerView = binding.rwIncomeMenu
         recyclerView.layoutManager = LinearLayoutManager(requireActivity())
         recyclerView.adapter = adapter

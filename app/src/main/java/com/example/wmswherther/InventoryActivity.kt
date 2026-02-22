@@ -13,7 +13,7 @@ import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.example.wmsRemote.databinding.ActivityInventoryBinding
-import com.example.wmsRemote.Adapters.InventoryAdapter
+import com.example.wmsRemote.Adapters.InventoryAdapterq
 import com.example.wmswherther.data.db.Entityes.Cell
 import com.example.wmsRemote.data.db.MainDB
 import com.example.wmsRemote.data.enums.SupplierType
@@ -47,7 +47,7 @@ class InventoryActivity : AppCompatActivity() {
         _binding = ActivityInventoryBinding.inflate(layoutInflater)
         setContentView(binding.root)
         viewModel = ViewModelProvider(this).get(InventoryViewModel::class.java)
-        var adapter = InventoryAdapter(this, lifecycleScope,viewModel, listOf())
+        var adapter = InventoryAdapterq(this, lifecycleScope,viewModel, listOf())
         var recyclerView : RecyclerView = binding.rwContainer
         val db = MainDB.getDB(this)
         recyclerView.layoutManager = LinearLayoutManager(this)

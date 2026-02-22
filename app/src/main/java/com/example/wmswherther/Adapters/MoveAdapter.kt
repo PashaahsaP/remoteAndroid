@@ -15,7 +15,10 @@ import com.example.wmswherther.viewModel.MainViewModel
 
 
 
-class MoveAdapter(var data: MutableList<MoveItem>, var fragment: Fragment, var viewModel: MainViewModel
+class MoveAdapter(
+    var data: MutableList<MoveItem>,
+    var fragment: Fragment,
+    var viewModel: MainViewModel
 ) : RecyclerView.Adapter<MoveViewHolder>() {
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): MoveViewHolder {
         val itemView = LayoutInflater.from(parent.context).

@@ -57,4 +57,21 @@ sealed class UiState {
         val isCheckModeActive : Boolean = true,
         val prevState: UiState? = null,
     ) : UiState()
+    data class InventoryMenu(
+        val isSearchLoopActive: Boolean = true,
+        val isBarcodeFieldActive: Boolean = false,
+        val isThreeDotsActive: Boolean = false,
+        val isBackBtnActive: Boolean = true,
+        val isCheckModeActive : Boolean = false,
+        val prevState: UiState? = null,
+    ) : UiState()
+    data class InventorySessionMenu(
+        val supplierId: String = "",
+        val isSearchLoopActive: Boolean = true,
+        val isBarcodeFieldActive: Boolean = false,
+        val isBarcodeScanActive: Boolean = true,
+        val isThreeDotsActive: Boolean = true,
+        val isBackBtnActive: Boolean = true,
+        val prevState: UiState? = null,
+    ) : UiState()
 }
