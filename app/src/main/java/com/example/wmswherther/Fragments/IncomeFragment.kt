@@ -49,7 +49,7 @@ class IncomeFragment : Fragment() {
     ): View? {
         lifecycleScope.launch {
             withContext(Dispatchers.IO){
-                //appendDummyData(MainDB.getDB(requireActivity()))
+                appendDummyData(MainDB.getDB(requireActivity()))
                 appendMoveDummyData(MainDB.getDB(requireActivity()))
             }
         }

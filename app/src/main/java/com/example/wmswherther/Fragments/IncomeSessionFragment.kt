@@ -33,9 +33,6 @@ class IncomeSessionFragment : Fragment() {
         private val localViewModel: IncomeSessionViewModel by activityViewModels()
 
 
-
-
-
         override fun onCreateView(
             inflater: LayoutInflater,
             container: ViewGroup?,

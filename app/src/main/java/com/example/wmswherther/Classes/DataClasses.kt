@@ -18,6 +18,18 @@ data class IncomeItem(
     var isExpandable: Boolean = false,
     var isShown: Boolean = true
 )
+data class InventorySessionItem(
+    var name: String,
+    var TE: String,
+    var catalogId: String,
+    var haveCount: Int,
+    var allCount: Int,
+    var teCount:Int = 0,
+    var isSelected: Boolean = false,
+    var isExpanded: Boolean = false,
+    var isExpandable: Boolean = false,
+    var isShown: Boolean = true
+)
 data class MoveItem(
     val name: String,
     val id: String

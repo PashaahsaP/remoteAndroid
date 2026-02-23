@@ -21,13 +21,13 @@
         android:layout_width="wrap_content"
         android:layout_height="20dp"
         android:layout_marginEnd="20dp"
-        app:layout_constraintBottom_toTopOf="@+id/rwIncomeSessionList"
+        app:layout_constraintBottom_toTopOf="@+id/rwInventorySessionList"
         android:text="0"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintTop_toTopOf="parent" />
 
     <androidx.recyclerview.widget.RecyclerView
-        android:id="@+id/rwIncomeSessionList"
+        android:id="@+id/rwInventorySessionList"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:paddingStart="20dp"

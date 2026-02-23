@@ -14,12 +14,14 @@ import com.example.wmswherther.data.db.Entityes.Change
 import com.example.wmswherther.data.db.Entityes.Credential
 import com.example.wmswherther.data.db.Entityes.Goods
 import com.example.wmswherther.data.db.Entityes.IncomeItem
+import com.example.wmswherther.data.db.Entityes.InventoryDiffItem
 import com.example.wmswherther.data.db.Entityes.Movement
 import com.example.wmswherther.data.db.Entityes.OutcomeItem
 import com.example.wmswherther.data.db.Entityes.PackageEntity
 import com.example.wmswherther.data.db.Entityes.PickerItem
 import com.example.wmswherther.data.db.Entityes.Service
 import com.example.wmswherther.data.db.Entityes.SessionIncome
+import com.example.wmswherther.data.db.Entityes.SessionInventory
 import com.example.wmswherther.data.db.Entityes.SessionOutcome
 import com.example.wmswherther.data.db.Entityes.SessionPicker
 import com.example.wmswherther.data.db.Entityes.Supplier
@@ -46,7 +48,9 @@ import com.example.wmswherther.data.db.Entityes.User
     SessionPicker::class,
     Supplier::class,
     TrueSign::class,
-    User::class
+    User::class,
+    InventoryDiffItem::class,
+    SessionInventory::class,
 
                      ], version = 1)
 abstract class MainDB :RoomDatabase(){
@@ -184,6 +188,21 @@ val MIGRATION_1_2 = object : Migration(1, 2) {
 
         database.execSQL("CREATE INDEX IF NOT EXISTS index_income_items_sessionId ON income_items(sessionId)")
         // </editor-fold>
+        // <editor-fold desc="InventoryDiffItem">
+        database.execSQL("""
+            CREATE TABLE IF NOT EXISTS inventory_diff_items (
+                id TEXT NOT NULL PRIMARY KEY,
+                inventorySessionId TEXT NOT NULL,
+                goodsId TEXT NOT NULL,
+                plannedCount INTEGER NOT NULL,
+                actualCount INTEGER NOT NULL,
+                status TEXT NOT NULL,
+                other TEXT,
+                FOREIGN KEY(inventorySessionId) REFERENCES SessionInventory(id) ON DELETE CASCADE
+            )
+        """)
+
+        // </editor-fold>
         // <editor-fold desc="Movements">
         database.execSQL("""
             CREATE TABLE IF NOT EXISTS movements (
@@ -305,6 +324,23 @@ val MIGRATION_1_2 = object : Migration(1, 2) {
         database.execSQL("CREATE INDEX IF NOT EXISTS index_sessions_income_supplierId ON sessions_income(supplierId)")
         database.execSQL("CREATE INDEX IF NOT EXISTS index_sessions_income_incomeCellId ON sessions_income(incomeCellId)")
         database.execSQL("CREATE INDEX IF NOT EXISTS index_sessions_income_toCellId ON sessions_income(toCellId)")
+        // </editor-fold>
+        // <editor-fold desc="InventorySession">
+        database.execSQL("""
+            CREATE TABLE IF NOT EXISTS sessions_inventory (
+                id TEXT NOT NULL PRIMARY KEY,
+                supplierId TEXT,
+                cellId TEXT,
+                prevSessionId TEXT,
+                status INTEGER NOT NULL,
+                createdAt INTEGER NOT NULL,
+                startedAt INTEGER,
+                finishedAt INTEGER,
+                other TEXT,
+                FOREIGN KEY(supplierId) REFERENCES Supplier(id) ON DELETE CASCADE,
+                FOREIGN KEY(cellId) REFERENCES Cell(id) ON DELETE CASCADE
+            )
+        """)
         // </editor-fold>
         // <editor-fold desc="OutcomeSessions">
         database.execSQL("""

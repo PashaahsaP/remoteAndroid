@@ -13,7 +13,9 @@ import com.example.wmswherther.data.db.Entityes.Cell
 import com.example.wmswherther.data.db.Entityes.Change
 import com.example.wmswherther.data.db.Entityes.Goods
 import com.example.wmswherther.data.db.Entityes.IncomeItem
+import com.example.wmswherther.data.db.Entityes.InventoryDiffItem
 import com.example.wmswherther.data.db.Entityes.SessionIncome
+import com.example.wmswherther.data.db.Entityes.SessionInventory
 import com.example.wmswherther.data.db.Entityes.Supplier
 
 @Dao
@@ -187,14 +189,47 @@ interface Dao {
     @Insert
     fun insertBarcodeChanges(change: Change)
     @Insert
+    fun insertInventoryDiffItemChanges(change: Change)
+    @Insert
+    fun insertInventorySessionChanges(change: Change)
+    @Insert
     suspend fun updateGoodsChanges(change: Change)
     @Insert
     suspend fun updateCellChanges(change: Change)
     @Delete
     suspend fun deleteGoodsChanges(change: Change)
+
     // </editor-fold>
     // <editor-fold desc="Movement">
 
     // </editor-fold>
+    // <editor-fold desc="InventoryDiffItem">
+    @Insert
+    fun insertInventoryDiffItem(diff: InventoryDiffItem)
+    @Transaction
+    fun insertInventoryDiffItemAsync(diff: InventoryDiffItem, change: Change) : Pair<Unit, Unit>{
+        val from = insertInventoryDiffItem(diff)
+        var to = insertInventoryDiffItemChanges(change)
+        return from to to
+    }
+    @Query("SELECT * FROM inventory_diff_items WHERE id =:id")
+    suspend fun getInventoryDiffItemById(id: String): InventoryDiffItem
+    @Query("SELECT * FROM inventory_diff_items")
+    suspend fun getInventoryDiffItems(): List<InventoryDiffItem>
+    // </editor-fold>
+    // <editor-fold desc="SessionInventory">
+    @Insert
+    fun insertInventorySession(session: SessionInventory)
+    @Transaction
+    fun insertInventorySessionAsync(session: SessionInventory, change: Change) : Pair<Unit, Unit>{
+        val from = insertInventorySession(session)
+        var to = insertInventorySessionChanges(change)
+        return from to to
+    }
+    @Query("SELECT * FROM sessions_inventory WHERE id =:id")
+    suspend fun getInventorySessionById(id: String): SessionInventory
+    @Query("SELECT * FROM sessions_inventory")
+    suspend fun getInventorySessions(): List<SessionInventory>
 
+    // </editor-fold>
 }
