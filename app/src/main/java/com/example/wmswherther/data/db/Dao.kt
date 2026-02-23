@@ -108,6 +108,8 @@ interface Dao {
     }
     @Query("SELECT * FROM suppliers")
     fun getAllSuppliers(): List<Supplier>
+    @Query("SELECT * FROM suppliers WHERE id =:id")
+    suspend fun getSupplierById(id: String): Supplier
     // </editor-fold>
     // <editor-fold desc="Catalog">
     @Insert

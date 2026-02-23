@@ -91,7 +91,7 @@ class InventorySessionFragment: Fragment() {
             adapter.updateCollection(items, localViewModel.getSelectedItem())
             recyclerView.smoothScrollToPosition(localViewModel.getSelectedItem())
         })
-        viewModel.Barcode.observe(viewLifecycleOwner, { barcode ->
+        /*viewModel.Barcode.observe(viewLifecycleOwner, { barcode ->
             //TODO сделать чтобы была сортировка по те, количеству и прочему перед добавлением
             //TODO  Если нажал ТЕ надо сделать чтобы можно было отменить добавление товара в те.
             if(barcode != "" && viewModel.uiState.value is UiState.MoveSessionMenu) {
@@ -127,7 +127,7 @@ class InventorySessionFragment: Fragment() {
                     //TODO шк тут надо, НАЙТИ в бд и ...
                 }
             }
-        })
+        })*/
 
         localViewModel.CurrentCountOfCount.observe(viewLifecycleOwner, {counter ->
             binding.tvLineCounter.text = "${counter.toString()}  /"

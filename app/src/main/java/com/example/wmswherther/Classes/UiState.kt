@@ -63,6 +63,7 @@ sealed class UiState {
         val isThreeDotsActive: Boolean = false,
         val isBackBtnActive: Boolean = true,
         val isCheckModeActive : Boolean = false,
+        val isSupplierModeActive: Boolean = false,
         val prevState: UiState? = null,
     ) : UiState()
     data class InventorySessionMenu(

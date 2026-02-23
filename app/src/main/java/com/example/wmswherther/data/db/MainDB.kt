@@ -50,8 +50,7 @@ import com.example.wmswherther.data.db.Entityes.User
     TrueSign::class,
     User::class,
     InventoryDiffItem::class,
-    SessionInventory::class,
-
+    SessionInventory::class
                      ], version = 1)
 abstract class MainDB :RoomDatabase(){
 

@@ -10,7 +10,9 @@ import androidx.lifecycle.ViewModelProvider
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.example.wmsRemote.databinding.FragmentInventoryBinding
+import com.example.wmswherther.Adapters.IncomeMenuAdapter
 import com.example.wmswherther.Adapters.InventoryAdapter
+import com.example.wmswherther.Classes.UiState
 import com.example.wmswherther.viewModel.InventoryViewModel
 import com.example.wmswherther.viewModel.MainViewModel
 
@@ -28,16 +30,27 @@ class InventoryFragment: Fragment() {
 
         val localViewModel = ViewModelProvider(requireActivity()).get(InventoryViewModel::class)
         _binding = FragmentInventoryBinding.inflate(inflater)
-        var adapter = InventoryAdapter(mutableListOf(), this, viewModel)
-        var recyclerView: RecyclerView = binding.rwIncomeMenu
-        recyclerView.layoutManager = LinearLayoutManager(requireActivity())
-        recyclerView.adapter = adapter
+
+        var supplierAdapter = InventoryAdapter(mutableListOf(), this, viewModel)
+        var supplierRecyclerView: RecyclerView = binding.rwSupplierMenu
+        supplierRecyclerView.layoutManager = LinearLayoutManager(requireActivity())
+        supplierRecyclerView.adapter = supplierAdapter
+
+        var orderAdapter = IncomeMenuAdapter(mutableListOf(), this, viewModel)
+        var orderRecyclerView: RecyclerView = binding.rwOrderMenu
+        orderRecyclerView.layoutManager = LinearLayoutManager(requireActivity())
+        orderRecyclerView.adapter = orderAdapter
+
 
         localViewModel.Suppliers.observe(requireActivity(), { items ->
-            adapter.updateData(items)
+            supplierAdapter.updateData(items)
+        })
+        localViewModel.Orders.observe(requireActivity(), { items ->
+            orderAdapter.updateMenuItems(items)
         })
 
-        localViewModel.LoadSuppliersFromLocal(requireActivity())
+        localViewModel.LoadSuppliers(requireActivity())
+        localViewModel.LoadOrder(requireActivity())
 
 
         return  binding.root

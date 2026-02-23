@@ -582,7 +582,44 @@ class MainActivity : AppCompatActivity() {
                         )
                     }
                     null -> {}
-                    is InventoryMenu -> TODO()
+                    is InventoryMenu ->
+                    {
+                        val inflater = layoutInflater
+                        val popupView = inflater.inflate(R.layout.pop_up_inventory_menu, null)
+                        var scanBtn = popupView.findViewById<Button>(R.id.btnScanningMode)
+                        var modeBtn = popupView.findViewById<Button>(R.id.btnChangeMode)
+
+                        val popupWindow = PopupWindow(
+                            popupView,
+                            WindowManager.LayoutParams.WRAP_CONTENT,
+                            WindowManager.LayoutParams.WRAP_CONTENT,
+                            true
+                        )
+                        scanBtn.setOnClickListener { view ->
+                            viewModel.setActiveUi(state.copy(
+                                isBarcodeFieldActive = !state.isBarcodeFieldActive
+                            ))
+                            popupWindow.dismiss()
+                        }
+                        modeBtn.setOnClickListener { view ->
+                            viewModel.setActiveUi(state.copy(
+                                isSupplierModeActive = !state.isSupplierModeActive
+                            ))
+
+                            popupWindow.dismiss()
+                        }
+
+                        val location = IntArray(2)
+                        btnThreeDots.getLocationOnScreen(location)
+
+// Show popup to the left of the button
+                        popupWindow.showAtLocation(
+                            btnThreeDots,
+                            Gravity.NO_GRAVITY,
+                            location[0] - popupWindow.width,  // x coordinate - to the left
+                            location[1] + btnThreeDots.height // y coordinate
+                        )
+                    }
                     is InventorySessionMenu ->
                     {
                         val inflater = layoutInflater
