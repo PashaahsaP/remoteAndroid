@@ -25,6 +25,7 @@ import com.example.wmswherther.data.db.Entityes.Change
 import com.example.wmswherther.data.db.Entityes.Goods
 import com.example.wmswherther.data.db.Entityes.IncomeItem
 import com.example.wmswherther.data.db.Entityes.SessionIncome
+import com.example.wmswherther.data.db.Entityes.SessionInventory
 import com.example.wmswherther.data.db.Entityes.Supplier
 import com.example.wmswherther.viewModel.IncomeMenuViewModel
 import com.example.wmswherther.viewModel.MainViewModel
@@ -415,6 +416,26 @@ fun appendMoveDummyData(db: MainDB){
 
     dao.insertCellSync(N00000001, teChange)
 
+    var inventoryTask = SessionInventory(
+        UUID.randomUUID().toString(),
+        vitekSupplier.id,
+        A111.id,
+        null,
+        StatusType.Created.ordinal,
+        System.currentTimeMillis(),
+        null,
+        null,
+        null
+    )
+    var inventoryChange = Change(
+        UUID.randomUUID().toString(),
+        inventoryTask.id,
+        OperationType.InsertInventorySession.ordinal,
+        StatusType.Created.ordinal,
+        vitekSupplier.id,
+        null
+    )
+    dao.insertInventorySessionAsync(inventoryTask, inventoryChange)
 
     for (enum in 10 .. 29){
         var catalog = Catalog(

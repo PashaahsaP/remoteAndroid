@@ -1,5 +1,6 @@
 package com.example.wmswherther.Fragments
 
+import android.opengl.Visibility
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
@@ -42,6 +43,16 @@ class InventoryFragment: Fragment() {
         orderRecyclerView.adapter = orderAdapter
 
 
+        viewModel.uiState.observe(viewLifecycleOwner, {state ->
+            var st = state as UiState.InventoryMenu
+            if(st.isSupplierModeActive){
+                binding.rwSupplierMenu.visibility = View.VISIBLE
+                binding.rwOrderMenu.visibility = View.GONE
+            }else{
+                binding.rwSupplierMenu.visibility = View.GONE
+                binding.rwOrderMenu.visibility = View.VISIBLE
+            }
+        })
         localViewModel.Suppliers.observe(requireActivity(), { items ->
             supplierAdapter.updateData(items)
         })
