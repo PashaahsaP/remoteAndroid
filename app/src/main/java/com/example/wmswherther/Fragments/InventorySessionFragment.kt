@@ -16,8 +16,10 @@ import com.example.wmsRemote.R
 import com.example.wmsRemote.data.db.MainDB
 import com.example.wmsRemote.databinding.FragmentInventorySessionBinding
 import com.example.wmswherther.Adapters.InventorySessionAdapter
+import com.example.wmswherther.Classes.IncomeItem
 import com.example.wmswherther.Classes.InventorySessionItem
 import com.example.wmswherther.Classes.UiState
+import com.example.wmswherther.data.db.Entityes.Barcode
 import com.example.wmswherther.data.db.Entityes.Cell
 import com.example.wmswherther.data.db.Entityes.CellType
 import com.example.wmswherther.viewModel.InventorySessionViewModel
@@ -81,43 +83,71 @@ class InventorySessionFragment: Fragment() {
             adapter.updateCollection(items, localViewModel.getSelectedItem())
             recyclerView.smoothScrollToPosition(localViewModel.getSelectedItem())
         })
-        /*viewModel.Barcode.observe(viewLifecycleOwner, { barcode ->
+        viewModel.Barcode.observe(viewLifecycleOwner, { barcode ->
             //TODO сделать чтобы была сортировка по те, количеству и прочему перед добавлением
             //TODO  Если нажал ТЕ надо сделать чтобы можно было отменить добавление товара в те.
-            if(barcode != "" && viewModel.uiState.value is UiState.MoveSessionMenu) {
-                if (isCell(barcode, listTypes)) {
-                    if (localViewModel.isMoving.value != null && localViewModel.isMoving.value!!) {
-                        localViewModel.moveItems(barcode, dao, viewModel)
-                        // если числа равны то смена ячейки
-                        // иначе создается новый goods
-                        //TODO перемещение элементов если нажата клавиша
-                    } else {
-                        if(viewModel.uiState.value is UiState.MoveSessionMenu) {
-                            val uiState = viewModel.uiState.value as UiState.MoveSessionMenu
-                            if (!uiState.isEmptyList){
-                                val dialog = AlertDialog.Builder(requireActivity())
-                                    .setTitle("Выход")
-                                    .setMessage("Есть остканированный товар, при переходе в другую ячейку прогресс сбросится!")
-                                    .setPositiveButton("Да") { _, _ ->
-                                        localViewModel.updateCell(barcode)
-                                        localViewModel.loadData(dao, barcode, viewModel)
-                                        localViewModel.setCounter(0)
-                                    }
-                                    .setNegativeButton("Нет", null)
-                                    .create()
-                                dialog.show()
-                            }else {
-                                localViewModel.updateCell(barcode)
-                                localViewModel.loadData(dao, barcode, viewModel)
+            //if(barcode != "" && viewModel.IsActiveSearchWindow.value == false) {
+            if(barcode != "" && viewModel.uiState.value is UiState.InventorySessionMenu) {
+                lifecycleScope.launch {
+                    var newItems: List<InventorySessionItem> = listOf()
+                    var bar =
+                        MainDB.getDB(requireActivity()).getDao().getBarcodeByName(barcode)
+                    if (bar != null && bar is Barcode) {
+                        var isAdded = false
+                        withContext(Dispatchers.IO) {
+                            localViewModel.items.value?.forEach { item ->
+                                var teCount = item.teCount
+                                //localViewModel.currentCellName.value.toString() == item.TE как помню это нужно чтобы не сканировать товар внутри те такой же, не менять счетчик
+                                if (item.catalogId == bar.catalogId && localViewModel.currentCellName.value.toString() == item.TE) {
+                                    isAdded = true
+                                    newItems += InventorySessionItem(
+                                        name = item.name,
+                                        TE = item.TE,
+                                        catalogId = item.catalogId,
+                                        haveCount = item.haveCount + 1,
+                                        allCount = item.allCount,
+                                        teCount = teCount,
+                                        isSelected = item.isSelected,
+                                        isExpanded = item.isExpanded,
+                                        isShown = item.isShown,
+                                        isExpandable = item.isExpandable)
+                                }else {
+                                    newItems += item
+                                }
+
+                            }
+                            if(!isAdded){
+                                var catalog = MainDB.getDB(requireActivity()).getDao().getCatalogById(bar.catalogId)
+                                if (catalog != null){
+                                    newItems += InventorySessionItem(
+                                        name = catalog.name,
+                                        TE = localViewModel.currentCellName.value.toString(),
+                                        catalogId = catalog.id,
+                                        haveCount = 1,
+                                        allCount = 0,
+                                        teCount =  0,
+                                        isSelected = false,
+                                        isExpanded = false,
+                                        isShown = true,
+                                        isExpandable = false)
+                                }
+                            }
+                        }
+                        withContext(Dispatchers.Main) {
+                            localViewModel.updateItems(newItems)
+                            var binding = viewModel.getMainBinding()
+                            if(viewModel.IsScanningActive.value == true) {
+                                binding?.etIncomeBarcode?.requestFocus()
+
+                            }else{
+                                binding?.etIncomeBarcodeScan?.requestFocus()
                             }
                         }
                     }
-                } else {
-                    localViewModel.changeList(barcode, dao)
-                    //TODO шк тут надо, НАЙТИ в бд и ...
                 }
             }
-        })*/
+
+        })
         localViewModel.CurrentCountOfCount.observe(viewLifecycleOwner, {counter ->
             binding.tvLineCounter.text = "${counter.toString()}  /"
         })

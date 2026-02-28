@@ -288,7 +288,7 @@ class MainActivity : AppCompatActivity() {
                 is MoveSessionMenu -> {}
                 null -> {}
                 is InventoryMenu -> TODO()
-                is InventorySessionMenu -> TODO()
+                is InventorySessionMenu -> {}
             }
         }
 
