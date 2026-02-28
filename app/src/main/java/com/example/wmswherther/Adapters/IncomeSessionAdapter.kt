@@ -157,7 +157,7 @@ class IncomeSessionAdapter(
                             var t = holder.etSelectedCount.text.trim().toString()
                             var counter = 0
                             var listIncome : List<IncomeItem> = listOf()
-                            var count = if(t != null && t != "" && t.isDigitsOnly()) t.toInt() else 0
+                            var count = if(t != "" && t.isDigitsOnly()) t.toInt() else 0
                             localViewModel.items.value?.forEach{ item ->
                                 item.isSelected = false
                                 if(counter == position){
