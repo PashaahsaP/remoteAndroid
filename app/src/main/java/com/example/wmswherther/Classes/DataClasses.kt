@@ -1,6 +1,8 @@
 package com.example.wmswherther.Classes
 
 data class TaskMenuItem(
+    var supplierId: String,
+    var sessionId: String,
     var supplier: String,
     var progress: String,
     var number: String,

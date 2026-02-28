@@ -38,7 +38,6 @@ class InventoryAdapter (
     override fun onBindViewHolder(holder: MoveViewHolder, @SuppressLint("RecyclerView") position: Int) {
         val item = data[position]
         holder.btn.text = item.name
-
         holder.btn.setOnClickListener {
             var newFragment = InventorySessionFragment()//
 
@@ -53,7 +52,7 @@ class InventoryAdapter (
                 addToBackStack(null)
 
             }
-            viewModel.setActiveUi(UiState.InventorySessionMenu(prevState = viewModel.uiState.value, supplierId = item.id))
+            viewModel.setActiveUi(UiState.InventorySessionMenu(prevState = viewModel.uiState.value, supplierId = item.id, isSupplierModeActive = true))
         }
     }
 

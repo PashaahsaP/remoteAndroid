@@ -44,23 +44,23 @@ class InventorySessionAdapter(var data: List<InventorySessionItem>,
         return when (viewType) {
             0 -> {
                 val view = inflater.inflate(R.layout.income_session, parent, false)
-                IncomeSessionViewHolder(view)
+                InventorySessionViewHolder(view)
             }
             1 -> {
                 val view = inflater.inflate(R.layout.income_session_selected, parent, false)
-                IncomeSessionSelectedViewHolder(view)
+                InventorySessionSelectedViewHolder(view)
             }
             2 -> {
                 val view = inflater.inflate(R.layout.income_session_expanded, parent, false)
-                IncomeSessionExpandedViewHolder(view)
+                InventorySessionExpandedViewHolder(view)
             }
             3 -> {
                 val view = inflater.inflate(R.layout.income_session_collapsed, parent, false)
-                IncomeSessionCollapsedViewHolder(view)
+                InventorySessionExpandedViewHolder(view)
             }
             4 -> {
                 val view = inflater.inflate(R.layout.income_session_invisible, parent, false)
-                IncomeSessionInvisibleViewHolder(view)
+                InventorySessionInvisibleViewHolder(view)
             }
             else -> throw IllegalArgumentException("Invalid view type")
         }

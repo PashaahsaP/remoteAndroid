@@ -20,11 +20,15 @@ class IncomeMenuViewModel : ViewModel() {
                 var dao = db.getDao()
                 var suppliers = dao.getAllSuppliers()
                 dao.getAllIncomeSession().forEach { item ->
+                    var supplier = suppliers.firstOrNull { inner -> inner.id == item.supplierId }
                     data += TaskMenuItem(
-                        supplier = suppliers.firstOrNull { inner -> inner.id == item.supplierId }!!.name,
+                        supplier = supplier!!.name,
                         progress = "0/1",
                         number = item.id,
-                        date = LocalDate.now().toString()
+                        date = LocalDate.now().toString(),
+                        supplierId = supplier!!.id,
+                        sessionId = supplier!!.id
+
                     )
                 }
         return data

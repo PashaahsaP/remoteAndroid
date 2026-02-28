@@ -13,6 +13,7 @@ import androidx.recyclerview.widget.RecyclerView
 import com.example.wmsRemote.databinding.FragmentInventoryBinding
 import com.example.wmswherther.Adapters.IncomeMenuAdapter
 import com.example.wmswherther.Adapters.InventoryAdapter
+import com.example.wmswherther.Adapters.InventoryOrderMenuAdapter
 import com.example.wmswherther.Classes.UiState
 import com.example.wmswherther.viewModel.InventoryViewModel
 import com.example.wmswherther.viewModel.MainViewModel
@@ -37,20 +38,22 @@ class InventoryFragment: Fragment() {
         supplierRecyclerView.layoutManager = LinearLayoutManager(requireActivity())
         supplierRecyclerView.adapter = supplierAdapter
 
-        var orderAdapter = IncomeMenuAdapter(mutableListOf(), this, viewModel)
+        var orderAdapter = InventoryOrderMenuAdapter(mutableListOf(), this, viewModel)
         var orderRecyclerView: RecyclerView = binding.rwOrderMenu
         orderRecyclerView.layoutManager = LinearLayoutManager(requireActivity())
         orderRecyclerView.adapter = orderAdapter
 
 
         viewModel.uiState.observe(viewLifecycleOwner, {state ->
-            var st = state as UiState.InventoryMenu
-            if(st.isSupplierModeActive){
-                binding.rwSupplierMenu.visibility = View.VISIBLE
-                binding.rwOrderMenu.visibility = View.GONE
-            }else{
-                binding.rwSupplierMenu.visibility = View.GONE
-                binding.rwOrderMenu.visibility = View.VISIBLE
+            if(state is UiState.InventoryMenu) {
+                var st = state as UiState.InventoryMenu
+                if (st.isSupplierModeActive) {
+                    binding.rwSupplierMenu.visibility = View.VISIBLE
+                    binding.rwOrderMenu.visibility = View.GONE
+                } else {
+                    binding.rwSupplierMenu.visibility = View.GONE
+                    binding.rwOrderMenu.visibility = View.VISIBLE
+                }
             }
         })
         localViewModel.Suppliers.observe(requireActivity(), { items ->

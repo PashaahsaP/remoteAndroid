@@ -165,7 +165,6 @@ class MainActivity : AppCompatActivity() {
                     else binding.etIncomeBarcodeScan.requestFocus()
 
                 }
-
                 is InventoryMenu -> {
                     binding.btnBack.visibility = if (State.isBackBtnActive) View.VISIBLE else View.GONE
                     binding.btnSearch.visibility = if (State.isSearchLoopActive) View.VISIBLE else View.GONE
@@ -581,9 +580,7 @@ class MainActivity : AppCompatActivity() {
                             location[1] + btnThreeDots.height // y coordinate
                         )
                     }
-                    null -> {}
-                    is InventoryMenu ->
-                    {
+                    is InventoryMenu -> {
                         val inflater = layoutInflater
                         val popupView = inflater.inflate(R.layout.pop_up_inventory_menu, null)
                         var scanBtn = popupView.findViewById<Button>(R.id.btnScanningMode)
@@ -620,8 +617,7 @@ class MainActivity : AppCompatActivity() {
                             location[1] + btnThreeDots.height // y coordinate
                         )
                     }
-                    is InventorySessionMenu ->
-                    {
+                    is InventorySessionMenu -> {
                         val inflater = layoutInflater
                         val popupView = inflater.inflate(R.layout.pop_up_income_menu, null)
                         var scanBtn = popupView.findViewById<Button>(R.id.btnScanningMode)
@@ -651,6 +647,7 @@ class MainActivity : AppCompatActivity() {
                             location[1] + btnThreeDots.height // y coordinate
                         )
                     }
+                    null -> {}
                 }
 
             }

@@ -68,6 +68,8 @@ sealed class UiState {
     ) : UiState()
     data class InventorySessionMenu(
         val supplierId: String = "",
+        val sessionId: String = "",
+        val isSupplierModeActive: Boolean = false,
         val isSearchLoopActive: Boolean = true,
         val isBarcodeFieldActive: Boolean = false,
         val isBarcodeScanActive: Boolean = true,

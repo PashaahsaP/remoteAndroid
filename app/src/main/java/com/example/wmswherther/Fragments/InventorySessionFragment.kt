@@ -5,30 +5,21 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import androidx.appcompat.app.AlertDialog
 import androidx.core.content.ContextCompat
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.lifecycleScope
-import androidx.lifecycle.viewModelScope
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
-import com.example.wmsRemote.Adapters.MoveSessionAdapter
 import com.example.wmsRemote.R
 import com.example.wmsRemote.data.db.MainDB
-import com.example.wmsRemote.databinding.FragmentIncomeSessionBinding
 import com.example.wmsRemote.databinding.FragmentInventorySessionBinding
-import com.example.wmsRemote.databinding.FragmentMoveSessionBinding
-import com.example.wmsRemote.viewModel.MoveSessionViewModel
-import com.example.wmswherther.Adapters.IncomeSessionAdapter
 import com.example.wmswherther.Adapters.InventorySessionAdapter
-import com.example.wmswherther.Classes.IncomeItem
 import com.example.wmswherther.Classes.InventorySessionItem
 import com.example.wmswherther.Classes.UiState
-import com.example.wmswherther.data.db.Entityes.Barcode
+import com.example.wmswherther.data.db.Entityes.Cell
 import com.example.wmswherther.data.db.Entityes.CellType
-import com.example.wmswherther.viewModel.IncomeSessionViewModel
 import com.example.wmswherther.viewModel.InventorySessionViewModel
 import com.example.wmswherther.viewModel.MainViewModel
 import kotlinx.coroutines.Dispatchers
@@ -52,9 +43,8 @@ class InventorySessionFragment: Fragment() {
         container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View? {
-        //val localViewModel = ViewModelProvider(requireActivity()).get(IncomeSessionViewModel::class)
+        val localViewModel = ViewModelProvider(requireActivity()).get(InventorySessionViewModel::class)
         _binding = FragmentInventorySessionBinding.inflate(inflater, container, false)
-        //viewModel.setCurrFragment(this)
 
         var listTypes : List<CellType> = listOf()
         var recyclerView: RecyclerView = binding.rwInventorySessionList
@@ -154,6 +144,33 @@ class InventorySessionFragment: Fragment() {
                 binding.btnFinish.visibility = View.GONE
             }
         })
+
+        if(viewModel.uiState.value is UiState.InventorySessionMenu){
+            var state = viewModel.uiState.value as UiState.InventorySessionMenu
+            var cell : Cell
+            if (!state.isSupplierModeActive){
+                lifecycleScope.launch {
+                    var data: List<InventorySessionItem> = listOf()
+                    withContext(Dispatchers.Main){
+                        var dao = MainDB.getDB(requireActivity()).getDao()
+                        var session = dao.getInventorySessionById(state.sessionId)
+                        cell = dao.getCellById(session.cellId.toString())
+                        localViewModel.cellStack.addLast(cell.name)
+                        localViewModel.setCellName(cell.name)
+                    }
+                    withContext(Dispatchers.IO){
+                        data = localViewModel.loadItems(MainDB.getDB(requireActivity()), cell)
+                    }
+                    withContext(Dispatchers.Main){
+                        localViewModel.updateItems(data)
+                        localViewModel.setSelectedItem(0)
+                    }
+                }
+                // Установить текущию ячейку
+                // Загрузить элементы ячейки
+            }
+        }
+
         return  binding.root
     }
 

@@ -3,16 +3,13 @@ package com.example.wmswherther.viewModel
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
-import androidx.lifecycle.viewModelScope
+import com.example.wmsRemote.data.db.Dao
 import com.example.wmsRemote.data.db.MainDB
-import com.example.wmswherther.Classes.IncomeItem
 import com.example.wmswherther.Classes.InventorySessionItem
 import com.example.wmswherther.data.db.Entityes.Barcode
 import com.example.wmswherther.data.db.Entityes.Cell
 import com.example.wmswherther.data.db.Entityes.Goods
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
+import com.example.wmswherther.data.db.Entityes.SessionInventory
 
 class InventorySessionViewModel : ViewModel(){
     private val _items = MutableLiveData<List<InventorySessionItem>>()
@@ -104,65 +101,68 @@ class InventorySessionViewModel : ViewModel(){
     fun setCellName(cellName: String){
         _currentCellName.value = cellName
     }
-    suspend fun loadItems (db : MainDB, sessionId: String) : List<InventorySessionItem>{
+    suspend fun loadItems (db: MainDB, cell: Cell) : List<InventorySessionItem>{
+        // Загрузить goods.
         var dao = db.getDao()
-
-        var listOfGoods: List<Pair<Goods, Cell>> = listOf()
-        listOfGoods = dao.getAllIncomeItem()
-            .filter { item -> item.sessionId == sessionId}
-            .map { item ->  dao.getGoodsById(item.goodsId) }
-            .map { inner -> Pair(inner, dao.getCellById(inner.cellId)) }
-
+        var listOfGoods: List<Pair<Goods, Cell>> = getAllGoods(dao, cell)
+        // Создать inventory item.
         var result : List<InventorySessionItem> = listOf()
-        var previousCellId: String = ""
-        var counter: Int = 0
-        for (item in listOfGoods){
-            var catalog = dao.getCatalogById(item.first.catalogId)
-            if (item.second.typeCellId == "e873f579-44fc-48e1-84d2-f529b77653ee"){//6730f3c3-0a33-4454-a485-520522b64de5
-                var parentCell = dao.getCellById(item.second.parentCellId.toString())
-                var isShown = if(parentCell.name.contains("IN")) true else false
-                if(item.second.id != previousCellId){
-                    previousCellId = item.second.id
-                    result += InventorySessionItem(
-                        name =  item.second.name,
-                        TE = if(isShown) item.second.name else "",
-                        catalogId = "",
-                        allCount = item.first.amount,
-                        haveCount = 0,
-                        isExpandable = true,
-                        isShown = isShown)
-                    result += InventorySessionItem(
-                        name =  catalog.name,
-                        TE = if(isShown) item.second.name else "",
-                        catalogId = catalog.id,
-                        allCount = item.first.amount,
-                        haveCount = 0,
-                        isExpandable = false,
-                        isShown = !isShown)
-                }else{
-                    result += InventorySessionItem(
-                        name =  catalog.name,
-                        TE = if(isShown) item.second.name else "",
-                        catalogId = catalog.id,
-                        allCount = item.first.amount,
-                        haveCount = 0,
-                        isExpandable = false,
-                        isShown = !isShown)
-                }
-            }else{
-                result += InventorySessionItem(
-                    name =  catalog.name,
-                    TE = currentCellName.value.toString(),
-                    catalogId = catalog.id,
-                    allCount = item.first.amount,
-                    haveCount = 0,
-                    isExpandable = false,
-                    isShown = true)
-            }
+        // для Cell
+        if(cell.typeCellId == "1078e222-0d70-47f7-a295-5827ea9ad1f5") {
+            result += InventorySessionItem(
+                name = cell.name,
+                TE = if (cell.typeCellId == "e873f579-44fc-48e1-84d2-f529b77653ee") cell.name else "",
+                catalogId = "",
+                allCount = 1,
+                haveCount = 0,
+                isExpandable = true,
+                isShown = if (cell.typeCellId == "e873f579-44fc-48e1-84d2-f529b77653ee") false else true
+            )
         }
 
-        return  result
+        // для goods
+        listOfGoods.forEach { goods ->
+            var catalog = dao.getCatalogById(goods.first.catalogId)
+            result += InventorySessionItem(
+                name =  catalog.name,
+                TE = cell.name,
+                catalogId = catalog.id,
+                allCount = goods.first.amount,
+                haveCount = 0,
+                isExpandable = false,
+                isShown = if(cell.typeCellId == "e873f579-44fc-48e1-84d2-f529b77653ee") false else true)
+        }
+
+        // Загрузить cells
+        var listOfCells = dao.getAllCells().filter { cell: Cell -> cell.parentCellId == cell.id }
+        if(listOfCells.count() == 0){
+            return  result
+        }else{
+            listOfCells.forEach { innerCell ->
+                var innerResult = loadItems(db, innerCell)
+                result += innerResult
+            }
+            return result
+        }
+            // Базовый случай. Если нет ячеек больше то вернуть коллекцию
+            // Иначе Загрузить goods  и соединить коллекции
+
+
     }
+// <editor-fold desc="Helper function">
+    private suspend fun getAllGoods(
+        dao: Dao,
+        cell: Cell
+    ): List<Pair<Goods, Cell>> {
+        var listOfGoods: List<Pair<Goods, Cell>> = listOf()
+        listOfGoods = dao.getGoodsByCellId(cell.id)
+            .map { goods -> Pair(goods, cell) }
+
+        return listOfGoods
+    }
+// </editor-fold>
+
+
     suspend fun getBarcode(db : MainDB, barcode: String) : Barcode {
         return db.getDao().getBarcodeByName(barcode)
     }

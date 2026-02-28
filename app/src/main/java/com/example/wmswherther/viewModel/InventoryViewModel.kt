@@ -16,9 +16,18 @@ import kotlinx.coroutines.withContext
 class InventoryViewModel : ViewModel() {
     private val _suppliers = MutableLiveData<MutableList<InventoryItem>>()
     private val _orders = MutableLiveData<MutableList<TaskMenuItem>>()
+    private val _isActiveSupplierMode = MutableLiveData<Boolean>()
 
     val Suppliers: LiveData<MutableList<InventoryItem>> get() = _suppliers
     val Orders: LiveData<MutableList<TaskMenuItem>> get() = _orders
+    val IsActiveSupplierMode: LiveData<Boolean> get() = _isActiveSupplierMode
+
+    fun ActivateSupplierMode(){
+        _isActiveSupplierMode.value = true
+    }
+    fun ActivateOrderMode(){
+        _isActiveSupplierMode.value = false
+    }
 
     fun LoadSuppliers(activity: FragmentActivity) {
         var supplierList: List<InventoryItem> = listOf()
@@ -40,9 +49,9 @@ class InventoryViewModel : ViewModel() {
             withContext(Dispatchers.IO)  {
                 var dao = MainDB.getDB(activity).getDao()
                 ordersList = dao.getInventorySessions().map { item ->
-                    var supplierName =  dao.getSupplierById(item.supplierId ?: "").name
+                    var supplier =  dao.getSupplierById(item.supplierId ?: "")
                     var cellName =  dao.getCellById(    item.cellId ?: "").name
-                    TaskMenuItem(supplierName, StatusType.Created.name, "", cellName)
+                    TaskMenuItem(supplier.id, item.id, supplier.name, StatusType.Created.name, "", cellName)
                 }
             }
             withContext(Dispatchers.Main) {
