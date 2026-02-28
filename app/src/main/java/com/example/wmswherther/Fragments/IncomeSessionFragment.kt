@@ -53,31 +53,6 @@ class IncomeSessionFragment : Fragment() {
             recyclerView.adapter = adapter
             val sessionId = arguments?.getString("id")
 
-            localViewModel.items.observe(viewLifecycleOwner,{ items ->
-                var curLineCounter = 0
-                var lineCounter = 0
-                var curCounterOfCounter = 0
-                var counterOfCounter = 0
-                items.forEach { item ->
-                    if(item.catalogId != ""){
-                        lineCounter += 1
-                        if(item.haveCount == item.allCount){
-                            curLineCounter += 1
-                        }
-                        curCounterOfCounter += item.haveCount
-                        counterOfCounter += item.haveCount
-                    }
-                }
-                //доделать апдейт
-
-
-
-
-
-
-                adapter.updateCollection(items, localViewModel.getSelectedItem())
-                recyclerView.smoothScrollToPosition(localViewModel.getSelectedItem())
-            })
             viewModel.Barcode.observe(viewLifecycleOwner, { barcode ->
                 //TODO сделать чтобы была сортировка по те, количеству и прочему перед добавлением
                 //TODO  Если нажал ТЕ надо сделать чтобы можно было отменить добавление товара в те.
@@ -282,6 +257,9 @@ class IncomeSessionFragment : Fragment() {
                     }
                 }
             })
+            viewModel.IsSelectedIncomeList.observe(viewLifecycleOwner, {flag : Boolean->
+                localViewModel.setSelection(flag)
+            })
             localViewModel.CurrentCountOfCount.observe(viewLifecycleOwner, {counter ->
                 binding.tvLineCounter.text = "${counter.toString()}  /"
             })
@@ -307,6 +285,32 @@ class IncomeSessionFragment : Fragment() {
                     binding.btnFinish.visibility = View.GONE
                 }
             })
+            localViewModel.items.observe(viewLifecycleOwner,{ items ->
+                var curLineCounter = 0
+                var lineCounter = 0
+                var curCounterOfCounter = 0
+                var counterOfCounter = 0
+                items.forEach { item ->
+                    if(item.catalogId != ""){
+                        lineCounter += 1
+                        if(item.haveCount == item.allCount){
+                            curLineCounter += 1
+                        }
+                        curCounterOfCounter += item.haveCount
+                        counterOfCounter += item.haveCount
+                    }
+                }
+                //доделать апдейт
+
+
+
+
+
+
+                adapter.updateCollection(items, localViewModel.getSelectedItem())
+                recyclerView.smoothScrollToPosition(localViewModel.getSelectedItem())
+            })
+
             //todo set red color or black
             lifecycleScope.launch {
                 var data: List<IncomeItem> = listOf()

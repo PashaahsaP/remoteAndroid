@@ -81,6 +81,7 @@ class IncomeFragment : Fragment() {
         return  binding.root
     }
 }
+
 fun appendDummyData(db: MainDB){
     val dao = db.getDao()
     val borkSupplier = Supplier(

@@ -7,6 +7,7 @@ import androidx.lifecycle.viewModelScope
 import com.example.wmswherther.data.db.Entityes.Cell
 import com.example.wmsRemote.data.db.MainDB
 import com.example.wmswherther.Classes.IncomeItem
+import com.example.wmswherther.Classes.InventorySessionItem
 import com.example.wmswherther.data.db.Entityes.Barcode
 import com.example.wmswherther.data.db.Entityes.Goods
 import kotlinx.coroutines.Dispatchers
@@ -219,5 +220,17 @@ class IncomeSessionViewModel : ViewModel() {
     }
     suspend fun getBarcode(db : MainDB, barcode: String) : Barcode {
         return db.getDao().getBarcodeByName(barcode)
+    }
+    fun setSelection(checked: Boolean) {
+        var list: MutableList<IncomeItem> = mutableListOf()
+        if (checked){
+            setCurCountOfCount(_countOfCount.value ?: 0)
+            items.value?.forEach { item -> list.add(item.copy(haveCount = item.allCount))}
+            updateItems(list)
+        }else{
+            setCurCountOfCount(0)
+            items.value?.forEach { item -> list.add(item.copy(haveCount = 0))}
+            updateItems(list)
+        }
     }
 }
