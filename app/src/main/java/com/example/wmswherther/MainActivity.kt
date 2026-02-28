@@ -512,6 +512,8 @@ class MainActivity : AppCompatActivity() {
                         val inflater = layoutInflater
                         val popupView = inflater.inflate(R.layout.pop_up_income_menu, null)
                         var scanBtn = popupView.findViewById<Button>(R.id.btnScanningMode)
+                        var selectBtn = popupView.findViewById<Button>(R.id.btnSelectAll)
+                        var deselectBtn = popupView.findViewById<Button>(R.id.btnDeselectAll)
 
                         val popupWindow = PopupWindow(
                             popupView,
@@ -526,7 +528,14 @@ class MainActivity : AppCompatActivity() {
                                 ))
                             popupWindow.dismiss()
                         }
-
+                        selectBtn.setOnClickListener { view ->
+                            viewModel.selectIncomeList()
+                            popupWindow.dismiss()
+                        }
+                        deselectBtn.setOnClickListener { view ->
+                            viewModel.deselectIncomeList()
+                            popupWindow.dismiss()
+                        }
                         val location = IntArray(2)
                         btnThreeDots.getLocationOnScreen(location)
 
@@ -621,6 +630,8 @@ class MainActivity : AppCompatActivity() {
                         val inflater = layoutInflater
                         val popupView = inflater.inflate(R.layout.pop_up_income_menu, null)
                         var scanBtn = popupView.findViewById<Button>(R.id.btnScanningMode)
+                        var selectBtn = popupView.findViewById<Button>(R.id.btnSelectAll)
+                        var deselectBtn = popupView.findViewById<Button>(R.id.btnDeselectAll)
 
                         val popupWindow = PopupWindow(
                             popupView,
@@ -635,7 +646,14 @@ class MainActivity : AppCompatActivity() {
                             ))
                             popupWindow.dismiss()
                         }
-
+                        selectBtn.setOnClickListener { view ->
+                            viewModel.selectInventoryList()
+                            popupWindow.dismiss()
+                        }
+                        deselectBtn.setOnClickListener { view ->
+                            viewModel.deselectInventoryList()
+                            popupWindow.dismiss()
+                        }
                         val location = IntArray(2)
                         btnThreeDots.getLocationOnScreen(location)
 

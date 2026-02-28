@@ -23,6 +23,8 @@ class MainViewModel : ViewModel() {
     private val _searchLineData = MutableLiveData<String>(null)
     private val _currentSupplierId = MutableLiveData<String>(null)
     private val _isSelectedMoveList = MutableLiveData<Boolean>(false)
+    private val _isSelectedIncomeList = MutableLiveData<Boolean>(false)
+    private val _isSelectedInventoryList = MutableLiveData<Boolean>(false)
    // private val _moveSupplierId = MutableLiveData<String>(null)
 
 
@@ -36,8 +38,10 @@ class MainViewModel : ViewModel() {
     val SearchLineData: LiveData<String> get() = _searchLineData
     val CurrentSupplierId: LiveData<String> get() = _currentSupplierId
     val IsSelectedMoveList: LiveData<Boolean> get() = _isSelectedMoveList
+    val IsSelectedIncomeList: LiveData<Boolean> get() = _isSelectedIncomeList
+    val IsSelectedInventoryList: LiveData<Boolean> get() = _isSelectedInventoryList
   //  val MoveSupplierId: LiveData<String> get() = _moveSupplierId
-  fun getIsSelectedMoveList(): Boolean{
+    fun getIsSelectedMoveList(): Boolean{
       if (IsSelectedMoveList.value != null && IsSelectedMoveList.value == true)
         return true
       else
@@ -48,6 +52,30 @@ class MainViewModel : ViewModel() {
     }
     fun deselectMoveList(){
         _isSelectedMoveList.value = false
+    }
+    fun getIsSelectedInventoryList(): Boolean{
+        if (IsSelectedInventoryList.value != null && IsSelectedInventoryList.value == true)
+            return true
+        else
+            return false
+    }
+    fun selectInventoryList(){
+        _isSelectedInventoryList.value = true
+    }
+    fun deselectInventoryList(){
+        _isSelectedInventoryList.value = false
+    }
+    fun getIsSelectedIncomeList(): Boolean{
+        if (IsSelectedIncomeList.value != null && IsSelectedIncomeList.value == true)
+            return true
+        else
+            return false
+    }
+    fun selectIncomeList(){
+        _isSelectedIncomeList.value = true
+    }
+    fun deselectIncomeList(){
+        _isSelectedIncomeList.value = false
     }
     fun setCurrentSupplierId(str: String){
         _currentSupplierId.value = str

@@ -110,7 +110,6 @@ class MoveSessionFragment: Fragment() {
                 binding.btnCancel.visibility = View.GONE
             }
         })
-
         localViewModel.cell.observe(requireActivity(), {str ->
             if (str != ""){
                 binding.btnMove.visibility = View.VISIBLE

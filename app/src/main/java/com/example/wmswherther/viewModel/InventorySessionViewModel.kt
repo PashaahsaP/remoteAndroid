@@ -6,6 +6,7 @@ import androidx.lifecycle.ViewModel
 import com.example.wmsRemote.data.db.Dao
 import com.example.wmsRemote.data.db.MainDB
 import com.example.wmswherther.Classes.InventorySessionItem
+import com.example.wmswherther.Classes.MoveSessionItem
 import com.example.wmswherther.data.db.Entityes.Barcode
 import com.example.wmswherther.data.db.Entityes.Cell
 import com.example.wmswherther.data.db.Entityes.Goods
@@ -166,4 +167,17 @@ class InventorySessionViewModel : ViewModel(){
     suspend fun getBarcode(db : MainDB, barcode: String) : Barcode {
         return db.getDao().getBarcodeByName(barcode)
     }
+    fun setSelection(checked: Boolean) {
+        var list: MutableList<InventorySessionItem> = mutableListOf()
+        if (checked){
+            setCurCountOfCount(_countOfCount.value ?: 0)
+            items.value?.forEach { item -> list.add(item.copy(haveCount = item.allCount))}
+            updateItems(list)
+        }else{
+            setCurCountOfCount(0)
+            items.value?.forEach { item -> list.add(item.copy(haveCount = 0))}
+            updateItems(list)
+        }
+    }
+
 }

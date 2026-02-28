@@ -118,7 +118,6 @@ class InventorySessionFragment: Fragment() {
                 }
             }
         })*/
-
         localViewModel.CurrentCountOfCount.observe(viewLifecycleOwner, {counter ->
             binding.tvLineCounter.text = "${counter.toString()}  /"
         })
@@ -143,6 +142,10 @@ class InventorySessionFragment: Fragment() {
                 binding.rwInventorySessionList.setPadding(20, 0, 20, 40)
                 binding.btnFinish.visibility = View.GONE
             }
+        })
+
+        viewModel.IsSelectedInventoryList.observe(viewLifecycleOwner, {flag->
+            localViewModel.setSelection(flag)
         })
 
         InitOrder(localViewModel)
