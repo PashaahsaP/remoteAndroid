@@ -29,10 +29,9 @@ class InventoryFragment: Fragment() {
         container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View? {
-
         val localViewModel = ViewModelProvider(requireActivity()).get(InventoryViewModel::class)
         _binding = FragmentInventoryBinding.inflate(inflater)
-
+        // <editor-fold desc="init adapters and recycle views">
         var supplierAdapter = InventoryAdapter(mutableListOf(), this, viewModel)
         var supplierRecyclerView: RecyclerView = binding.rwSupplierMenu
         supplierRecyclerView.layoutManager = LinearLayoutManager(requireActivity())
@@ -42,7 +41,7 @@ class InventoryFragment: Fragment() {
         var orderRecyclerView: RecyclerView = binding.rwOrderMenu
         orderRecyclerView.layoutManager = LinearLayoutManager(requireActivity())
         orderRecyclerView.adapter = orderAdapter
-
+        // </editor-fold>
 
         viewModel.uiState.observe(viewLifecycleOwner, {state ->
             if(state is UiState.InventoryMenu) {
@@ -62,10 +61,8 @@ class InventoryFragment: Fragment() {
         localViewModel.Orders.observe(requireActivity(), { items ->
             orderAdapter.updateMenuItems(items)
         })
-
         localViewModel.LoadSuppliers(requireActivity())
         localViewModel.LoadOrder(requireActivity())
-
 
         return  binding.root
     }

@@ -12,10 +12,8 @@ import androidx.core.view.setPadding
 import androidx.fragment.app.FragmentActivity
 import androidx.recyclerview.widget.RecyclerView
 import com.example.wmsRemote.R
-import com.example.wmswherther.Classes.IncomeItem
 import com.example.wmswherther.Classes.InventorySessionItem
 import com.example.wmswherther.Classes.UiState
-import com.example.wmswherther.viewModel.IncomeSessionViewModel
 import com.example.wmswherther.viewModel.InventorySessionViewModel
 import com.example.wmswherther.viewModel.MainViewModel
 
@@ -159,10 +157,6 @@ class InventorySessionAdapter(var data: List<InventorySessionItem>,
                                 item.isSelected = false
                                 if(counter == position){
                                     item.haveCount = count
-
-                                    if((viewModel.uiState.value as UiState.IncomeSessionMenu).isTEModeActive){
-                                        item.teCount = count
-                                    }
                                 }
                                 listIncome+= item
                                 counter = counter + 1
@@ -189,8 +183,9 @@ class InventorySessionAdapter(var data: List<InventorySessionItem>,
                     )
                 }
                 holder.bind(item)
+                holder.etSelectedCount.requestFocus()
             }
-            is InventorySessionExpandedViewHolder ->{
+            is InventorySessionExpandedViewHolder -> {
                 holder.tvLeft.text = item.name
                 holder.container.setOnClickListener {
                     var value = localViewModel.stack.removeLast().toList()
@@ -210,7 +205,7 @@ class InventorySessionAdapter(var data: List<InventorySessionItem>,
                 }
 
             }
-            is InventorySessionCollapsedViewHolder ->{
+            is InventorySessionCollapsedViewHolder -> {
                 holder.tvLeft.text = item.name
                 holder.container.setOnClickListener {
                     var value = localViewModel.items.value!!.toList()
@@ -286,9 +281,7 @@ class InventorySessionAdapter(var data: List<InventorySessionItem>,
                     dialog.setButton(android.app.AlertDialog.BUTTON_NEUTRAL, "Отмена") { dialogInterface, _ ->
                         dialogInterface.dismiss()
                     }
-                    dialog.setOnCancelListener {
-                        viewModel.setActiveUi((viewModel.uiState.value as UiState.IncomeSessionMenu).copy(isTEModeActive = true))
-                    }
+
 
                     dialog.setView(containerLocal)
                     dialog.show()
@@ -308,14 +301,14 @@ class InventorySessionAdapter(var data: List<InventorySessionItem>,
     fun updateCollection(items: List<InventorySessionItem>, selectedItem: Int){
         data = items
         notifyDataSetChanged()
-        focusOnItem(recyclerView, selectedItem)
+        focusOnInventoryItem(recyclerView, selectedItem)
     }
 
 }
-fun  com.example.wmswherther.Adapters.InventorySessionAdapter.focusOnItem(recyclerView: RecyclerView, position: Int) {
+fun focusOnInventoryItem(recyclerView: RecyclerView, position: Int) {
     recyclerView.post {
         val vh = recyclerView.findViewHolderForAdapterPosition(position)
-        if (vh is IncomeSessionSelectedViewHolder) {
+        if (vh is InventorySessionSelectedViewHolder) {
             vh.etSelectedCount.requestFocus()
             vh.etSelectedCount.post {
                 vh.etSelectedCount.selectAll()

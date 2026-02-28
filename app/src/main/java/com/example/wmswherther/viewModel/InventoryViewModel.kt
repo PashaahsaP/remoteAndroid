@@ -20,14 +20,7 @@ class InventoryViewModel : ViewModel() {
 
     val Suppliers: LiveData<MutableList<InventoryItem>> get() = _suppliers
     val Orders: LiveData<MutableList<TaskMenuItem>> get() = _orders
-    val IsActiveSupplierMode: LiveData<Boolean> get() = _isActiveSupplierMode
 
-    fun ActivateSupplierMode(){
-        _isActiveSupplierMode.value = true
-    }
-    fun ActivateOrderMode(){
-        _isActiveSupplierMode.value = false
-    }
 
     fun LoadSuppliers(activity: FragmentActivity) {
         var supplierList: List<InventoryItem> = listOf()

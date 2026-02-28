@@ -145,33 +145,35 @@ class InventorySessionFragment: Fragment() {
             }
         })
 
-        if(viewModel.uiState.value is UiState.InventorySessionMenu){
+        InitOrder(localViewModel)
+
+        return  binding.root
+    }
+
+    private fun InitOrder(localViewModel: InventorySessionViewModel) {
+        if (viewModel.uiState.value is UiState.InventorySessionMenu) {
             var state = viewModel.uiState.value as UiState.InventorySessionMenu
-            var cell : Cell
-            if (!state.isSupplierModeActive){
+            var cell: Cell
+            if (!state.isSupplierModeActive) {//
                 lifecycleScope.launch {
                     var data: List<InventorySessionItem> = listOf()
-                    withContext(Dispatchers.Main){
+                    withContext(Dispatchers.Main) {
                         var dao = MainDB.getDB(requireActivity()).getDao()
                         var session = dao.getInventorySessionById(state.sessionId)
                         cell = dao.getCellById(session.cellId.toString())
                         localViewModel.cellStack.addLast(cell.name)
                         localViewModel.setCellName(cell.name)
                     }
-                    withContext(Dispatchers.IO){
+                    withContext(Dispatchers.IO) {
                         data = localViewModel.loadItems(MainDB.getDB(requireActivity()), cell)
                     }
-                    withContext(Dispatchers.Main){
+                    withContext(Dispatchers.Main) {
                         localViewModel.updateItems(data)
                         localViewModel.setSelectedItem(0)
                     }
                 }
-                // Установить текущию ячейку
-                // Загрузить элементы ячейки
             }
         }
-
-        return  binding.root
-    }
+    }//вызывается когда в inventoryMenu выбран режим заказы и выбран определенный заказ
 
 }

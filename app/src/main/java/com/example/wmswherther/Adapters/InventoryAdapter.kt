@@ -25,16 +25,12 @@ class InventoryAdapter (
         inflate(R.layout.supplier_menu_item,parent,false)
         return MoveViewHolder(itemView)
     }
-
-
-
     override fun getItemCount(): Int {
         return data.size
     }
     fun getItems(): List<InventoryItem> {
         return data
     }
-
     override fun onBindViewHolder(holder: MoveViewHolder, @SuppressLint("RecyclerView") position: Int) {
         val item = data[position]
         holder.btn.text = item.name
@@ -55,8 +51,6 @@ class InventoryAdapter (
             viewModel.setActiveUi(UiState.InventorySessionMenu(prevState = viewModel.uiState.value, supplierId = item.id, isSupplierModeActive = true))
         }
     }
-
-
 
     fun updateData(newData: MutableList<InventoryItem>){
         data = newData
