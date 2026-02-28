@@ -8,6 +8,7 @@ import android.view.inputmethod.InputMethodManager
 import android.widget.LinearLayout
 import android.widget.TextView
 import androidx.core.content.ContextCompat
+import androidx.core.text.isDigitsOnly
 import androidx.core.view.setPadding
 import androidx.fragment.app.FragmentActivity
 import androidx.recyclerview.widget.RecyclerView
@@ -149,10 +150,10 @@ class InventorySessionAdapter(var data: List<InventorySessionItem>,
                         if (char == '\n') { // Enter — значит скан закончен
                             val scannedBarcode = barcodeBuffer.toString().trim()
                             barcodeBuffer.clear()
-                            var t = holder.etSelectedCount.text.trim()
+                            var t = holder.etSelectedCount.text.trim().toString()
                             var counter = 0
                             var listIncome : List<InventorySessionItem> = listOf()
-                            var count = t.toString().toInt()
+                            var count = if(t != null && t != "" && t.isDigitsOnly()) t.toInt() else 0
                             localViewModel.items.value?.forEach{ item ->
                                 item.isSelected = false
                                 if(counter == position){

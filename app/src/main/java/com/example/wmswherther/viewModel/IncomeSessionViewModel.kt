@@ -172,7 +172,7 @@ class IncomeSessionViewModel : ViewModel() {
         var counter: Int = 0
         for (item in listOfGoods){
             var catalog = dao.getCatalogById(item.first.catalogId)
-            if (item.second.typeCellId == "e873f579-44fc-48e1-84d2-f529b77653ee"){//6730f3c3-0a33-4454-a485-520522b64de5
+            if (item.second.typeCellId == "1078e222-0d70-47f7-a295-5827ea9ad1f5"){//6730f3c3-0a33-4454-a485-520522b64de5
                 var parentCell = dao.getCellById(item.second.parentCellId.toString())
                 var isShown = if(parentCell.name.contains("IN")) true else false
                 if(item.second.id != previousCellId){

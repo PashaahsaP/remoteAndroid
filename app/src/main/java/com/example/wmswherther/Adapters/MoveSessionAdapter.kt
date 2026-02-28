@@ -7,6 +7,7 @@ import android.view.LayoutInflater
 import android.view.ViewGroup
 import android.view.inputmethod.InputMethodManager
 import androidx.core.content.ContextCompat
+import androidx.core.text.isDigitsOnly
 import androidx.fragment.app.FragmentActivity
 import androidx.recyclerview.widget.RecyclerView
 import com.example.wmsRemote.R
@@ -109,10 +110,10 @@ class MoveSessionAdapter(
                         if (char == '\n') { // Enter — значит скан закончен
                             val scannedBarcode = barcodeBuffer.toString().trim()
                             barcodeBuffer.clear()
-                            var t = holder.etSelectedCount.text.trim()
+                            var t = holder.etSelectedCount.text.trim().toString()
                             var counter = 0
                             var listIncome: List<MoveSessionItem> = listOf()
-                            var count = t.toString().toInt()
+                            var count = if(t != null && t != "" && t.isDigitsOnly()) t.toInt() else 0
                             viewModel.myData.value?.forEach { item ->
                                 item.isSelected = false
                                 if (counter == position) {
