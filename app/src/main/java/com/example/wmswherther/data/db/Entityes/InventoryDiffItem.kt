@@ -12,9 +12,9 @@ import androidx.room.PrimaryKey
 data class InventoryDiffItem(
     @PrimaryKey(autoGenerate = false) val id: String,
     val inventorySessionId: String,
-    val goodsId: String,
-    val plannedCount: Int,
-    val actualCount: Int,
+    val catalogId: String,
+    val parentCellId: String,
+    val diffCount: Int,
     val status: Int,
     val other: String? // JSON
 )

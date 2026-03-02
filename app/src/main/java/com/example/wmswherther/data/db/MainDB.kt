@@ -192,9 +192,9 @@ val MIGRATION_1_2 = object : Migration(1, 2) {
             CREATE TABLE IF NOT EXISTS inventory_diff_items (
                 id TEXT NOT NULL PRIMARY KEY,
                 inventorySessionId TEXT NOT NULL,
-                goodsId TEXT NOT NULL,
-                plannedCount INTEGER NOT NULL,
-                actualCount INTEGER NOT NULL,
+                catalogId TEXT NOT NULL,
+                parentCellId TEXT NOT NULL,
+                diffCount INTEGER NOT NULL,
                 status TEXT NOT NULL,
                 other TEXT,
                 FOREIGN KEY(inventorySessionId) REFERENCES SessionInventory(id) ON DELETE CASCADE

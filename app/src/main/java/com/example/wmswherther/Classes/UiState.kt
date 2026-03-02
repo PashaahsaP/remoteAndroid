@@ -75,6 +75,7 @@ sealed class UiState {
         val isBarcodeScanActive: Boolean = true,
         val isThreeDotsActive: Boolean = true,
         val isBackBtnActive: Boolean = true,
+        val isTEIsCell: Boolean = false,
         val prevState: UiState? = null,
     ) : UiState()
 }

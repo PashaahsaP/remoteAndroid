@@ -100,7 +100,7 @@ fun appendDummyData(db: MainDB){
     val incomeType = CellType(
         UUID.randomUUID().toString(),
         "Income",
-        "#####",
+        "IN##",
         null
     )
     dao.insertCellType(incomeType)
@@ -108,7 +108,7 @@ fun appendDummyData(db: MainDB){
     val teType = CellType(
         UUID.randomUUID().toString(),
         "BoxTE",
-        "#########",
+        "N########",
         null
     )
     dao.insertCellType(teType)
@@ -147,7 +147,7 @@ fun appendDummyData(db: MainDB){
     val pickerType = CellType(
         UUID.randomUUID().toString(),
         "Picker",
-        "####",
+        "*###",
         null
     )
     dao.insertCellType(pickerType)
@@ -365,7 +365,7 @@ fun appendMoveDummyData(db: MainDB){
     val incomeType = CellType(
         UUID.randomUUID().toString(),
         "Income",
-        "#####",
+        "IN##",
         null
     )
     dao.insertCellType(incomeType)
@@ -373,14 +373,14 @@ fun appendMoveDummyData(db: MainDB){
     val teType = CellType(
         UUID.randomUUID().toString(),
         "BoxTE",
-        "#########",
+        "N########",
         null
     )
     dao.insertCellType(teType)
     val pickerType = CellType(
         UUID.randomUUID().toString(),
         "Picker",
-        "####",
+        "*###",
         null
     )
     dao.insertCellType(pickerType)
