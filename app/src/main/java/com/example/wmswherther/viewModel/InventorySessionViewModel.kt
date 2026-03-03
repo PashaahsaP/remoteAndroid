@@ -3,6 +3,7 @@ package com.example.wmswherther.viewModel
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
+import androidx.lifecycle.viewModelScope
 import com.example.wmsRemote.data.db.Dao
 import com.example.wmsRemote.data.db.MainDB
 import com.example.wmswherther.Classes.InventorySessionItem
@@ -11,6 +12,9 @@ import com.example.wmswherther.data.db.Entityes.Barcode
 import com.example.wmswherther.data.db.Entityes.Cell
 import com.example.wmswherther.data.db.Entityes.Goods
 import com.example.wmswherther.data.db.Entityes.SessionInventory
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 
 class InventorySessionViewModel : ViewModel(){
     private val _items = MutableLiveData<List<InventorySessionItem>>()
@@ -44,6 +48,13 @@ class InventorySessionViewModel : ViewModel(){
     }
     fun setCountOfCount(count: Int){
         _countOfCount.value = count
+    }
+    suspend fun updateItemsAsync(items: List<InventorySessionItem>){
+        viewModelScope.launch {
+            withContext(Dispatchers.Main){
+                updateItems(items)
+            }
+        }
     }
     fun updateItems(items: List<InventorySessionItem>){
         var sortedCollection : MutableList<InventorySessionItem> = mutableListOf()

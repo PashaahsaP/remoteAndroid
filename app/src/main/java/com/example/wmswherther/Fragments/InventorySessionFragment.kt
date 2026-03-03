@@ -89,11 +89,37 @@ class InventorySessionFragment: Fragment() {
                             if(isTE(barcode, dao)){
                                 // либо открыть те
                                 if(inventorySession.isTEIsCell){
-                                    
+                                    // сначало найти в ячейках те с таким именем
+                                    var curCell = dao.getCellByName(localViewModel.currentCellName.value.toString())
+                                    var te = dao.getAllCells().firstOrNull { inner -> inner.parentCellId == curCell.id }
+                                    if (te != null) {
+                                        // Добавить в стак текущию коллекцию и ячейку
+                                        localViewModel.stack.addLast(
+                                            localViewModel.items.value ?: listOf()
+                                        )
+                                        localViewModel.cellStack.addLast(localViewModel.currentCellName.value.toString())
+                                        // Загрузить в текущию коллекцию элементы у которых те равна отсканированной те
+                                        var newInventoryCollection =
+                                            localViewModel.items.value?.filter { item -> item.TE == te.name  }
+                                        localViewModel.updateItemsAsync(newInventoryCollection ?: listOf())
+                                    }
                                 }
                                 // либо выделить все элементы
                                 else{
-
+                                    var curCell = dao.getCellByName(localViewModel.currentCellName.value.toString())
+                                    var te = dao.getAllCells().firstOrNull { inner -> inner.parentCellId == curCell.id }
+                                    if (te != null) {
+                                        // Загрузить в текущию коллекцию элементы у которых те равна отсканированной те
+                                        var newCol: List<InventorySessionItem> = listOf()
+                                        localViewModel.items.value?.forEach { item ->
+                                            if(item.TE == te.name && !item.isExpanded){
+                                                newCol += item.copy(haveCount = item.allCount)
+                                            }else{
+                                                newCol += item
+                                            }
+                                        }
+                                        localViewModel.updateItemsAsync(newCol ?: listOf())
+                                    }
                                 }
 
                             }else{
