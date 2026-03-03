@@ -79,109 +79,19 @@ class InventorySessionFragment: Fragment() {
                         var inventorySession = viewModel.uiState.value as UiState.InventorySessionMenu
                         var db = MainDB.getDB(requireActivity())
                         var dao = db.getDao()
-                        // Если ячейка то
                         if (isPickerCell(barcode, dao)) {
-                            // Проверить isOrderMode Active то ничего делать т.к. это заявка(особенность)
-                            if (inventorySession.isSupplierModeActive) {
+                            if (inventorySession.isSupplierModeActive) {  // Проверить isOrderMode Active то ничего делать т.к. это заявка(особенность)
                                 loadNewCell(localViewModel, barcode, db)
                             }
                         } else {
                             if(isTE(barcode, dao)){
-                                // либо открыть те
-                                if(inventorySession.isTEIsCell){
-                                    // сначало найти в ячейках те с таким именем
-                                    var curCell = dao.getCellByName(localViewModel.currentCellName.value.toString())
-                                    var te = dao.getAllCells().firstOrNull { inner -> inner.parentCellId == curCell.id }
-                                    if (te != null) {
-                                        // Добавить в стак текущию коллекцию и ячейку
-                                        localViewModel.stack.addLast(
-                                            localViewModel.items.value ?: listOf()
-                                        )
-                                        localViewModel.cellStack.addLast(localViewModel.currentCellName.value.toString())
-                                        // Загрузить в текущию коллекцию элементы у которых те равна отсканированной те
-                                        var newInventoryCollection =
-                                            localViewModel.items.value?.filter { item -> item.TE == te.name  }
-                                        localViewModel.updateItemsAsync(newInventoryCollection ?: listOf())
-                                    }
-                                }
-                                // либо выделить все элементы
-                                else{
-                                    var curCell = dao.getCellByName(localViewModel.currentCellName.value.toString())
-                                    var te = dao.getAllCells().firstOrNull { inner -> inner.parentCellId == curCell.id }
-                                    if (te != null) {
-                                        // Загрузить в текущию коллекцию элементы у которых те равна отсканированной те
-                                        var newCol: List<InventorySessionItem> = listOf()
-                                        localViewModel.items.value?.forEach { item ->
-                                            if(item.TE == te.name && !item.isExpanded){
-                                                newCol += item.copy(haveCount = item.allCount)
-                                            }else{
-                                                newCol += item
-                                            }
-                                        }
-                                        localViewModel.updateItemsAsync(newCol ?: listOf())
-                                    }
-                                }
-
+                                prepareTE(inventorySession, dao, localViewModel)
                             }else{
-                                // поиск товара и изменение его количества
+                                prepareBarcode(dao, barcode, localViewModel)
                             }
                         }
                     }
-                    var newItems: List<InventorySessionItem> = listOf()
-                    var bar =
-                        MainDB.getDB(requireActivity()).getDao().getBarcodeByName(barcode)
-                    if (bar != null && bar is Barcode) {
-                        var isAdded = false
-                        withContext(Dispatchers.IO) {
-                            localViewModel.items.value?.forEach { item ->
-                                var teCount = item.teCount
-                                //localViewModel.currentCellName.value.toString() == item.TE как помню это нужно чтобы не сканировать товар внутри те такой же, не менять счетчик
-                                if (item.catalogId == bar.catalogId && localViewModel.currentCellName.value.toString() == item.TE) {
-                                    isAdded = true
-                                    newItems += InventorySessionItem(
-                                        name = item.name,
-                                        TE = item.TE,
-                                        catalogId = item.catalogId,
-                                        haveCount = item.haveCount + 1,
-                                        allCount = item.allCount,
-                                        teCount = teCount,
-                                        isSelected = item.isSelected,
-                                        isExpanded = item.isExpanded,
-                                        isShown = item.isShown,
-                                        isExpandable = item.isExpandable)
-                                }else {
-                                    newItems += item
-                                }
 
-                            }
-                            if(!isAdded){
-                                var catalog = MainDB.getDB(requireActivity()).getDao().getCatalogById(bar.catalogId)
-                                if (catalog != null){
-                                    newItems += InventorySessionItem(
-                                        name = catalog.name,
-                                        TE = localViewModel.currentCellName.value.toString(),
-                                        catalogId = catalog.id,
-                                        haveCount = 1,
-                                        allCount = 0,
-                                        teCount =  0,
-                                        isSelected = false,
-                                        isExpanded = false,
-                                        isShown = true,
-                                        isExpandable = false)
-                                }
-                            }
-                        }
-                        withContext(Dispatchers.Main) {
-                            localViewModel.updateItems(newItems)
-                            var binding = viewModel.getMainBinding()
-                            if(viewModel.IsScanningActive.value == true) {
-                                binding?.etIncomeBarcode?.requestFocus()
-
-                            }else{
-                                binding?.etIncomeBarcodeScan?.requestFocus()
-                            }
-                        }
-                    }
                 }
             }
 
@@ -218,6 +128,68 @@ class InventorySessionFragment: Fragment() {
         initOrder(localViewModel)
 
         return  binding.root
+    }
+
+    private suspend fun prepareBarcode(
+        dao: Dao,
+        barcode: String,
+        localViewModel: InventorySessionViewModel
+    ) {
+        // поиск товара и изменение его количества
+        // найти barcode
+        var searchBarcode: Barcode = dao.getBarcodeByName(barcode)
+        if (searchBarcode != null) {
+            var newCol: List<InventorySessionItem> = listOf()
+            localViewModel.items.value?.forEach { inner ->
+                if (inner.catalogId == searchBarcode.catalogId && localViewModel.currentCellName.value.toString() == inner.TE) {
+                    newCol += inner.copy(haveCount = inner.haveCount + 1)
+                } else {
+                    newCol += inner
+                }
+            }
+
+            localViewModel.updateItemsAsync(newCol)
+        }
+    }
+
+    private suspend fun prepareTE(
+        inventorySession: UiState.InventorySessionMenu,
+        dao: Dao,
+        localViewModel: InventorySessionViewModel
+    ) {
+        if (inventorySession.isTEIsCell) {//TODO сделать счетчик для те 0/1
+            // сначало найти в ячейках те с таким именем
+            var curCell = dao.getCellByName(localViewModel.currentCellName.value.toString())
+            var te = dao.getAllCells().firstOrNull { inner -> inner.parentCellId == curCell.id }
+            if (te != null) {
+                // Добавить в стак текущию коллекцию и ячейку
+                localViewModel.stack.addLast(
+                    localViewModel.items.value ?: listOf()
+                )
+                localViewModel.cellStack.addLast(localViewModel.currentCellName.value.toString())
+                // Загрузить в текущию коллекцию элементы у которых те равна отсканированной те
+                var newInventoryCollection =
+                    localViewModel.items.value?.filter { item -> item.TE == te.name }
+                localViewModel.updateItemsAsync(newInventoryCollection ?: listOf())
+            }
+        }
+        // либо выделить все элементы
+        else {
+            var curCell = dao.getCellByName(localViewModel.currentCellName.value.toString())
+            var te = dao.getAllCells().firstOrNull { inner -> inner.parentCellId == curCell.id }
+            if (te != null) {
+                // Загрузить в текущию коллекцию элементы у которых те равна отсканированной те
+                var newCol: List<InventorySessionItem> = listOf()
+                localViewModel.items.value?.forEach { item ->
+                    if (item.TE == te.name && !item.isExpanded) {
+                        newCol += item.copy(haveCount = item.allCount)
+                    } else {
+                        newCol += item
+                    }
+                }
+                localViewModel.updateItemsAsync(newCol ?: listOf())
+            }
+        }
     }
 
     suspend private fun loadNewCell(
