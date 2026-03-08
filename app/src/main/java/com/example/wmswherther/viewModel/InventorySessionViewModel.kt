@@ -120,15 +120,16 @@ class InventorySessionViewModel : ViewModel(){
         // Создать inventory item.
         var result : List<InventorySessionItem> = listOf()
         // для Cell
-        if(cell.typeCellId == "1078e222-0d70-47f7-a295-5827ea9ad1f5") {
+        if(cell.typeCellId == "7e8ea95c-d78f-4a2f-9539-73458af2e728") {
+            var parent = dao.getCellById(cell.parentCellId.toString())
             result += InventorySessionItem(
                 name = cell.name,
-                TE = if (cell.typeCellId == "e873f579-44fc-48e1-84d2-f529b77653ee") cell.name else "",
+                TE = if (cell.typeCellId == "7e8ea95c-d78f-4a2f-9539-73458af2e728") cell.name else "",
                 catalogId = "",
                 allCount = 1,
                 haveCount = 0,
                 isExpandable = true,
-                isShown = if (cell.typeCellId == "e873f579-44fc-48e1-84d2-f529b77653ee") false else true
+                isShown = if (parent.typeCellId == "7fb144ef-41e1-497d-8b83-c0bbd1fc80a2") true else false
             )
         }
 
@@ -142,11 +143,11 @@ class InventorySessionViewModel : ViewModel(){
                 allCount = goods.first.amount,
                 haveCount = 0,
                 isExpandable = false,
-                isShown = if(cell.typeCellId == "e873f579-44fc-48e1-84d2-f529b77653ee") false else true)
+                isShown = if(cell.typeCellId == "7e8ea95c-d78f-4a2f-9539-73458af2e728") false else true)
         }
 
         // Загрузить cells
-        var listOfCells = dao.getAllCells().filter { cell: Cell -> cell.parentCellId == cell.id }
+        var listOfCells = dao.getAllCells().filter { innerCell: Cell -> innerCell.parentCellId == cell.id }
         if(listOfCells.count() == 0){
             return  result
         }else{

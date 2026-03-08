@@ -55,7 +55,7 @@ class InventorySessionAdapter(var data: List<InventorySessionItem>,
             }
             3 -> {
                 val view = inflater.inflate(R.layout.income_session_collapsed, parent, false)
-                InventorySessionExpandedViewHolder(view)
+                InventorySessionCollapsedViewHolder(view)
             }
             4 -> {
                 val view = inflater.inflate(R.layout.income_session_invisible, parent, false)
