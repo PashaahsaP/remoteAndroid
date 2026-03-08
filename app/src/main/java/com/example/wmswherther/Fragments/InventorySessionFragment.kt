@@ -278,22 +278,6 @@ class InventorySessionFragment: Fragment() {
     }//вызывается когда в inventoryMenu выбран режим заказы и выбран определенный заказ
 
 
-    suspend private fun isPickerCell(cell: String, dao: Dao): Boolean {
-        val cells = dao.getCellTypes().filter { cellType -> cellType.type == "Picker" }
-
-        return cells.any { cellType ->
-            val mask = cellType.mask ?: return@any false
-
-            mask.length == cell.length &&
-                    mask.indices.all { i ->
-                        when (mask[i]) {
-                            '*' -> cell[i].isDigit()
-                            '#' -> cell[i].isLetter()
-                            else -> mask[i] == cell[i]
-                        }
-                    }
-        }
-    }
     suspend private fun isTE(cell: String, dao: Dao): Boolean {
         val cells = dao.getCellTypes().filter { cellType -> cellType.type == "BoxTE" }
 
@@ -303,8 +287,23 @@ class InventorySessionFragment: Fragment() {
             mask.length == cell.length &&
                     mask.indices.all { i ->
                         when (mask[i]) {
-                            '*' -> cell[i].isDigit()
-                            '#' -> cell[i].isLetter()
+                            '#' -> cell[i].isDigit()
+                            else -> mask[i] == cell[i]
+                        }
+                    }
+        }
+    }
+    suspend private fun isPickerCell(cell: String, dao: Dao): Boolean {
+        val cells = dao.getCellTypes().filter { cellType -> cellType.type == "Picker" }
+
+        return cells.any { cellType ->
+            val mask = cellType.mask ?: return@any false
+
+            mask.length == cell.length &&
+                    mask.indices.all { i ->
+                        when (mask[i]) {
+                            '*' -> cell[i].isLetter()
+                            '#' -> cell[i].isDigit()
                             else -> mask[i] == cell[i]
                         }
                     }

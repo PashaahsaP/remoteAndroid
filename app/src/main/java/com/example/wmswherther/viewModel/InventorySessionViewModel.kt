@@ -120,16 +120,16 @@ class InventorySessionViewModel : ViewModel(){
         // Создать inventory item.
         var result : List<InventorySessionItem> = listOf()
         // для Cell
-        if(cell.typeCellId == "7e8ea95c-d78f-4a2f-9539-73458af2e728") {
+        if(isTE(cell.name, dao)) {
             var parent = dao.getCellById(cell.parentCellId.toString())
             result += InventorySessionItem(
                 name = cell.name,
-                TE = if (cell.typeCellId == "7e8ea95c-d78f-4a2f-9539-73458af2e728") cell.name else "",
+                TE = if (isTE(cell.name, dao)) cell.name else "",
                 catalogId = "",
                 allCount = 1,
                 haveCount = 0,
                 isExpandable = true,
-                isShown = if (parent.typeCellId == "7fb144ef-41e1-497d-8b83-c0bbd1fc80a2") true else false
+                isShown = if (isPickerCell(parent.name, dao)) true else false
             )
         }
 
@@ -143,7 +143,7 @@ class InventorySessionViewModel : ViewModel(){
                 allCount = goods.first.amount,
                 haveCount = 0,
                 isExpandable = false,
-                isShown = if(cell.typeCellId == "7e8ea95c-d78f-4a2f-9539-73458af2e728") false else true)
+                isShown = if(isTE(cell.name, dao)) false else true)
         }
 
         // Загрузить cells
@@ -192,4 +192,35 @@ class InventorySessionViewModel : ViewModel(){
         }
     }
 
+}
+suspend private fun isTE(cell: String, dao: Dao): Boolean {
+    val cells = dao.getCellTypes().filter { cellType -> cellType.type == "BoxTE" }
+
+    return cells.any { cellType ->
+        val mask = cellType.mask ?: return@any false
+
+        mask.length == cell.length &&
+                mask.indices.all { i ->
+                    when (mask[i]) {
+                        '#' -> cell[i].isDigit()
+                        else -> mask[i] == cell[i]
+                    }
+                }
+    }
+}
+suspend private fun isPickerCell(cell: String, dao: Dao): Boolean {
+    val cells = dao.getCellTypes().filter { cellType -> cellType.type == "Picker" }
+
+    return cells.any { cellType ->
+        val mask = cellType.mask ?: return@any false
+
+        mask.length == cell.length &&
+                mask.indices.all { i ->
+                    when (mask[i]) {
+                        '*' -> cell[i].isLetter()
+                        '#' -> cell[i].isDigit()
+                        else -> mask[i] == cell[i]
+                    }
+                }
+    }
 }
