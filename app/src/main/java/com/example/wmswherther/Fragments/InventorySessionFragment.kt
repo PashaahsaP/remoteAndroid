@@ -112,7 +112,7 @@ class InventorySessionFragment: Fragment() {
                     withContext(Dispatchers.IO) {
                         itemsInVm.forEach { item ->
                             if (item.name == cellName) {
-                                coll += item.copy(haveCount = if (localViewModel.CountOfCount.value == localViewModel.CurrentCountOfCount.value) 1 else 0)
+                                coll += item.copy(haveCount = if (localViewModel.CountOfCount.value!! <= localViewModel.CurrentCountOfCount.value!!) 1 else 0)
                             } else {
                                 coll += item
                             }
