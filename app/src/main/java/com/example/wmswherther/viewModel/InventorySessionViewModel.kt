@@ -63,6 +63,7 @@ class InventorySessionViewModel : ViewModel(){
         var counter = 0
         var curCounter = 0
         var isOver = false
+        // get collections
         items.forEach { item ->
             if(item.isExpandable){
                 teCollection.add(item)
@@ -83,16 +84,19 @@ class InventorySessionViewModel : ViewModel(){
             }
 
         }
+        // insert collections in certain order
         teCollection.forEach { item ->
             sortedCollection.add(item)
         }
         otherCollection.forEach { item ->
             sortedCollection.add(item)
         }
+        //set properties
         _items.value = sortedCollection
         setCountOfCount(counter)
         setCurCountOfCount(curCounter)
         setCounterValidation(isOver)
+        //set is over session btn
         if(IsOverCounter.value == false && CurrentCountOfCount.value == CountOfCount.value){
             setFinishValidation(true)
         }else{

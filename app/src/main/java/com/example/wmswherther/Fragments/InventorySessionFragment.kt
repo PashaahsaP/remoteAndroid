@@ -243,6 +243,7 @@ class InventorySessionFragment: Fragment() {
                         .setMessage("Есть отсканированный товар, точно хотите сменить ячейку?")
                         .setPositiveButton("Да") { _, _ ->
                             localViewModel.setCellName(barcode)
+                            localViewModel.cellStack.addLast(barcode)
                             localViewModel.updateItems(inventoryItems)
                         }
                         .setNegativeButton("Нет", null)
@@ -251,6 +252,7 @@ class InventorySessionFragment: Fragment() {
                 }else {
                     // Иначе сменить активную ячейку
                     localViewModel.setCellName(barcode)
+                    localViewModel.cellStack.addLast(barcode)
                     localViewModel.updateItems(inventoryItems)
                 }
             }
