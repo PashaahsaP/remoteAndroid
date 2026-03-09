@@ -310,7 +310,9 @@ class IncomeSessionFragment : Fragment() {
                 adapter.updateCollection(items, localViewModel.getSelectedItem())
                 recyclerView.smoothScrollToPosition(localViewModel.getSelectedItem())
             })
-
+            localViewModel.currentCellName.observe(viewLifecycleOwner, { cellName ->
+                binding.tvCellName.text = cellName
+            })
             //todo set red color or black
             lifecycleScope.launch {
                 var data: List<IncomeItem> = listOf()

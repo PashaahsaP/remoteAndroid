@@ -8,6 +8,15 @@
 
 
     <TextView
+        android:id="@+id/tvCellName"
+        android:layout_width="wrap_content"
+        android:layout_height="20dp"
+        android:layout_marginStart="15dp"
+        app:layout_constraintBottom_toTopOf="@+id/rwIncomeSessionList"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
+
+    <TextView
         android:id="@+id/tvLineCounter"
         android:layout_width="wrap_content"
         android:layout_height="20dp"

@@ -155,9 +155,13 @@ class InventorySessionFragment: Fragment() {
                 binding.btnFinish.visibility = View.GONE
             }
         })
+        localViewModel.currentCellName.observe(viewLifecycleOwner, { cellName ->
+            binding.tvCellName.text = cellName
+        })
         viewModel.IsSelectedInventoryList.observe(viewLifecycleOwner, {flag->
             localViewModel.setSelection(flag)
         })
+
 
 
 
