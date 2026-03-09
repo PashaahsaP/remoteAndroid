@@ -4,6 +4,7 @@ import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.example.wmsRemote.data.db.Dao
 import com.example.wmswherther.data.db.Entityes.Cell
 import com.example.wmsRemote.data.db.MainDB
 import com.example.wmswherther.Classes.IncomeItem
@@ -173,7 +174,7 @@ class IncomeSessionViewModel : ViewModel() {
         var counter: Int = 0
         for (item in listOfGoods){
             var catalog = dao.getCatalogById(item.first.catalogId)
-            if (item.second.typeCellId == "1078e222-0d70-47f7-a295-5827ea9ad1f5"){//6730f3c3-0a33-4454-a485-520522b64de5
+            if (isTE(item.second.name, dao)){
                 var parentCell = dao.getCellById(item.second.parentCellId.toString())
                 var isShown = if(parentCell.name.contains("IN")) true else false
                 if(item.second.id != previousCellId){
@@ -231,6 +232,21 @@ class IncomeSessionViewModel : ViewModel() {
             setCurCountOfCount(0)
             items.value?.forEach { item -> list.add(item.copy(haveCount = 0))}
             updateItems(list)
+        }
+    }
+    suspend private fun isTE(cell: String, dao: Dao): Boolean {
+        val cells = dao.getCellTypes().filter { cellType -> cellType.type == "BoxTE" }
+
+        return cells.any { cellType ->
+            val mask = cellType.mask ?: return@any false
+
+            mask.length == cell.length &&
+                    mask.indices.all { i ->
+                        when (mask[i]) {
+                            '#' -> cell[i].isDigit()
+                            else -> mask[i] == cell[i]
+                        }
+                    }
         }
     }
 }
