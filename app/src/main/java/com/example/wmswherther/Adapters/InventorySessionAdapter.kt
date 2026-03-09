@@ -188,6 +188,7 @@ class InventorySessionAdapter(var data: List<InventorySessionItem>,
             }
             is InventorySessionExpandedViewHolder -> {
                 holder.tvLeft.text = item.name
+                holder.tvRight.text = "${item.haveCount}/${item.allCount}"
                 holder.container.setOnClickListener {
                     var value = localViewModel.stack.removeLast().toList()
                     localViewModel.cellStack.removeLast()
@@ -208,6 +209,7 @@ class InventorySessionAdapter(var data: List<InventorySessionItem>,
             }
             is InventorySessionCollapsedViewHolder -> {
                 holder.tvLeft.text = item.name
+                holder.tvRight.text = "${item.haveCount}/${item.allCount}"
                 holder.container.setOnClickListener {
                     var value = localViewModel.items.value!!.toList()
                     localViewModel.stack.addLast(value)

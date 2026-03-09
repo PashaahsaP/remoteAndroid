@@ -53,6 +53,9 @@ class InventorySessionFragment: Fragment() {
         val adapter = InventorySessionAdapter(adapterCollection, recyclerView, localViewModel, requireActivity(), viewModel)
         recyclerView.layoutManager = LinearLayoutManager(requireActivity())
         recyclerView.adapter = adapter
+        val db = MainDB.getDB(requireActivity())
+
+        initOrder(localViewModel)
 
         localViewModel.items.observe(viewLifecycleOwner,{ items ->
             var curLineCounter = 0
@@ -97,7 +100,36 @@ class InventorySessionFragment: Fragment() {
 
         })
         localViewModel.CurrentCountOfCount.observe(viewLifecycleOwner, {counter ->
-            binding.tvLineCounter.text = "${counter.toString()}  /"
+            var itemsInVm : List<InventorySessionItem> = listOf()
+            var cellName : String = ""
+            itemsInVm = localViewModel.items.value ?: listOf()
+            cellName = localViewModel.currentCellName.value.toString()
+            lifecycleScope.launch {
+                if(isTE(cellName, dao = db.getDao())) {
+                    var coll: List<InventorySessionItem> = listOf()
+                    withContext(Dispatchers.IO) {
+                        itemsInVm.forEach { item ->
+                            if (item.name == cellName) {
+                                coll += item.copy(haveCount = if (localViewModel.CountOfCount.value == localViewModel.CurrentCountOfCount.value) 1 else 0)
+                            } else {
+                                coll += item
+                            }
+                        }
+                    }
+                    withContext(Dispatchers.Main) {
+                        binding.tvLineCounter.text = "${counter.toString()}  /"
+                        if (coll != localViewModel.items.value) {
+                            localViewModel.updateItems(coll)
+                        }
+                    }
+                }else{
+                    binding.tvLineCounter.text = "${counter.toString()}  /"
+                }
+            }
+
+            // Если количество товара добило счетчик и ячейка текущая является те то
+            // Изменить счетчик для те
+            // Иначе сбросить счетчик на 0 для te
         })
         localViewModel.CountOfCount.observe(viewLifecycleOwner, {counter ->
             binding.tvCounterCounter.text = counter.toString()
@@ -125,7 +157,7 @@ class InventorySessionFragment: Fragment() {
             localViewModel.setSelection(flag)
         })
 
-        initOrder(localViewModel)
+
 
         return  binding.root
     }
@@ -276,8 +308,6 @@ class InventorySessionFragment: Fragment() {
             }
         }
     }//вызывается когда в inventoryMenu выбран режим заказы и выбран определенный заказ
-
-
     suspend private fun isTE(cell: String, dao: Dao): Boolean {
         val cells = dao.getCellTypes().filter { cellType -> cellType.type == "BoxTE" }
 

@@ -182,13 +182,13 @@ class InventorySessionViewModel : ViewModel(){
     fun setSelection(checked: Boolean) {
         var list: MutableList<InventorySessionItem> = mutableListOf()
         if (checked){
-            setCurCountOfCount(_countOfCount.value ?: 0)
             items.value?.forEach { item -> list.add(item.copy(haveCount = item.allCount))}
             updateItems(list)
+            //setCurCountOfCount(_countOfCount.value ?: 0)
         }else{
-            setCurCountOfCount(0)
             items.value?.forEach { item -> list.add(item.copy(haveCount = 0))}
             updateItems(list)
+            //setCurCountOfCount(0)
         }
     }
 
