@@ -629,10 +629,12 @@ class MainActivity : AppCompatActivity() {
                     }
                     is InventorySessionMenu -> {
                         val inflater = layoutInflater
-                        val popupView = inflater.inflate(R.layout.pop_up_income_menu, null)
+                        val popupView = inflater.inflate(R.layout.pop_up_inventory_menu, null)
                         var scanBtn = popupView.findViewById<Button>(R.id.btnScanningMode)
+                        var changeBtn = popupView.findViewById<Button>(R.id.btnChangeMode)
                         var selectBtn = popupView.findViewById<Button>(R.id.btnSelectAll)
                         var deselectBtn = popupView.findViewById<Button>(R.id.btnDeselectAll)
+                        var finishBtn = popupView.findViewById<Button>(R.id.btnFinish)
 
                         val popupWindow = PopupWindow(
                             popupView,
@@ -644,6 +646,12 @@ class MainActivity : AppCompatActivity() {
                             viewModel.setActiveUi(state.copy(
                                 isBarcodeFieldActive = !state.isBarcodeFieldActive,
                                 isBarcodeScanActive = !state.isBarcodeScanActive
+                            ))
+                            popupWindow.dismiss()
+                        }
+                        changeBtn.setOnClickListener { view ->
+                            viewModel.setActiveUi(state.copy(
+                                isTEIsCell = !state.isTEIsCell
                             ))
                             popupWindow.dismiss()
                         }
