@@ -357,6 +357,7 @@ class MainActivity : AppCompatActivity() {
                             .setTitle("Выход")
                             .setMessage("Точно закрыть текущий экран?")
                             .setPositiveButton("Да") { _, _ ->
+                                viewModel.setBarcode("")
                                 viewModel.setActiveUi(state.prevState!!)
                                 super.onBackPressed()
                             }

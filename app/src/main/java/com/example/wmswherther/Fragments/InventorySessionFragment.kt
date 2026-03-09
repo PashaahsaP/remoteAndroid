@@ -96,6 +96,8 @@ class InventorySessionFragment: Fragment() {
                     }
 
                 }
+            }else{
+                localViewModel.updateItems(listOf())
             }
 
         })
