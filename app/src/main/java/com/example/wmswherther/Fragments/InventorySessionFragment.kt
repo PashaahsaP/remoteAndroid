@@ -239,56 +239,64 @@ class InventorySessionFragment: Fragment() {
         barcode: String
     ) {
         var curCell = dao.getCellByName(localViewModel.currentCellName.value.toString())
-        if (inventorySession.isTEIsCell) {//TODO сделать счетчик для те 0/1
-            // сначало найти в ячейках те с таким именем
-            var te = dao.getAllCells().firstOrNull { inner -> inner.parentCellId == curCell.id && inner.name == barcode}
-            if (te != null) {
-                // Добавить в стак текущию коллекцию и ячейку
-                localViewModel.stack.addLast(
-                    localViewModel.items.value ?: listOf()
-                )
-                localViewModel.cellStack.addLast(localViewModel.currentCellName.value.toString())
-                // Загрузить в текущию коллекцию элементы у которых те равна отсканированной те
-                var newInventoryCollection =
-                    localViewModel.items.value?.filter { item -> item.TE == te.name }
-                localViewModel.updateItemsAsync(newInventoryCollection ?: listOf())
-            }else{
-                //Добавить те и зайти в нее
-            }
-        }
-        // либо выделить все элементы
-        else {
-            var newCol: List<InventorySessionItem> = listOf()
-            var te = dao.getAllCells().firstOrNull { inner -> inner.parentCellId == curCell.id && inner.name == barcode}
-            if (te != null) {
-                // Загрузить в текущию коллекцию элементы у которых те равна отсканированной те
+        if(localViewModel.currentCellName.value != barcode) {
+            if (inventorySession.isTEIsCell) {//TODO сделать счетчик для те 0/1
+                lifecycleScope.launch {
+                    var list: MutableList<InventorySessionItem> = mutableListOf()
+                    var value = localViewModel.items.value!!.toList()
 
-                localViewModel.items.value?.forEach { item ->
-                    if (item.TE == te.name && !item.isExpanded) {
-                        newCol += item.copy(haveCount = item.allCount)
-                    } else {
-                        newCol += item
+                    withContext(Dispatchers.IO) {
+                        localViewModel.items.value?.forEach { elem ->
+                            if (elem.name == barcode) {
+                                list.add(elem.copy(isExpanded = true))
+                            } else if (elem.TE == barcode) {
+                                list.add(elem.copy(isShown = true))
+                            }
+                        }
+                    }
+                    withContext(Dispatchers.Main) {
+                        localViewModel.stack.addLast(value)
+                        localViewModel.setCellName(barcode)
+                        localViewModel.cellStack.addLast(localViewModel.currentCellName.value.toString())
+                        localViewModel.updateItems(list.toList())
                     }
                 }
-
-            }else{
-                localViewModel.items.value?.forEach { item ->
-                    newCol += item
-                }
-                newCol += InventorySessionItem(
-                    name = barcode,
-                    TE = localViewModel.currentCellName.value.toString(),
-                    catalogId = "${-1}",
-                    haveCount = 1,
-                    allCount = 0,
-                    teCount = 0,
-                    isSelected = false,
-                    isExpanded = false,
-                    isExpandable = true,
-                    isShown = true
-                )
             }
-            localViewModel.updateItemsAsync(newCol ?: listOf())
+            // либо выделить все элементы
+            else {
+                var newCol: List<InventorySessionItem> = listOf()
+                var te = dao.getAllCells()
+                    .firstOrNull { inner -> inner.parentCellId == curCell.id && inner.name == barcode }
+                if (te != null) {
+                    // Загрузить в текущию коллекцию элементы у которых те равна отсканированной те
+
+                    localViewModel.items.value?.forEach { item ->
+                        if (item.TE == te.name && !item.isExpanded) {
+                            newCol += item.copy(haveCount = item.allCount)
+                        } else {
+                            newCol += item
+                        }
+                    }
+
+                } else {
+                    localViewModel.items.value?.forEach { item ->
+                        newCol += item
+                    }
+                    newCol += InventorySessionItem(
+                        name = barcode,
+                        TE = localViewModel.currentCellName.value.toString(),
+                        catalogId = "${-1}",
+                        haveCount = 1,
+                        allCount = 0,
+                        teCount = 0,
+                        isSelected = false,
+                        isExpanded = false,
+                        isExpandable = true,
+                        isShown = true
+                    )
+                }
+                localViewModel.updateItemsAsync(newCol ?: listOf())
+            }
         }
     }
 
