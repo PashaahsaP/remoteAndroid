@@ -11,7 +11,7 @@ class MainViewModel : ViewModel() {
     private val _uiState = MutableLiveData<UiState>(UiState.MainMenu())
     val uiState: LiveData<UiState> = _uiState
 
-
+    private val _isActiveSession = MutableLiveData<Boolean>(true)
     private val _mainActivityBinding = MutableLiveData<ActivityMainBinding>()
     private val _isScanningActive = MutableLiveData<Boolean>(false)
     private val _isIncomeSessionTEModeActive = MutableLiveData<Boolean>(false)
@@ -29,6 +29,7 @@ class MainViewModel : ViewModel() {
 
 
     val WidthScanningField: LiveData<Int> get() = _widhtScanningField
+    val IsActiveSession: LiveData<Boolean> get() = _isActiveSession
     val IsScanningActive: LiveData<Boolean> get() = _isScanningActive
     val IsIncomeSessionTEModeActive: LiveData<Boolean> get() = _isIncomeSessionTEModeActive
     val TE: LiveData<String> get() = _TE
@@ -41,6 +42,11 @@ class MainViewModel : ViewModel() {
     val IsSelectedIncomeList: LiveData<Boolean> get() = _isSelectedIncomeList
     val IsSelectedInventoryList: LiveData<Boolean> get() = _isSelectedInventoryList
   //  val MoveSupplierId: LiveData<String> get() = _moveSupplierId
+
+
+    fun switchActivityOfInventorySession(){
+        _isActiveSession.value = !IsActiveSession.value!!
+    }
     fun getIsSelectedMoveList(): Boolean{
       if (IsSelectedMoveList.value != null && IsSelectedMoveList.value == true)
         return true

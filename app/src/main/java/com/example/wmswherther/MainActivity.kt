@@ -663,6 +663,20 @@ class MainActivity : AppCompatActivity() {
                             viewModel.deselectInventoryList()
                             popupWindow.dismiss()
                         }
+                        finishBtn.setOnClickListener { view ->
+                            val dialog = AlertDialog.Builder(this@MainActivity)
+                                .setTitle("Выход")
+                                .setMessage("Точно хотите завершить инвентаризацию?")
+                                .setPositiveButton("Да") { _, _ ->
+                                    viewModel.switchActivityOfInventorySession()
+                                    popupWindow.dismiss()
+                                    super.onBackPressed()
+                                }
+                                .setNegativeButton("Нет", null)
+                                .create()
+                            dialog.show()
+
+                        }
                         val location = IntArray(2)
                         btnThreeDots.getLocationOnScreen(location)
 

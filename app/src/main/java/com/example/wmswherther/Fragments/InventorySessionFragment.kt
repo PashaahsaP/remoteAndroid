@@ -57,6 +57,14 @@ class InventorySessionFragment: Fragment() {
 
         initOrder(localViewModel)
 
+        binding.btnFinish.setOnClickListener {
+            lifecycleScope.launch {
+                withContext(Dispatchers.IO) {
+                    localViewModel.finishSession(db.getDao())
+                }
+            }
+        }
+
         localViewModel.items.observe(viewLifecycleOwner,{ items ->
             var curLineCounter = 0
             var lineCounter = 0
@@ -157,6 +165,16 @@ class InventorySessionFragment: Fragment() {
         })
         localViewModel.currentCellName.observe(viewLifecycleOwner, { cellName ->
             binding.tvCellName.text = cellName
+        })
+        viewModel.IsActiveSession.observe(viewLifecycleOwner, {flag ->
+            if (flag){
+                lifecycleScope.launch {
+                    withContext(Dispatchers.IO) {
+                        localViewModel.finishSession(db.getDao())
+                    }
+                }
+                viewModel.switchActivityOfInventorySession()
+            }
         })
         viewModel.IsSelectedInventoryList.observe(viewLifecycleOwner, {flag->
             localViewModel.setSelection(flag)

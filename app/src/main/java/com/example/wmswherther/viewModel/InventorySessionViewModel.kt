@@ -103,19 +103,6 @@ class InventorySessionViewModel : ViewModel(){
             setFinishValidation(false)
         }
     }
-    fun getSelectedItem() : Int{
-        var isCorrect = _selectedItem.value
-        if (isCorrect != null)
-            return isCorrect
-        else
-            return  0
-    }
-    fun setSelectedItem(selectedItemCount: Int){
-        _selectedItem.value = selectedItemCount
-    }
-    fun setCellName(cellName: String){
-        _currentCellName.value = cellName
-    }
     suspend fun loadItems (db: MainDB, cell: Cell) : List<InventorySessionItem>{
         // Загрузить goods.
         var dao = db.getDao()
@@ -160,11 +147,28 @@ class InventorySessionViewModel : ViewModel(){
             }
             return result
         }
-            // Базовый случай. Если нет ячеек больше то вернуть коллекцию
-            // Иначе Загрузить goods  и соединить коллекции
+        // Базовый случай. Если нет ячеек больше то вернуть коллекцию
+        // Иначе Загрузить goods  и соединить коллекции
 
 
     }
+    suspend fun finishSession(dao: Dao){
+
+    }
+    fun getSelectedItem() : Int{
+        var isCorrect = _selectedItem.value
+        if (isCorrect != null)
+            return isCorrect
+        else
+            return  0
+    }
+    fun setSelectedItem(selectedItemCount: Int){
+        _selectedItem.value = selectedItemCount
+    }
+    fun setCellName(cellName: String){
+        _currentCellName.value = cellName
+    }
+
 // <editor-fold desc="Helper function">
     private suspend fun getAllGoods(
         dao: Dao,
@@ -177,8 +181,6 @@ class InventorySessionViewModel : ViewModel(){
         return listOfGoods
     }
 // </editor-fold>
-
-
     suspend fun getBarcode(db : MainDB, barcode: String) : Barcode {
         return db.getDao().getBarcodeByName(barcode)
     }
