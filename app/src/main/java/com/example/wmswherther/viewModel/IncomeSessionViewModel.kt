@@ -225,7 +225,7 @@ class IncomeSessionViewModel : ViewModel() {
         var list: MutableList<IncomeItem> = mutableListOf()
         if (checked){
             setCurCountOfCount(_countOfCount.value ?: 0)
-            items.value?.forEach { item -> list.add(item.copy(haveCount = item.allCount))}
+            items.value?.forEach { item -> list.add(item.copy(haveCount = if(item.allCount != 0) item.allCount else item.haveCount ))}
             updateItems(list)
         }else{
             setCurCountOfCount(0)

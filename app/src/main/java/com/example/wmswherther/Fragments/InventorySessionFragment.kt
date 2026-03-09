@@ -18,7 +18,6 @@ import com.example.wmsRemote.data.db.Dao
 import com.example.wmsRemote.data.db.MainDB
 import com.example.wmsRemote.databinding.FragmentInventorySessionBinding
 import com.example.wmswherther.Adapters.InventorySessionAdapter
-import com.example.wmswherther.Classes.InventoryItem
 import com.example.wmswherther.Classes.InventorySessionItem
 import com.example.wmswherther.Classes.UiState
 import com.example.wmswherther.data.db.Entityes.Barcode
@@ -28,6 +27,7 @@ import com.example.wmswherther.viewModel.MainViewModel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import java.util.UUID
 
 class InventorySessionFragment: Fragment() {
 
@@ -88,7 +88,7 @@ class InventorySessionFragment: Fragment() {
                             }
                         } else {
                             if(isTE(barcode, dao)){
-                                prepareTE(inventorySession, dao, localViewModel)
+                                prepareTE(inventorySession, dao, localViewModel, barcode)
                             }else{
                                 prepareBarcode(dao, barcode, localViewModel)
                             }
@@ -163,7 +163,7 @@ class InventorySessionFragment: Fragment() {
 
         return  binding.root
     }
-
+    //TODO refactor func
     private suspend fun prepareBarcode(
         dao: Dao,
         barcode: String,
@@ -172,29 +172,72 @@ class InventorySessionFragment: Fragment() {
         // поиск товара и изменение его количества
         // найти barcode
         var searchBarcode: Barcode = dao.getBarcodeByName(barcode)
+        var newCol: List<InventorySessionItem> = listOf()
         if (searchBarcode != null) {
-            var newCol: List<InventorySessionItem> = listOf()
+            var isHave = false // если вообще не было в коллекции такого элемента то добавить новый(с условим того что он есть каталоге)
+
             localViewModel.items.value?.forEach { inner ->
                 if (inner.catalogId == searchBarcode.catalogId && localViewModel.currentCellName.value.toString() == inner.TE) {
                     newCol += inner.copy(haveCount = inner.haveCount + 1)
+                    isHave = true
                 } else {
                     newCol += inner
                 }
             }
-
+            if(!isHave){
+                var catalogItem = dao.getCatalogById(searchBarcode.catalogId)
+                newCol += InventorySessionItem(
+                    name = catalogItem.name,
+                    TE = localViewModel.currentCellName.value.toString(),
+                    catalogId = searchBarcode.catalogId,
+                    haveCount = 1,
+                    allCount = 0,
+                    teCount = 0,
+                    isSelected = false,
+                    isExpanded = false,
+                    isExpandable = false,
+                    isShown = true
+                )
+            }
+        }else{
+            var isHave = false // если вообще не было в коллекции такого элемента то добавить новый
+            //обработать случай отсутствия в бд
+            localViewModel.items.value?.forEach { inner ->
+                if (inner.name == barcode) {
+                    newCol += inner.copy(haveCount = inner.haveCount + 1)
+                    isHave = true
+                } else {
+                    newCol += inner
+                }
+            }
+            if(!isHave) {
+                newCol += InventorySessionItem(
+                    name = barcode,
+                    TE = localViewModel.currentCellName.value.toString(),
+                    catalogId = "${-1}",
+                    haveCount = 1,
+                    allCount = 0,
+                    teCount = 0,
+                    isSelected = false,
+                    isExpanded = false,
+                    isExpandable = false,
+                    isShown = true
+                )
+            }
             localViewModel.updateItemsAsync(newCol)
-        }
+            }
     }
 
     private suspend fun prepareTE(
         inventorySession: UiState.InventorySessionMenu,
         dao: Dao,
-        localViewModel: InventorySessionViewModel
+        localViewModel: InventorySessionViewModel,
+        barcode: String
     ) {
+        var curCell = dao.getCellByName(localViewModel.currentCellName.value.toString())
         if (inventorySession.isTEIsCell) {//TODO сделать счетчик для те 0/1
             // сначало найти в ячейках те с таким именем
-            var curCell = dao.getCellByName(localViewModel.currentCellName.value.toString())
-            var te = dao.getAllCells().firstOrNull { inner -> inner.parentCellId == curCell.id }
+            var te = dao.getAllCells().firstOrNull { inner -> inner.parentCellId == curCell.id && inner.name == barcode}
             if (te != null) {
                 // Добавить в стак текущию коллекцию и ячейку
                 localViewModel.stack.addLast(
@@ -205,15 +248,17 @@ class InventorySessionFragment: Fragment() {
                 var newInventoryCollection =
                     localViewModel.items.value?.filter { item -> item.TE == te.name }
                 localViewModel.updateItemsAsync(newInventoryCollection ?: listOf())
+            }else{
+                //Добавить те и зайти в нее
             }
         }
         // либо выделить все элементы
         else {
-            var curCell = dao.getCellByName(localViewModel.currentCellName.value.toString())
-            var te = dao.getAllCells().firstOrNull { inner -> inner.parentCellId == curCell.id }
+            var newCol: List<InventorySessionItem> = listOf()
+            var te = dao.getAllCells().firstOrNull { inner -> inner.parentCellId == curCell.id && inner.name == barcode}
             if (te != null) {
                 // Загрузить в текущию коллекцию элементы у которых те равна отсканированной те
-                var newCol: List<InventorySessionItem> = listOf()
+
                 localViewModel.items.value?.forEach { item ->
                     if (item.TE == te.name && !item.isExpanded) {
                         newCol += item.copy(haveCount = item.allCount)
@@ -221,8 +266,25 @@ class InventorySessionFragment: Fragment() {
                         newCol += item
                     }
                 }
-                localViewModel.updateItemsAsync(newCol ?: listOf())
+
+            }else{
+                localViewModel.items.value?.forEach { item ->
+                    newCol += item
+                }
+                newCol += InventorySessionItem(
+                    name = barcode,
+                    TE = localViewModel.currentCellName.value.toString(),
+                    catalogId = "${-1}",
+                    haveCount = 1,
+                    allCount = 0,
+                    teCount = 0,
+                    isSelected = false,
+                    isExpanded = false,
+                    isExpandable = true,
+                    isShown = true
+                )
             }
+            localViewModel.updateItemsAsync(newCol ?: listOf())
         }
     }
 
@@ -235,7 +297,7 @@ class InventorySessionFragment: Fragment() {
         lifecycleScope.launch {
             var inventoryItems : List<InventorySessionItem> = listOf()
             withContext(Dispatchers.IO){
-                var cell = db.getDao().getCellByName(barcode)
+                var cell = getCell(db, barcode)
                 inventoryItems = localViewModel.loadItems(db, cell)
             }
             withContext(Dispatchers.Main){
@@ -259,6 +321,31 @@ class InventorySessionFragment: Fragment() {
                 }
             }
         }
+
+    }
+
+    private suspend fun getCell(
+        db: MainDB,
+        barcode: String
+    ) : Cell {
+        var dao = db.getDao()
+        var cell = dao.getCellByName(barcode)
+        if(cell == null){
+            if(isPickerCell(barcode, dao)) {
+                var cellType = dao.getCellTypeByName("Picker").first()
+                val uuid = UUID.randomUUID()
+                var newCell = Cell(
+                    id = uuid.toString(),
+                    typeCellId = cellType.id,
+                    parentCellId = dao.getCellByName(localViewModel.currentCellName.value.toString()).id,
+                    name = barcode
+                )
+                db.getDao().insertCell(newCell)
+                return newCell
+            }
+        }
+
+        return cell
 
     }
 

@@ -216,7 +216,7 @@ class MoveSessionViewModel : ViewModel() {
         var list: MutableList<MoveSessionItem> = mutableListOf()
         if (checked){
             setCounter(_totalCount.value?: 0)
-            myData.value?.forEach { item -> list.add(item.copy(haveCount = item.allCount))}
+            myData.value?.forEach { item -> list.add(item.copy(haveCount = if(item.allCount != 0) item.allCount else item.haveCount ))}
             updateMyData(list)
         }else{
             setCounter(0)

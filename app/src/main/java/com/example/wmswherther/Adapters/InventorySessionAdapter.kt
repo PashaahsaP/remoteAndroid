@@ -190,20 +190,22 @@ class InventorySessionAdapter(var data: List<InventorySessionItem>,
                 holder.tvLeft.text = item.name
                 holder.tvRight.text = "${item.haveCount}/${item.allCount}"
                 holder.container.setOnClickListener {
+                    var newColl : List<InventorySessionItem> = listOf()
                     var value = localViewModel.stack.removeLast().toList()
                     localViewModel.cellStack.removeLast()
                     localViewModel.setCellName(localViewModel.cellStack.last())
+                    // Найти в базовой коллекции текущию те
                     for (elem in value){
-                        localViewModel.items.value?.forEach { item ->
-                            if(item.name == elem.TE){
-                                elem.isExpanded = false
-                            }
-                            if(elem.catalogId == item.catalogId && item.TE == elem.TE){
-                                elem.haveCount = item.haveCount
-                            }
+                        if(elem.name == localViewModel.items.value?.first()?.name ){
+                            localViewModel.items.value?.takeLast(localViewModel.items.value!!.count() - 1)?.
+                            forEach { item -> newColl += item.copy(isExpanded = false, isShown = false) }
+                            localViewModel.items.value?.take(1)?.
+                            forEach { item -> newColl += item.copy(isExpanded = false, isShown = true) }
+                        }else if(elem.TE != localViewModel.items.value?.first()?.name){
+                            newColl += elem
                         }
                     }
-                    localViewModel.updateItems(value)
+                    localViewModel.updateItems(newColl)
                 }
 
             }
@@ -214,7 +216,7 @@ class InventorySessionAdapter(var data: List<InventorySessionItem>,
                     var value = localViewModel.items.value!!.toList()
                     localViewModel.stack.addLast(value)
                     var list: MutableList<InventorySessionItem> = mutableListOf()
-                    localViewModel.setCellName(item.TE)
+                    localViewModel.setCellName(item.name)
                     localViewModel.cellStack.addLast(localViewModel.currentCellName.value.toString())
                     localViewModel.items.value?.forEach { elem ->
                         if(elem.name == item.name){
@@ -296,7 +298,7 @@ class InventorySessionAdapter(var data: List<InventorySessionItem>,
 
     }
     //TODO не получается корректно добавлять те внутри других те, но вроде работает сканирование добавление элементов
-//TODO если отсканировал и вышел из те, то почему то пропадают элементы. При добавлении новой те внутри те неправильный порядок те
+    //TODO если отсканировал и вышел из те, то почему то пропадают элементы. При добавлении новой те внутри те неправильный порядок те
     override fun getItemCount(): Int {
         return data.count()
     }

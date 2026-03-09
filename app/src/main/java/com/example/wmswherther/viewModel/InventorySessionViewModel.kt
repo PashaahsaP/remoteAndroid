@@ -103,7 +103,6 @@ class InventorySessionViewModel : ViewModel(){
             setFinishValidation(false)
         }
     }
-
     fun getSelectedItem() : Int{
         var isCorrect = _selectedItem.value
         if (isCorrect != null)
@@ -186,7 +185,7 @@ class InventorySessionViewModel : ViewModel(){
     fun setSelection(checked: Boolean) {
         var list: MutableList<InventorySessionItem> = mutableListOf()
         if (checked){
-            items.value?.forEach { item -> list.add(item.copy(haveCount = item.allCount))}
+            items.value?.forEach { item -> list.add(item.copy(haveCount = if(item.allCount != 0) item.allCount else item.haveCount ))}
             updateItems(list)
             //setCurCountOfCount(_countOfCount.value ?: 0)
         }else{
