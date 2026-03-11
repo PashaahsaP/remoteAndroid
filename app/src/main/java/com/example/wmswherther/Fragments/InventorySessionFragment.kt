@@ -60,7 +60,7 @@ class InventorySessionFragment: Fragment() {
         binding.btnFinish.setOnClickListener {
             lifecycleScope.launch {
                 withContext(Dispatchers.IO) {
-                    localViewModel.finishSession(db.getDao())
+                    localViewModel.finishSession(db.getDao(), (viewModel.uiState.value as UiState.InventorySessionMenu).isSupplierModeActive, viewModel.CurrentSupplierId.value)
                 }
             }
         }
@@ -170,7 +170,7 @@ class InventorySessionFragment: Fragment() {
             if (flag){
                 lifecycleScope.launch {
                     withContext(Dispatchers.IO) {
-                        localViewModel.finishSession(db.getDao())
+                        localViewModel.finishSession(db.getDao(), (viewModel.uiState.value as UiState.InventorySessionMenu).isSupplierModeActive, viewModel.CurrentSupplierId.value)
                     }
                 }
                 viewModel.switchActivityOfInventorySession()
@@ -258,7 +258,7 @@ class InventorySessionFragment: Fragment() {
     ) {
         var curCell = dao.getCellByName(localViewModel.currentCellName.value.toString())
         if(localViewModel.currentCellName.value != barcode) {
-            if (inventorySession.isTEIsCell) {//TODO сделать счетчик для те 0/1
+            if (inventorySession.isTEIsCell) {
                 lifecycleScope.launch {
                     var list: MutableList<InventorySessionItem> = mutableListOf()
                     var value = localViewModel.items.value!!.toList()
