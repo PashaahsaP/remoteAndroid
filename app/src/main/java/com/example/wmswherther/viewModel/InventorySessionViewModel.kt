@@ -179,8 +179,9 @@ class InventorySessionViewModel : ViewModel(){
         }
 
     }
-
+//что если вообще нет такого шк, как будет сохранятся
     suspend fun getDiffs(baseCell: Cell, data: List<InventorySessionItem>, dao: Dao, sessionId: String): List<InventoryDiffItem> {
+        // Проверить все те и добавить те которых нет в бд
         // Проверить товар в текущей ячейке
         var goods = dao.getGoodsByCellId(baseCell.id)
         var diffs : List<InventoryDiffItem> = listOf()
@@ -223,10 +224,11 @@ class InventorySessionViewModel : ViewModel(){
             return diffs
         }else{
             cells.forEach { innerCell ->
-                return getDiffs(innerCell, data, dao, sessionId)
+                diffs += getDiffs(innerCell, data, dao, sessionId)
+                return diffs
             }
         }
-
+        return diffs
     }
 
     fun getSelectedItem() : Int{
