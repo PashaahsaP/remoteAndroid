@@ -193,6 +193,8 @@ val MIGRATION_1_2 = object : Migration(1, 2) {
                 id TEXT NOT NULL PRIMARY KEY,
                 inventorySessionId TEXT NOT NULL,
                 catalogId TEXT NOT NULL,
+                isTE BOOLEAN NOT NULL,
+                barcode TEXT NOT NULL,
                 parentCellId TEXT NOT NULL,
                 diffCount INTEGER NOT NULL,
                 status TEXT NOT NULL,

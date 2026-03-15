@@ -13,6 +13,8 @@ data class InventoryDiffItem(
     @PrimaryKey(autoGenerate = false) val id: String,
     val inventorySessionId: String,
     val catalogId: String,
+    val barcode: String,
+    val isTE: Boolean,
     val parentCellId: String,
     val diffCount: Int,
     val status: Int,
