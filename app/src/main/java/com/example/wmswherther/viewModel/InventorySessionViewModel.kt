@@ -6,11 +6,13 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.wmsRemote.data.db.Dao
 import com.example.wmsRemote.data.db.MainDB
+import com.example.wmsRemote.data.enums.OperationType
 import com.example.wmsRemote.data.enums.StatusType
 import com.example.wmswherther.Classes.InventorySessionItem
 import com.example.wmswherther.Classes.UiState
 import com.example.wmswherther.data.db.Entityes.Barcode
 import com.example.wmswherther.data.db.Entityes.Cell
+import com.example.wmswherther.data.db.Entityes.Change
 import com.example.wmswherther.data.db.Entityes.Goods
 import com.example.wmswherther.data.db.Entityes.InventoryDiffItem
 import com.example.wmswherther.data.db.Entityes.SessionInventory
@@ -177,11 +179,43 @@ class InventorySessionViewModel : ViewModel(){
             // Получение данных
             var diffs : List<InventoryDiffItem> = getDiffs(baseCell, items.value ?: listOf(), dao, session.id)
             // Загрузить данные в бд
+            var changes = Change(
+                id = UUID.randomUUID().toString(),
+                entityId = session.id,
+                operationType = OperationType.InsertInventorySession.ordinal,
+                status = StatusType.Created.ordinal,
+                supplierId = supplierId,
+                other = null
+            )
+            dao.insertInventorySessionAsync(session, changes)
+            diffs.forEach { item ->
+                changes = Change(
+                    id = UUID.randomUUID().toString(),
+                    entityId = item.id,
+                    operationType = OperationType.InsertInventoryDiff.ordinal,
+                    status = StatusType.Created.ordinal,
+                    supplierId = supplierId,
+                    other = null
+                )
+                dao.insertInventoryDiffItemAsync(item, changes)
+            }
         }
         else{
             var sessionId = state.sessionId
             var diffs : List<InventoryDiffItem> = getDiffs(baseCell, items.value ?: listOf(), dao, sessionId)
             // Загрузить данные в бд
+            diffs.forEach { item ->
+                var changes = Change(
+                    id = UUID.randomUUID().toString(),
+                    entityId = item.id,
+                    operationType = OperationType.InsertInventoryDiff.ordinal,
+                    status = StatusType.Created.ordinal,
+                    supplierId = supplierId,
+                    other = null
+                )
+                dao.insertInventoryDiffItemAsync(item, changes)
+            }
+
         }
 
     }
@@ -204,6 +238,8 @@ class InventorySessionViewModel : ViewModel(){
                             parentCellId = baseCell.id,
                             diffCount = item.amount - innerGoods.haveCount,
                             status = StatusType.Created.ordinal,
+                            isTE = false,
+                            barcode = innerGoods.name,
                             other = null
                         )
                         diffs += diff
@@ -222,6 +258,8 @@ class InventorySessionViewModel : ViewModel(){
                         parentCellId = baseCell.id,
                         diffCount = 0 - innerGoods.haveCount,
                         status = StatusType.Created.ordinal,
+                        isTE = true,
+                        barcode = innerGoods.name,
                         other = null
                     )
                     diffs += diff
@@ -235,6 +273,8 @@ class InventorySessionViewModel : ViewModel(){
                         parentCellId = baseCell.id,
                         diffCount = 0 - innerGoods.haveCount,
                         status = StatusType.Created.ordinal,
+                        isTE = false,
+                        barcode = innerGoods.name,
                         other = null
                     )
                     diffs += diff
