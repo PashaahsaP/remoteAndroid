@@ -60,7 +60,9 @@ class InventorySessionFragment: Fragment() {
         binding.btnFinish.setOnClickListener {
             lifecycleScope.launch {
                 withContext(Dispatchers.IO) {
-                    localViewModel.finishSession(db.getDao(), (viewModel.uiState.value as UiState.InventorySessionMenu).isSupplierModeActive, viewModel.CurrentSupplierId.value)
+                    localViewModel.finishSession(db.getDao(),
+                        viewModel.uiState.value as UiState.InventorySessionMenu,
+                        viewModel.CurrentSupplierId.value)
                 }
             }
         }
@@ -170,7 +172,11 @@ class InventorySessionFragment: Fragment() {
             if (!flag){
                 lifecycleScope.launch {
                     withContext(Dispatchers.IO) {
-                        localViewModel.finishSession(db.getDao(), (viewModel.uiState.value as UiState.InventorySessionMenu).isSupplierModeActive, viewModel.CurrentSupplierId.value)
+                        localViewModel.finishSession(
+                            db.getDao(),
+                            viewModel.uiState.value as UiState.InventorySessionMenu,
+                            viewModel.CurrentSupplierId.value
+                        )
                     }
                 }
                 viewModel.switchActivityOfInventorySession()

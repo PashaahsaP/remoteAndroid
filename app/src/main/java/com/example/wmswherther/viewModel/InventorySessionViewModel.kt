@@ -8,6 +8,7 @@ import com.example.wmsRemote.data.db.Dao
 import com.example.wmsRemote.data.db.MainDB
 import com.example.wmsRemote.data.enums.StatusType
 import com.example.wmswherther.Classes.InventorySessionItem
+import com.example.wmswherther.Classes.UiState
 import com.example.wmswherther.data.db.Entityes.Barcode
 import com.example.wmswherther.data.db.Entityes.Cell
 import com.example.wmswherther.data.db.Entityes.Goods
@@ -154,9 +155,14 @@ class InventorySessionViewModel : ViewModel(){
 
 
     }
-    suspend fun finishSession(dao: Dao, isSupplierModeActive: Boolean, supplierId: String?){
+    suspend fun finishSession(
+        dao: Dao,
+        state: UiState.InventorySessionMenu,
+        supplierId: String?
+    ){
         var baseCell = dao.getCellByName(currentCellName.value.toString())
-        if(isSupplierModeActive){
+        if(state.isSupplierModeActive){
+            // создание сессии
             var session = SessionInventory(
                 id = UUID.randomUUID().toString(),
                 supplierId = supplierId,
@@ -168,14 +174,14 @@ class InventorySessionViewModel : ViewModel(){
                 finishedAt = System.currentTimeMillis(),
                 other = null
             )
+            // Получение данных
             var diffs : List<InventoryDiffItem> = getDiffs(baseCell, items.value ?: listOf(), dao, session.id)
+            // Загрузить данные в бд
         }
         else{
-            // Загрузить все элементы которые есть в ячейки и сверить с тем что есть на текущий момент
-
-            // Если элемента нет в базовой коллекция(что в ячейке лежит) то создать diff  items  и указать ссылку на сессию.
-            // Также добавить статус для сессии changed
-            // Иначе correct
+            var sessionId = state.sessionId
+            var diffs : List<InventoryDiffItem> = getDiffs(baseCell, items.value ?: listOf(), dao, sessionId)
+            // Загрузить данные в бд
         }
 
     }
@@ -184,18 +190,19 @@ class InventorySessionViewModel : ViewModel(){
         // Проверить товар в текущей ячейке
         var goods = dao.getGoodsByCellId(baseCell.id)
         var diffs : List<InventoryDiffItem> = listOf()
-        goods.forEach { innerGoods ->
-            var isCorrect = false
-            for (item in data){
-                if(item.catalogId == innerGoods.catalogId && item.TE == baseCell.name){
+        var isCorrect = false
+        data.filter {inner -> inner.TE == baseCell.name}.forEach { innerGoods ->
+            isCorrect = false
+            for (item in goods){
+                if(item.catalogId == innerGoods.catalogId && innerGoods.TE == baseCell.name){
                     isCorrect = true
-                    if(item.haveCount != innerGoods.amount){
+                    if(item.amount != innerGoods.haveCount){
                         var diff = InventoryDiffItem(
                             id = UUID.randomUUID().toString(),
                             inventorySessionId = sessionId,
                             catalogId = item.catalogId,
                             parentCellId = baseCell.id,
-                            diffCount = innerGoods.amount - item.haveCount,
+                            diffCount = item.amount - innerGoods.haveCount,
                             status = StatusType.Created.ordinal,
                             other = null
                         )
@@ -203,17 +210,35 @@ class InventorySessionViewModel : ViewModel(){
                     }
                 }
             }
-            if(isCorrect == false){
-                var diff = InventoryDiffItem(
-                    id = UUID.randomUUID().toString(),
-                    inventorySessionId = sessionId,
-                    catalogId = innerGoods.catalogId,
-                    parentCellId = baseCell.id,
-                    diffCount = 0 - innerGoods.amount,
-                    status = StatusType.Created.ordinal,
-                    other = null
-                )
-                diffs += diff
+            //Обработка элемента которого нет изначально
+            //если это те проверить есть ли такая те у ячейки, если нет то добавить диф
+            if(isTE(innerGoods.name, dao)){
+                var checkCell = dao.getCellByName(innerGoods.name)
+                if(isCorrect == false  && checkCell == null){
+                    var diff = InventoryDiffItem(
+                        id = UUID.randomUUID().toString(),
+                        inventorySessionId = sessionId,
+                        catalogId = innerGoods.catalogId,
+                        parentCellId = baseCell.id,
+                        diffCount = 0 - innerGoods.haveCount,
+                        status = StatusType.Created.ordinal,
+                        other = null
+                    )
+                    diffs += diff
+                }
+            }else{
+                if(isCorrect == false ){
+                    var diff = InventoryDiffItem(
+                        id = UUID.randomUUID().toString(),
+                        inventorySessionId = sessionId,
+                        catalogId = innerGoods.catalogId,
+                        parentCellId = baseCell.id,
+                        diffCount = 0 - innerGoods.haveCount,
+                        status = StatusType.Created.ordinal,
+                        other = null
+                    )
+                    diffs += diff
+                }
             }
         }
         // Получить все вложенные те
@@ -223,10 +248,11 @@ class InventorySessionViewModel : ViewModel(){
             return diffs
         }else{
             cells.forEach { innerCell ->
-                return getDiffs(innerCell, data, dao, sessionId)
+                diffs += getDiffs(innerCell, data, dao, sessionId)
+                return diffs
             }
         }
-
+        return diffs
     }
 
     fun getSelectedItem() : Int{
