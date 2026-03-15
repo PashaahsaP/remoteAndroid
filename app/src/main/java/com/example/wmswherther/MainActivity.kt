@@ -593,7 +593,6 @@ class MainActivity : AppCompatActivity() {
                     is InventoryMenu -> {
                         val inflater = layoutInflater
                         val popupView = inflater.inflate(R.layout.pop_up_inventory_menu, null)
-                        var scanBtn = popupView.findViewById<Button>(R.id.btnScanningMode)
                         var modeBtn = popupView.findViewById<Button>(R.id.btnChangeMode)
 
                         val popupWindow = PopupWindow(
@@ -602,12 +601,7 @@ class MainActivity : AppCompatActivity() {
                             WindowManager.LayoutParams.WRAP_CONTENT,
                             true
                         )
-                        scanBtn.setOnClickListener { view ->
-                            viewModel.setActiveUi(state.copy(
-                                isBarcodeFieldActive = !state.isBarcodeFieldActive
-                            ))
-                            popupWindow.dismiss()
-                        }
+
                         modeBtn.setOnClickListener { view ->
                             viewModel.setActiveUi(state.copy(
                                 isSupplierModeActive = !state.isSupplierModeActive
@@ -629,7 +623,7 @@ class MainActivity : AppCompatActivity() {
                     }
                     is InventorySessionMenu -> {
                         val inflater = layoutInflater
-                        val popupView = inflater.inflate(R.layout.pop_up_inventory_menu, null)
+                        val popupView = inflater.inflate(R.layout.pop_up_inventory_session_menu, null)
                         var scanBtn = popupView.findViewById<Button>(R.id.btnScanningMode)
                         var changeBtn = popupView.findViewById<Button>(R.id.btnChangeMode)
                         var selectBtn = popupView.findViewById<Button>(R.id.btnSelectAll)
