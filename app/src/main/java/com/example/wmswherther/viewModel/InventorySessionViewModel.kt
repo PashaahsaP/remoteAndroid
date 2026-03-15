@@ -203,6 +203,7 @@ class InventorySessionViewModel : ViewModel(){
         else{
             var sessionId = state.sessionId
             var diffs : List<InventoryDiffItem> = getDiffs(baseCell, items.value ?: listOf(), dao, sessionId)
+            println(diffs)
             // Загрузить данные в бд
             diffs.forEach { item ->
                 var changes = Change(

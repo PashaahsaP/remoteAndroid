@@ -171,13 +171,23 @@ class InventorySessionFragment: Fragment() {
         viewModel.IsActiveSession.observe(viewLifecycleOwner, {flag ->
             if (!flag){
                 lifecycleScope.launch {
-                    withContext(Dispatchers.IO) {
-                        localViewModel.finishSession(
-                            db.getDao(),
-                            viewModel.uiState.value as UiState.InventorySessionMenu,
-                            viewModel.CurrentSupplierId.value
-                        )
+                    withContext(Dispatchers.Main) {
+                        while (isTE(localViewModel.currentCellName.value.toString(), db.getDao()))
+                        {
+                            var prevStack = localViewModel.stack.removeLast()
+                            localViewModel.cellStack.removeLast()
+                            localViewModel.setCellName( localViewModel.cellStack.last())
+                            localViewModel.updateItems(prevStack)
+                        }
+
                     }
+                    withContext(Dispatchers.IO) {
+                    localViewModel.finishSession(
+                        db.getDao(),
+                        viewModel.uiState.value as UiState.InventorySessionMenu,
+                        viewModel.CurrentSupplierId.value
+                    )
+                }
                 }
                 viewModel.switchActivityOfInventorySession()
             }
