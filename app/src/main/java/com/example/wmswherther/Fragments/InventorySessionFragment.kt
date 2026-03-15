@@ -167,7 +167,7 @@ class InventorySessionFragment: Fragment() {
             binding.tvCellName.text = cellName
         })
         viewModel.IsActiveSession.observe(viewLifecycleOwner, {flag ->
-            if (flag){
+            if (!flag){
                 lifecycleScope.launch {
                     withContext(Dispatchers.IO) {
                         localViewModel.finishSession(db.getDao(), (viewModel.uiState.value as UiState.InventorySessionMenu).isSupplierModeActive, viewModel.CurrentSupplierId.value)
@@ -246,8 +246,9 @@ class InventorySessionFragment: Fragment() {
                     isShown = true
                 )
             }
-            localViewModel.updateItemsAsync(newCol)
+
             }
+        localViewModel.updateItemsAsync(newCol)
     }
 
     private suspend fun prepareTE(
