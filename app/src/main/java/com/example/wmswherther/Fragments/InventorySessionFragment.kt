@@ -283,7 +283,7 @@ class InventorySessionFragment: Fragment() {
                     var value = localViewModel.items.value!!.toList()
                     var isExist = localViewModel.items.value?.any { item-> item.name == barcode }
                     if(!isExist!!){
-                        list.add(InventorySessionItem(
+                        var newInventoryItem = InventorySessionItem(
                             name = barcode,
                             TE = localViewModel.currentCellName.value.toString(),
                             catalogId = "${-1}",
@@ -294,7 +294,9 @@ class InventorySessionFragment: Fragment() {
                             isExpanded = true,
                             isExpandable = true,
                             isShown = true
-                        ))
+                        )
+                        value += newInventoryItem
+                        list.add(newInventoryItem)
                     }
                     //TODO обработать случай когда не было еще добавлено такого элемента. Получается надо добавить те и зайти в нее. Проблема в том что при переборе элементов не находит с таким именем и остается только установление название ячейки
 
