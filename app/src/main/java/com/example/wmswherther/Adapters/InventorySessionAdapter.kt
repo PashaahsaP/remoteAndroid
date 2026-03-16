@@ -241,7 +241,7 @@ class InventorySessionAdapter(var data: List<InventorySessionItem>,
                     titleText.setText("Удаление")
                     contentText.setPadding(30)
                     contentText.setText("Удалить вложенные элементы?")
-                    dialog.setButton(android.app.AlertDialog.BUTTON_POSITIVE, "Да") { _, _ ->
+                    dialog.setButton(android.app.AlertDialog.BUTTON_NEGATIVE, "Нет") { _, _ ->
                         var newCollection : MutableList<InventorySessionItem> = mutableListOf()
                         localViewModel.items.value?.forEach { localItem->
                             if (item.name != localItem.TE){
@@ -250,7 +250,7 @@ class InventorySessionAdapter(var data: List<InventorySessionItem>,
                         }
                         localViewModel.updateItems(newCollection)
                     }
-                    dialog.setButton(android.app.AlertDialog.BUTTON_NEGATIVE, "Нет") { dialogInterface, _ ->
+                    dialog.setButton(android.app.AlertDialog.BUTTON_POSITIVE, "Да") { dialogInterface, _ ->
                         var newCollection : MutableList<InventorySessionItem> = mutableListOf()
                         //удаление те
                         localViewModel.items.value?.forEach { localItem->
