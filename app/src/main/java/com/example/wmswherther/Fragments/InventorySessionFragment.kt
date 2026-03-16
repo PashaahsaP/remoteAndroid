@@ -274,11 +274,14 @@ class InventorySessionFragment: Fragment() {
         barcode: String
     ) {
         var curCell = dao.getCellByName(localViewModel.currentCellName.value.toString())
+
+
         if(localViewModel.currentCellName.value != barcode) {
             if (inventorySession.isTEIsCell) {
                 lifecycleScope.launch {
                     var list: MutableList<InventorySessionItem> = mutableListOf()
                     var value = localViewModel.items.value!!.toList()
+                    //TODO обработать случай когда не было еще добавлено такого элемента. Получается надо добавить те и зайти в нее. Проблема в том что при переборе элементов не находит с таким именем и остается только установление название ячейки
 
                     withContext(Dispatchers.IO) {
                         localViewModel.items.value?.forEach { elem ->
@@ -300,23 +303,27 @@ class InventorySessionFragment: Fragment() {
             // либо выделить все элементы
             else {
                 var newCol: List<InventorySessionItem> = listOf()
-                var te = dao.getAllCells()
-                    .firstOrNull { inner -> inner.parentCellId == curCell.id && inner.name == barcode }
-                if (te != null) {
+                //обработать случай дублирования новых данных
+                // todo обработать случай когда добавляется новый элемент и после этого он не находится в бд и снова будет добавлятся множество раз.
+/*                var te = dao.getAllCells()
+                    .firstOrNull { inner -> inner.parentCellId == curCell.id && inner.name == barcode }*/
                     // Загрузить в текущию коллекцию элементы у которых те равна отсканированной те
-
+                    var isAdded = false
                     localViewModel.items.value?.forEach { item ->
-                        if (item.TE == te.name && !item.isExpanded) {
-                            newCol += item.copy(haveCount = item.allCount)
+                        if(item.name == barcode){
+                            isAdded = true//для контроля дубликатов
+                        }
+                        if (item.TE == barcode && !item.isExpanded) {
+                            newCol += item.copy(haveCount = if(item.allCount == 0) item.haveCount else item.allCount)// если товар только добавился то максимальное значение равно нулю и чтобы не занулить имеющиеся количество надо проверять на ноль
                         } else {
                             newCol += item
                         }
                     }
 
-                } else {
-                    localViewModel.items.value?.forEach { item ->
+                   /* localViewModel.items.value?.forEach { item ->
                         newCol += item
-                    }
+                    }*/
+                if(!isAdded) {
                     newCol += InventorySessionItem(
                         name = barcode,
                         TE = localViewModel.currentCellName.value.toString(),
