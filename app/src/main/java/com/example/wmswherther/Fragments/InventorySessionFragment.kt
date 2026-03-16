@@ -281,6 +281,21 @@ class InventorySessionFragment: Fragment() {
                 lifecycleScope.launch {
                     var list: MutableList<InventorySessionItem> = mutableListOf()
                     var value = localViewModel.items.value!!.toList()
+                    var isExist = localViewModel.items.value?.any { item-> item.name == barcode }
+                    if(!isExist!!){
+                        list.add(InventorySessionItem(
+                            name = barcode,
+                            TE = localViewModel.currentCellName.value.toString(),
+                            catalogId = "${-1}",
+                            haveCount = 1,
+                            allCount = 0,
+                            teCount = 0,
+                            isSelected = false,
+                            isExpanded = true,
+                            isExpandable = true,
+                            isShown = true
+                        ))
+                    }
                     //TODO обработать случай когда не было еще добавлено такого элемента. Получается надо добавить те и зайти в нее. Проблема в том что при переборе элементов не находит с таким именем и остается только установление название ячейки
 
                     withContext(Dispatchers.IO) {
@@ -304,9 +319,6 @@ class InventorySessionFragment: Fragment() {
             else {
                 var newCol: List<InventorySessionItem> = listOf()
                 //обработать случай дублирования новых данных
-                // todo обработать случай когда добавляется новый элемент и после этого он не находится в бд и снова будет добавлятся множество раз.
-/*                var te = dao.getAllCells()
-                    .firstOrNull { inner -> inner.parentCellId == curCell.id && inner.name == barcode }*/
                     // Загрузить в текущию коллекцию элементы у которых те равна отсканированной те
                     var isAdded = false
                     localViewModel.items.value?.forEach { item ->
@@ -320,9 +332,6 @@ class InventorySessionFragment: Fragment() {
                         }
                     }
 
-                   /* localViewModel.items.value?.forEach { item ->
-                        newCol += item
-                    }*/
                 if(!isAdded) {
                     newCol += InventorySessionItem(
                         name = barcode,
