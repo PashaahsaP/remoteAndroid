@@ -9,6 +9,8 @@ enum class OperationType {
     InsertBarcode,
     InsertInventorySession,
     InsertInventoryDiff,
+    InsertPickerSession,
+    InsertPickerItem,
     UpdateGoods,
     DeleteGoods,
     UpdateCell

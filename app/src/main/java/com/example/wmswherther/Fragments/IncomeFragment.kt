@@ -24,8 +24,10 @@ import com.example.wmswherther.data.db.Entityes.CellType
 import com.example.wmswherther.data.db.Entityes.Change
 import com.example.wmswherther.data.db.Entityes.Goods
 import com.example.wmswherther.data.db.Entityes.IncomeItem
+import com.example.wmswherther.data.db.Entityes.PickerItem
 import com.example.wmswherther.data.db.Entityes.SessionIncome
 import com.example.wmswherther.data.db.Entityes.SessionInventory
+import com.example.wmswherther.data.db.Entityes.SessionPicker
 import com.example.wmswherther.data.db.Entityes.Supplier
 import com.example.wmswherther.viewModel.IncomeMenuViewModel
 import com.example.wmswherther.viewModel.MainViewModel
@@ -52,6 +54,7 @@ class IncomeFragment : Fragment() {
             withContext(Dispatchers.IO){
                 //appendDummyData(MainDB.getDB(requireActivity()))
                 //appendMoveDummyData(MainDB.getDB(requireActivity()))
+                appendPickerDummyData(MainDB.getDB(requireActivity()))
             }
         }
         //viewModel.setCurrFragment(this)
@@ -492,6 +495,245 @@ fun appendMoveDummyData(db: MainDB){
             null
         )
         dao.insertGoodsAsync(goods, goodsChange)
+    }
+
+    for(enum in 50..52){
+        var catalog = Catalog(
+            UUID.randomUUID().toString(),
+            "Kettle k5${enum}",
+            "3241223",
+            vitekSupplier.id,
+            null
+        )
+        var catalogChange = Change(
+            UUID.randomUUID().toString(),
+            catalog.id,
+            OperationType.InsertCatalog.ordinal,
+            StatusType.Created.ordinal,
+            vitekSupplier.id,
+            null
+        )
+
+        var barcode = Barcode(
+            UUID.randomUUID().toString(),
+            "46654537764${enum}",
+            catalog.id,
+            vitekSupplier.id,
+            null
+        )
+        var barcodeChanges = Change(
+            UUID.randomUUID().toString(),
+            barcode.id,
+            OperationType.InsertBarcode.ordinal,
+            StatusType.Created.ordinal,
+            vitekSupplier.id,
+            null
+        )
+        dao.insertCatalogSync(catalog, catalogChange)
+        dao.insertBarcodeAsync(barcode, barcodeChanges)
+
+
+        var goods = Goods(
+            id = UUID.randomUUID().toString(),
+            amount = 3 + enum,
+            cellId = N00000001.id,
+            catalogId = catalog.id,
+            createdAt = System.currentTimeMillis(),
+            isAvailable = true,
+            other = null
+        )
+        var goodsChange = Change(
+            UUID.randomUUID().toString(),
+            goods.id,
+            OperationType.InsertGoods.ordinal,
+            status = StatusType.Created.ordinal,
+            vitekSupplier.id,
+            null
+        )
+        dao.insertGoodsAsync(goods, goodsChange)
+    }
+
+
+}
+fun appendPickerDummyData(db: MainDB){
+    val dao = db.getDao()
+    val vitekSupplier = Supplier(
+        UUID.randomUUID().toString(),
+        "Vitek",
+        null
+    )
+
+    dao.insertSupplier(vitekSupplier)
+
+    val incomeType = CellType(
+        UUID.randomUUID().toString(),
+        "Income",
+        "IN##",
+        null
+    )
+    dao.insertCellType(incomeType)
+
+    val teType = CellType(
+        UUID.randomUUID().toString(),
+        "BoxTE",
+        "N########",
+        null
+    )
+    dao.insertCellType(teType)
+    val pickerType = CellType(
+        UUID.randomUUID().toString(),
+        "Picker",
+        "*###",
+        null
+    )
+    dao.insertCellType(pickerType)
+    var A100 = Cell(
+        UUID.randomUUID().toString(),
+        pickerType.id,
+        null,
+        "A100"
+    )
+    var cellChange = Change(
+        UUID.randomUUID().toString(),
+        A100.id,
+        OperationType.InsertCell.ordinal,
+        StatusType.Created.ordinal,
+        null,
+        null
+    )
+    dao.insertCellSync(A100, cellChange)
+
+    var N00000001 = Cell(
+        UUID.randomUUID().toString(),
+        teType.id,
+        A100.id,
+        "N00000001"
+    )
+    var teChange = Change(
+        UUID.randomUUID().toString(),
+        N00000001.id,
+        OperationType.InsertCell.ordinal,
+        StatusType.Created.ordinal,
+        null,
+        null
+    )
+
+    dao.insertCellSync(N00000001, teChange)
+
+    var pickerSession = SessionPicker(
+        id = UUID.randomUUID().toString(),
+        supplierId = vitekSupplier.id,
+        outCellId = A100.id,
+        status = StatusType.Created.ordinal.toString(),
+        createdAt = System.currentTimeMillis(),
+        startedAt = System.currentTimeMillis(),
+        finishedAt = System.currentTimeMillis(),
+        other = null
+    )
+    var pickerChange = Change(
+        UUID.randomUUID().toString(),
+        pickerSession.id,
+        OperationType.InsertPickerSession.ordinal,
+        StatusType.Created.ordinal,
+        vitekSupplier.id,
+        null
+    )
+    dao.insertPickerSessionAsync(pickerSession, pickerChange)
+
+    for (enum in 10 .. 29){
+        // <editor-fold desc="insert cell">
+        var A111 = Cell(
+            UUID.randomUUID().toString(),
+            pickerType.id,
+            null,
+            "A1${enum}"
+        )
+        var cellChange = Change(
+            UUID.randomUUID().toString(),
+            A111.id,
+            OperationType.InsertCell.ordinal,
+            StatusType.Created.ordinal,
+            null,
+            null
+        )
+        dao.insertCellSync(A111, cellChange)
+        // </editor-fold>
+        // <editor-fold desc="insert catalog and barcode">
+        var catalog = Catalog(
+            UUID.randomUUID().toString(),
+            "Kettle k5${enum}",
+            "3241223",
+            vitekSupplier.id,
+            null
+        )
+        var catalogChange = Change(
+            UUID.randomUUID().toString(),
+            catalog.id,
+            OperationType.InsertCatalog.ordinal,
+            StatusType.Created.ordinal,
+            vitekSupplier.id,
+            null
+        )
+
+
+        var barcode = Barcode(
+            UUID.randomUUID().toString(),
+            "46654537764${enum}",
+            catalog.id,
+            vitekSupplier.id,
+            null
+        )
+        var barcodeChanges = Change(
+            UUID.randomUUID().toString(),
+            barcode.id,
+            OperationType.InsertBarcode.ordinal,
+            StatusType.Created.ordinal,
+            vitekSupplier.id,
+            null
+        )
+        dao.insertCatalogSync(catalog, catalogChange)
+        dao.insertBarcodeAsync(barcode, barcodeChanges)
+        // </editor-fold>
+        // <editor-fold desc="insert goods">
+        var goods = Goods(
+            id = UUID.randomUUID().toString(),
+            amount = 3 + enum,
+            cellId = A111.id,
+            catalogId = catalog.id,
+            createdAt = System.currentTimeMillis(),
+            isAvailable = true,
+            other = null
+        )
+        var goodsChange = Change(
+            UUID.randomUUID().toString(),
+            goods.id,
+            OperationType.InsertGoods.ordinal,
+            status = StatusType.Created.ordinal,
+            vitekSupplier.id,
+            null
+        )
+        dao.insertGoodsAsync(goods, goodsChange)
+        // </editor-fold>
+        // <editor-fold desc="insert pickerItem">
+        var pickerItem = PickerItem(
+            id = UUID.randomUUID().toString(),
+            sessionId = pickerSession.id,
+            goodsId = goods.id,
+            cellId = A111.id,
+            status = StatusType.Created.ordinal,
+            startedAt = System.currentTimeMillis(),
+            finishedAt = System.currentTimeMillis(),
+            other = null
+        )
+        var pickerChange = Change(
+            UUID.randomUUID().toString(),
+            pickerItem.id,
+            OperationType.InsertGoods.ordinal,
+            status = StatusType.Created.ordinal,
+            vitekSupplier.id,
+            null
+        )
+        // </editor-fold>
     }
 
     for(enum in 50..52){
