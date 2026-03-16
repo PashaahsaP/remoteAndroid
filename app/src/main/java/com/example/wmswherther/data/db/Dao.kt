@@ -14,8 +14,10 @@ import com.example.wmswherther.data.db.Entityes.Change
 import com.example.wmswherther.data.db.Entityes.Goods
 import com.example.wmswherther.data.db.Entityes.IncomeItem
 import com.example.wmswherther.data.db.Entityes.InventoryDiffItem
+import com.example.wmswherther.data.db.Entityes.PickerItem
 import com.example.wmswherther.data.db.Entityes.SessionIncome
 import com.example.wmswherther.data.db.Entityes.SessionInventory
+import com.example.wmswherther.data.db.Entityes.SessionPicker
 import com.example.wmswherther.data.db.Entityes.Supplier
 
 @Dao
@@ -195,6 +197,10 @@ interface Dao {
     @Insert
     fun insertInventorySessionChanges(change: Change)
     @Insert
+    fun insertPickerSessionChanges(change: Change)
+    @Insert
+    fun insertPickerItemChanges(change: Change)
+    @Insert
     suspend fun updateGoodsChanges(change: Change)
     @Insert
     suspend fun updateCellChanges(change: Change)
@@ -233,5 +239,36 @@ interface Dao {
     @Query("SELECT * FROM sessions_inventory")
     suspend fun getInventorySessions(): List<SessionInventory>
 
+
+    // </editor-fold>
+    // <editor-fold desc="SessionPicker">
+    @Insert
+    fun insertPickerSession(session: SessionPicker)
+    @Transaction
+    fun insertPickerSessionAsync(session: SessionPicker, change: Change) : Pair<Unit, Unit>{
+        val from = insertPickerSession(session)
+        var to = insertPickerSessionChanges(change)
+        return from to to
+    }
+    @Query("SELECT * FROM sessions_picker WHERE id =:id")
+    suspend fun getPickerSessionById(id: String): SessionPicker
+    @Query("SELECT * FROM sessions_picker")
+    suspend fun getPickerSessions(): List<SessionPicker>
+
+
+    // </editor-fold>
+    // <editor-fold desc="PickerItem">
+    @Insert
+    fun insertPickerItem(item: PickerItem)
+    @Transaction
+    fun insertPickerItemAsync(item: PickerItem, change: Change) : Pair<Unit, Unit>{
+        val from = insertPickerItem(item)
+        var to = insertPickerItemChanges(change)
+        return from to to
+    }
+    @Query("SELECT * FROM picker_items WHERE id =:id")
+    suspend fun getPickerItemById(id: String): PickerItem
+    @Query("SELECT * FROM picker_items")
+    suspend fun getPickerItems(): List<PickerItem>
     // </editor-fold>
 }
