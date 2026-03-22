@@ -78,4 +78,21 @@ sealed class UiState {
         val isTEIsCell: Boolean = false,
         val prevState: UiState? = null,
     ) : UiState()
+    data class AssemblyMenu(
+        val isSearchLoopActive: Boolean = true,
+        val isBarcodeFieldActive: Boolean = false,
+        val isThreeDotsActive: Boolean = false,
+        val isBackBtnActive: Boolean = true,
+        val prevState: UiState? = null,
+    ) : UiState()
+    data class AssemblySessionMenu(
+        val supplierId: String = "",
+        val sessionId: String = "",
+        val isSearchLoopActive: Boolean = true,
+        val isBarcodeFieldActive: Boolean = false,
+        val isBarcodeScanActive: Boolean = true,
+        val isThreeDotsActive: Boolean = true,
+        val isBackBtnActive: Boolean = true,
+        val prevState: UiState? = null,
+    ) : UiState()
 }

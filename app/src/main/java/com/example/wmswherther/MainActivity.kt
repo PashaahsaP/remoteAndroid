@@ -92,6 +92,14 @@ class MainActivity : AppCompatActivity() {
                 super.onBackPressed()
             }
             null -> {}
+            is AssemblyMenu -> {
+                viewModel.setActiveUi(state.prevState!!)
+                super.onBackPressed()
+            }
+            is AssemblySessionMenu -> {
+                viewModel.setActiveUi(state.prevState!!)
+                super.onBackPressed()
+            }
         }
     }
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -182,6 +190,16 @@ class MainActivity : AppCompatActivity() {
                         binding.etIncomeBarcode.requestFocus()
                     else binding.etIncomeBarcodeScan.requestFocus()
 
+                }
+                is AssemblyMenu -> {
+                    binding.btnBack.visibility = if (State.isBackBtnActive) View.VISIBLE else View.GONE
+                    binding.btnSearch.visibility = if (State.isSearchLoopActive) View.VISIBLE else View.GONE
+                    binding.etIncomeBarcode.visibility = if (State.isBarcodeFieldActive) View.VISIBLE else View.GONE
+                }
+                is AssemblySessionMenu -> {
+                    binding.btnBack.visibility = if (State.isBackBtnActive) View.VISIBLE else View.GONE
+                    binding.btnSearch.visibility = if (State.isSearchLoopActive) View.VISIBLE else View.GONE
+                    binding.etIncomeBarcode.visibility = if (State.isBarcodeFieldActive) View.VISIBLE else View.GONE
                 }
             }
         }
@@ -289,6 +307,8 @@ class MainActivity : AppCompatActivity() {
                 null -> {}
                 is InventoryMenu -> TODO()
                 is InventorySessionMenu -> {}
+                is AssemblyMenu -> TODO()
+                is AssemblySessionMenu -> TODO()
             }
         }
 
@@ -365,6 +385,9 @@ class MainActivity : AppCompatActivity() {
                             .create()
                         dialog.show()
                     }
+
+                    is AssemblyMenu -> TODO()
+                    is AssemblySessionMenu -> TODO()
                 }
             }
             btnBarcode.setOnClickListener {
@@ -683,6 +706,8 @@ class MainActivity : AppCompatActivity() {
                         )
                     }
                     null -> {}
+                    is AssemblyMenu -> TODO()
+                    is AssemblySessionMenu -> TODO()
                 }
 
             }

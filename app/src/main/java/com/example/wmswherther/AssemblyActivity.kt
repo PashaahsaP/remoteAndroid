@@ -8,7 +8,7 @@ import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
-import com.example.wmsRemote.Adapters.AssemblyAdapter
+import com.example.wmsRemote.Adapters.AssemblySessionAdapter
 import com.example.wmsRemote.databinding.ActivityAssemblyBinding
 import com.example.wmsRemote.data.db.MainDB
 import com.example.wmsRemote.viewModel.AssemblyViewModel
@@ -28,7 +28,7 @@ class AssemblyActivity : AppCompatActivity() {
         _binding = ActivityAssemblyBinding.inflate(layoutInflater)
         setContentView(binding.root)
         viewModel = ViewModelProvider(this).get(AssemblyViewModel::class.java)
-        var adapter = AssemblyAdapter(this, lifecycleScope, viewModel, listOf())
+        var adapter = AssemblySessionAdapter(this, lifecycleScope, viewModel, listOf())
         var recyclerView: RecyclerView = binding.rwListItem
         recyclerView.layoutManager = LinearLayoutManager(this)
         recyclerView.adapter = adapter
