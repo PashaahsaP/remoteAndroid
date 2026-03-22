@@ -7,19 +7,13 @@ import android.view.ViewGroup
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
 import androidx.lifecycle.ViewModelProvider
-import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
-import com.example.wmsRemote.data.db.Dao
 import com.example.wmsRemote.data.db.MainDB
 import com.example.wmsRemote.databinding.FragmentAssemblyBinding
 import com.example.wmsRemote.viewModel.AssemblyViewModel
 import com.example.wmswherther.Adapters.AssemblyMenuAdapter
-import com.example.wmswherther.Classes.TaskMenuItem
 import com.example.wmswherther.viewModel.MainViewModel
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
 
 class PickerFragment: Fragment() {
     private var _binding: FragmentAssemblyBinding? = null
@@ -37,7 +31,7 @@ class PickerFragment: Fragment() {
         _binding = FragmentAssemblyBinding.inflate(inflater)
 
 
-        var adapter = AssemblyMenuAdapter(listOf(), this, viewModel)
+        var adapter = AssemblyMenuAdapter(listOf(), this, viewModel, localViewModel, dao)
         var recyclerView: RecyclerView = binding.rwAssemblyMenu
         recyclerView.layoutManager = LinearLayoutManager(requireActivity())
         recyclerView.adapter = adapter

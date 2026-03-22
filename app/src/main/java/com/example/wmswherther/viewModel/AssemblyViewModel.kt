@@ -15,6 +15,7 @@ import com.example.wmsRemote.data.db.MainDB
 import com.example.wmsRemote.data.enums.StatusType
 import com.example.wmsRemote.models.client
 import com.example.wmswherther.Classes.TaskMenuItem
+import com.example.wmswherther.data.db.Entityes.SessionPicker
 import com.example.wmswherther.data.db.Request
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -35,8 +36,9 @@ class AssemblyViewModel : ViewModel() {
         var data : List<TaskMenuItem> = listOf()
         viewModelScope.launch {
             withContext(Dispatchers.IO){
-                data = dao.getPickerSessions().map { item ->
-                    TaskMenuItem(
+                data = dao.getPickerSessions()
+                    .filter { item-> item.status == StatusType.Created.ordinal.toString() }
+                    .map { item -> TaskMenuItem(
                         item.supplierId.toString(),
                         item.id.toString(),
                         "Some",
@@ -47,6 +49,14 @@ class AssemblyViewModel : ViewModel() {
             }
             withContext(Dispatchers.Main){
                 updateItems(data)
+            }
+        }
+    }
+    fun startSession(dao: Dao, sessionId: String){
+        viewModelScope.launch {
+            withContext(Dispatchers.IO){
+                var session = dao.getPickerSessionById(sessionId)
+                dao.updatePickerSession(session.copy(status = StatusType.Work.ordinal.toString()))
             }
         }
     }

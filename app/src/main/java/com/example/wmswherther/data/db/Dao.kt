@@ -203,6 +203,8 @@ interface Dao {
     @Insert
     suspend fun updateGoodsChanges(change: Change)
     @Insert
+    suspend fun updatePickerSessionChanges(change: Change)
+    @Insert
     suspend fun updateCellChanges(change: Change)
     @Delete
     suspend fun deleteGoodsChanges(change: Change)
@@ -254,7 +256,8 @@ interface Dao {
     suspend fun getPickerSessionById(id: String): SessionPicker
     @Query("SELECT * FROM sessions_picker")
     suspend fun getPickerSessions(): List<SessionPicker>
-
+    @Update
+    suspend fun updatePickerSession(item: SessionPicker)
 
     // </editor-fold>
     // <editor-fold desc="PickerItem">
@@ -270,5 +273,6 @@ interface Dao {
     suspend fun getPickerItemById(id: String): PickerItem
     @Query("SELECT * FROM picker_items")
     suspend fun getPickerItems(): List<PickerItem>
+
     // </editor-fold>
 }

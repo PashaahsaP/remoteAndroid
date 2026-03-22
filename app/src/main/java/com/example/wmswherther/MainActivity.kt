@@ -386,7 +386,10 @@ class MainActivity : AppCompatActivity() {
                         dialog.show()
                     }
 
-                    is AssemblyMenu -> TODO()
+                    is AssemblyMenu -> {
+                        viewModel.setActiveUi(state.prevState!!)
+                        super.onBackPressed()
+                    }
                     is AssemblySessionMenu -> TODO()
                 }
             }

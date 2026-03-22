@@ -1,24 +1,25 @@
 package com.example.wmswherther.Adapters
 
-import android.os.Bundle
-import android.util.Log
 import android.view.LayoutInflater
 import android.view.ViewGroup
 import androidx.fragment.app.Fragment
-import androidx.fragment.app.add
 import androidx.fragment.app.commit
-import androidx.fragment.app.replace
 import androidx.recyclerview.widget.RecyclerView
 import com.example.wmsRemote.R
+import com.example.wmsRemote.data.db.Dao
+import com.example.wmsRemote.viewModel.AssemblyViewModel
 import com.example.wmswherther.Classes.TaskMenuItem
 import com.example.wmswherther.Classes.UiState
-import com.example.wmswherther.Fragments.IncomeFragment
-import com.example.wmswherther.Fragments.IncomeSessionFragment
-import com.example.wmswherther.Fragments.InventorySessionFragment
 import com.example.wmswherther.Fragments.PickerSessionFragment
 import com.example.wmswherther.viewModel.MainViewModel
 
-class AssemblyMenuAdapter(var data: List<TaskMenuItem>, var fragment: Fragment, var viewModel: MainViewModel): RecyclerView.Adapter<IncomeMenuViewHolder>() {
+class AssemblyMenuAdapter(
+    var data: List<TaskMenuItem>,
+    var fragment: Fragment,
+    var viewModel: MainViewModel,
+    var localViewModel: AssemblyViewModel,
+    var dao: Dao
+): RecyclerView.Adapter<IncomeMenuViewHolder>() {
     override fun onCreateViewHolder(
         parent: ViewGroup,
         viewType: Int
@@ -50,6 +51,7 @@ class AssemblyMenuAdapter(var data: List<TaskMenuItem>, var fragment: Fragment, 
 
             }
             viewModel.setActiveUi(UiState.AssemblySessionMenu(prevState = viewModel.uiState.value, sessionId = item.sessionId, supplierId = item.supplierId))
+            localViewModel.startSession(dao, item.sessionId)
         }
 
         holder.tvDate.text = item.date
