@@ -4,16 +4,16 @@ import android.content.Context
 import android.view.LayoutInflater
 import android.view.ViewGroup
 import androidx.recyclerview.widget.RecyclerView
-import com.example.wmsRemote.Classes.AssemblyItem
 import com.example.wmsRemote.R
-import com.example.wmsRemote.viewModel.AssemblyViewModel
+import com.example.wmsRemote.viewModel.AssemblySessionViewModel
 import com.example.wmswherther.Adapters.AssemblyViewHolder
+import com.example.wmswherther.Classes.AssemblyItem
 import kotlinx.coroutines.CoroutineScope
 
 class AssemblySessionAdapter(
     private val context: Context,
     private val coroutine: CoroutineScope,
-    private val viewModel: AssemblyViewModel,
+    private val viewModel: AssemblySessionViewModel,
     var data: List<AssemblyItem>) : RecyclerView.Adapter<AssemblyViewHolder>() {
 
 

@@ -11,12 +11,13 @@ import androidx.recyclerview.widget.RecyclerView
 import com.example.wmsRemote.Adapters.AssemblySessionAdapter
 import com.example.wmsRemote.databinding.ActivityAssemblyBinding
 import com.example.wmsRemote.data.db.MainDB
+import com.example.wmsRemote.viewModel.AssemblySessionViewModel
 import com.example.wmsRemote.viewModel.AssemblyViewModel
 import java.util.UUID
 
 class AssemblyActivity : AppCompatActivity() {
     private var _binding: ActivityAssemblyBinding? = null
-    private lateinit var viewModel: AssemblyViewModel
+    private lateinit var viewModel: AssemblySessionViewModel
     private val binding
         get() = _binding ?: throw IllegalStateException("Binding for AssemblyMain")
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -27,11 +28,12 @@ class AssemblyActivity : AppCompatActivity() {
         val db = MainDB.getDB(this)
         _binding = ActivityAssemblyBinding.inflate(layoutInflater)
         setContentView(binding.root)
-        viewModel = ViewModelProvider(this).get(AssemblyViewModel::class.java)
+        viewModel = ViewModelProvider(this).get(AssemblySessionViewModel::class.java)
         var adapter = AssemblySessionAdapter(this, lifecycleScope, viewModel, listOf())
         var recyclerView: RecyclerView = binding.rwListItem
         recyclerView.layoutManager = LinearLayoutManager(this)
         recyclerView.adapter = adapter
+
 
 
         /* viewModel.sessions.observe(this, Observer { newCollection ->
@@ -71,7 +73,7 @@ class AssemblyActivity : AppCompatActivity() {
             }
         })
 
-        viewModel.loadCollection(db)
+
 
         with(binding){
             etInput.setOnEditorActionListener { textView, actionId, event ->
@@ -106,41 +108,9 @@ class AssemblyActivity : AppCompatActivity() {
 
         }*/
 
-        /* private fun updateMenuStyle(status: Int?) {
-        if(status == 0){
-            binding.llMenuContainer.visibility = View.VISIBLE
-            binding.llAssemblyContainer.visibility = View.GONE
-        }
-        else if(status == 1){
-            binding.llMenuContainer.visibility = View.GONE
-            binding.llAssemblyContainer.visibility = View.VISIBLE
-        }
-    }
+        /*
 
-    private fun updateAssemblyStyle(status: Int?) {
-        with(binding){
-            if(StatusType.EnterCell.ordinal == status){
-                tvCell.setTextColor(resources.getColor(R.color.white))
-                tvGoodsName.setTextColor(resources.getColor(R.color.regularGrey))
-                tvBarcode.setTextColor(resources.getColor(R.color.regularGrey))
-                etCount.setTextColor(resources.getColor(R.color.regularGrey))
-                etInput.isEnabled = true
-                etInput.requestFocus()
-                etCount.isEnabled = false
-            }else if(StatusType.EnterBarcode.ordinal == status){
-                tvGoodsName.setTextColor(resources.getColor(R.color.white))
-                tvBarcode.setTextColor(resources.getColor(R.color.white ))
-                tvCell.setTextColor(resources.getColor(R.color.regularGrey))
-            }else{
-                tvGoodsName.setTextColor(resources.getColor(R.color.regularGrey))
-                tvBarcode.setTextColor(resources.getColor(R.color.regularGrey))
-                etCount.setTextColor(resources.getColor(R.color.white))
-                etCount.isEnabled = true
-                etInput.isEnabled = false
-                etCount.requestFocus()
-            }
-        }
-    }*/
+    */
         /*private fun updateListItems(items: List<AssemblyItem>?, ) {
         val paint = binding.tvListNames.paint
         val maxWidth = binding.tvListNames.width

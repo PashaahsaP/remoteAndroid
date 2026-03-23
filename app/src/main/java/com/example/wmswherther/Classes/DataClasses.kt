@@ -36,12 +36,10 @@ data class MoveItem(
     val name: String,
     val id: String
 )
-
 data class InventoryItem(
     val name: String,
     val id: String
 )
-
 data class MoveSessionItem(
     var name: String,
     var catalogId: String,
@@ -51,3 +49,13 @@ data class MoveSessionItem(
     var isSelected: Boolean,
     var isCell: Boolean,
 )
+data class AssemblyItem(
+    var sessionId: String,
+    var catalogId: String,
+    var name: String,
+    var assemblyItemId: String,
+    var amount: Int,
+    var cell: String,
+    var status: Int,
+)
+

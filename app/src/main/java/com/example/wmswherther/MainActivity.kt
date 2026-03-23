@@ -385,12 +385,14 @@ class MainActivity : AppCompatActivity() {
                             .create()
                         dialog.show()
                     }
-
                     is AssemblyMenu -> {
                         viewModel.setActiveUi(state.prevState!!)
                         super.onBackPressed()
                     }
-                    is AssemblySessionMenu -> TODO()
+                    is AssemblySessionMenu -> {
+                        viewModel.setActiveUi(state.prevState!!)
+                        super.onBackPressed()
+                    }
                 }
             }
             btnBarcode.setOnClickListener {

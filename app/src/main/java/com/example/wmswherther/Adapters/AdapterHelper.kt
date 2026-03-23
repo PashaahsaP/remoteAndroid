@@ -13,7 +13,6 @@ import android.widget.TextView
 import android.widget.Toast
 import androidx.core.content.ContextCompat
 import com.example.wmsRemote.R
-import com.example.wmsRemote.Classes.AssemblyItem
 import com.example.wmsRemote.Classes.AtomyInventoryItem
 import com.example.wmsRemote.Classes.BorkInventoryItem
 import com.example.wmsRemote.Classes.IInventoryItem
@@ -24,10 +23,10 @@ import com.example.wmswherther.data.db.Request
 import org.json.JSONObject
 
 object AdapterHelper {
-    var client = Request()
+/*    var client = Request()
     var ip = "192.168.6.208"
     // <editor-fold desc="assembly code">
-    val getAssemblyItems: Map<Int, suspend (sessionId: Int, db: MainDB) -> List<AssemblyItem>> = mapOf(
+    val getAssemblyItems: Map<Int, suspend (sessionId: Int, db: MainDB) -> List<AssemblyItem>> = mapOf(*/
         /*1 to { sessionId, db ->
             var data = client.getAllAssemblyBorkItemBySessionId(ip, sessionId)
                 .filter { item -> item["status"] == "created" }
@@ -61,7 +60,7 @@ object AdapterHelper {
                 }
             data.filter { item-> item.status == 0 }.sortedBy { item -> item.cell }
         }*/
-   )
+   /*)*/
 // </editor-fold>
     // <editor-fold desc="inventory code">
    /* val prepareNoneTypeInventoryItem: Map<Int, suspend (inventoryItem: IInventoryItem, db: MainDB, cellId: Int?, context:Context ) -> IInventoryItem?> = mapOf(

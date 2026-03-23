@@ -1,6 +1,6 @@
 package com.example.wmsRemote.Classes
 
-class AssemblyItem {
+class AssemblyItemq {
     var sessionId: Int = 0
     var catalogId: Int = 0
     var name: String = ""

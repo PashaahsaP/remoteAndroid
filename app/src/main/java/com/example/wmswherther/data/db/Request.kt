@@ -1,6 +1,5 @@
 package com.example.wmswherther.data.db
 
-import com.example.wmsRemote.Classes.AssemblyItem
 import com.example.wmsRemote.models.client
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext

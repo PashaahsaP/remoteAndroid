@@ -9,7 +9,6 @@ import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.viewModelScope
 import com.example.wmsRemote.Adapters.AdapterHelper
 import com.example.wmsRemote.AssemblyActivity
-import com.example.wmsRemote.Classes.AssemblyItem
 import com.example.wmsRemote.data.db.Dao
 import com.example.wmsRemote.data.db.MainDB
 import com.example.wmsRemote.data.enums.StatusType
@@ -56,7 +55,7 @@ class AssemblyViewModel : ViewModel() {
         viewModelScope.launch {
             withContext(Dispatchers.IO){
                 var session = dao.getPickerSessionById(sessionId)
-                dao.updatePickerSession(session.copy(status = StatusType.Work.ordinal.toString()))
+               // dao.updatePickerSession(session.copy(status = StatusType.Work.ordinal.toString()))
             }
         }
     }

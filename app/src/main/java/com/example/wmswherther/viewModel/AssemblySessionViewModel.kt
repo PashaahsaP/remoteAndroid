@@ -1,4 +1,4 @@
-/*
+
 package com.example.wmsRemote.viewModel
 
 import android.widget.Toast
@@ -9,10 +9,10 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.wmsRemote.Adapters.AdapterHelper
 import com.example.wmsRemote.AssemblyActivity
-import com.example.wmsRemote.Classes.AssemblyItem
 import com.example.wmsRemote.data.db.MainDB
 import com.example.wmsRemote.data.enums.StatusType
 import com.example.wmsRemote.models.client
+import com.example.wmswherther.Classes.AssemblyItem
 import com.example.wmswherther.data.db.Request
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -21,9 +21,7 @@ import org.json.JSONObject
 
 class AssemblySessionViewModel : ViewModel() {
 
-    private val ip = "192.168.6.208"
     private val _count = MutableLiveData<Int>()
-    val sessions: LiveData<List<AssemblyItem>> get() = _sessions
     val menuStatus: LiveData<Int> get() = _menuStatus
     val assemblyStatus: LiveData<Int> get() = _assemblyStatus
     val activeElement: LiveData<AssemblyItem> get() = _activeElement
@@ -31,66 +29,54 @@ class AssemblySessionViewModel : ViewModel() {
     val count: LiveData<Int>get() = _count
 
 
-    var _sessions = MutableLiveData<List<AssemblyItem>>()
     var _menuStatus = MutableLiveData<Int> ()
     var _assemblyStatus = MutableLiveData<Int> ()
     var _activeElement = MutableLiveData<AssemblyItem>()
     var _items = MutableLiveData<List<AssemblyItem>>()
 
-    fun loadCollection(db: MainDB): Unit
+    fun loadCollection(db: MainDB, sessionId: String): Unit
     {
         var dao = db.getDao()
         viewModelScope.launch {
             var data : List<AssemblyItem> = listOf()
             withContext(Dispatchers.IO) {
-                data = dao.get
-                    .filter { item-> item["status"] == "created"}
+                data = dao.getPickerItems()
+                    .filter { item -> item.sessionId == sessionId }
                     .map { item ->
-                    var statusVal = when(item["status"].toString()){
-                        "created" -> StatusType.Created.ordinal
-                        "work" -> StatusType.Work.ordinal
-                        "enterCell"-> StatusType.EnterCell.ordinal
-                        "enterBarcode"->StatusType.EnterBarcode.ordinal
-                        "enterCount"->StatusType.EnterCount.ordinal
-                        "finished"->StatusType.Finished.ordinal
-                        "canceled"->StatusType.Canceled.ordinal
-                        else -> 999
+                        var goodsItem = dao.getGoodsById(item.goodsId)
+                        AssemblyItem(
+                    sessionId = sessionId,
+                    catalogId = goodsItem.catalogId,
+                    assemblyItemId = item.id,
+                    amount = goodsItem.amount,
+                    cell = item.cellId.toString(),
+                    name = dao.getCatalogById(goodsItem.catalogId).name,
+                    status = StatusType.Created.ordinal,
+                )
                     }
-                    AssemblySession(
-                        id =  item["id"].toString().toInt(),
-                        supplier = item["supplierId"].toString().toInt(),
-                        out = client.getCellById(ip, item["outCell"].toString())["name"].toString(),
-                        status = statusVal,
-                        created_at = item["createdAt"].toString(),
-                        finished_at = item["finishedAt"].toString(),
-                        amount = item["amount"].toString().toInt(),
-                        lines = item["lines"].toString().toInt()
-                    )
-                }
-
             }
             withContext(Dispatchers.Main){
-                _sessions.value = data
+                _items.value = data
             }
 
         }
 
     }
-    fun getItem(count: Int) : AssemblyItem{
+   /* fun getItem(count: Int) : AssemblyItem{
         val data = _items.value?.get(count)
         if(data != null){
             return data
         }else{
             return  AssemblyItem(1,2,1,2,3,"","",1, listOf())
         }
-    }
+    }*/
     fun changeMenuStatus(status: Int){
         _menuStatus.value = status
     }
     fun setActiveElement(element: AssemblyItem){
         _activeElement.value = element
     }
-    fun loadItems(sessionId: Int, db: MainDB, supplierId: Int)
+    /*fun loadItems(sessionId: Int, db: MainDB, supplierId: Int)
     {
         viewModelScope.launch {
             var items: List<AssemblyItem> = listOf()
@@ -104,7 +90,7 @@ class AssemblySessionViewModel : ViewModel() {
                 _items.value = items
             }
         }
-    }
+    }*/
     fun removeElementFromCollection(elem: AssemblyItem?){
         if(elem != null)
             _items.value =  _items.value?.minusElement(elem)
@@ -114,7 +100,7 @@ class AssemblySessionViewModel : ViewModel() {
         _assemblyStatus.value = enterCell
     }
 
-    fun searchBtnHandler(trim: String, assemblyActivity: AssemblyActivity, db: MainDB) {
+    /*fun searchBtnHandler(trim: String, assemblyActivity: AssemblyActivity, db: MainDB) {
         if(assemblyStatus.value == StatusType.EnterCell.ordinal) {
             if (activeElement.value!!.cell != trim) {
                 var act = items.value?.firstOrNull { item -> item.cell == trim }
@@ -131,8 +117,8 @@ class AssemblySessionViewModel : ViewModel() {
         }else if (isHaveBarcodeCount?.count() != 0 && assemblyStatus.value == StatusType.EnterBarcode.ordinal){
             changeAssemblyStatus(StatusType.EnterCount.ordinal)
         }
-    }
-    suspend fun searchBtnHandlerCount(trim: String, assemblyActivity: AssemblyActivity, db: MainDB) {
+    }*/
+    /*suspend fun searchBtnHandlerCount(trim: String, assemblyActivity: AssemblyActivity, db: MainDB) {
         val amount = activeElement.value?.amount
        if(trim.isDigitsOnly()) {
            val amountInt = trim.toInt()
@@ -196,5 +182,5 @@ class AssemblySessionViewModel : ViewModel() {
                }
            }
         }
-    }
-}*/
+    }*/
+}
