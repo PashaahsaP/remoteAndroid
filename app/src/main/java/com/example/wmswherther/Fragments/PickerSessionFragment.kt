@@ -23,6 +23,7 @@ import com.example.wmsRemote.databinding.FragmentInventorySessionBinding
 import com.example.wmsRemote.viewModel.AssemblySessionViewModel
 import com.example.wmsRemote.viewModel.AssemblyViewModel
 import com.example.wmswherther.Adapters.InventorySessionAdapter
+import com.example.wmswherther.Classes.AssemblyItem
 import com.example.wmswherther.Classes.InventorySessionItem
 import com.example.wmswherther.Classes.UiState
 import com.example.wmswherther.data.db.Entityes.Barcode
@@ -79,7 +80,13 @@ class PickerSessionFragment: Fragment() {
                 }
             }
         })
-
+        localViewModel.activeElement.observe(viewLifecycleOwner, { element->
+            lifecycleScope.launch {
+                withContext(Dispatchers.Main){
+                    updateActiveElement(element)
+                }
+            }
+        })
 
         var sessionId = (viewModel.uiState.value as UiState.AssemblySessionMenu).sessionId
         localViewModel.loadCollection(db,sessionId)
@@ -118,6 +125,14 @@ class PickerSessionFragment: Fragment() {
         else if(status == 1){
             binding.llMenuContainer.visibility = View.GONE
             binding.llAssemblyContainer.visibility = View.VISIBLE
+        }
+    }
+    private fun updateActiveElement(newItem: AssemblyItem) {
+        with(binding){
+            tvCell.text = newItem!!.cell
+            //tvBarcode.text = "456546546"
+            tvGoodsName.text = newItem.name
+            etCount.setText(newItem.amount.toString())
         }
     }
 }

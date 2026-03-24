@@ -58,10 +58,9 @@ class AssemblySessionViewModel : ViewModel() {
             }
             withContext(Dispatchers.Main){
                 _items.value = data
+                _activeElement.value = data.first()
             }
-
         }
-
     }
    /* fun getItem(count: Int) : AssemblyItem{
         val data = _items.value?.get(count)
