@@ -27,6 +27,7 @@ import com.example.wmswherther.Classes.InventorySessionItem
 import com.example.wmswherther.Classes.UiState
 import com.example.wmswherther.data.db.Entityes.Barcode
 import com.example.wmswherther.data.db.Entityes.Cell
+import com.example.wmswherther.data.db.Entityes.SessionPicker
 import com.example.wmswherther.viewModel.InventorySessionViewModel
 import com.example.wmswherther.viewModel.MainViewModel
 import kotlinx.coroutines.Dispatchers
@@ -79,6 +80,9 @@ class PickerSessionFragment: Fragment() {
             }
         })
 
+
+        var sessionId = (viewModel.uiState.value as UiState.AssemblySessionMenu).sessionId
+        localViewModel.loadCollection(db,sessionId)
 
         return  binding.root
     }

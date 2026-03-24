@@ -44,12 +44,13 @@ class AssemblySessionViewModel : ViewModel() {
                     .filter { item -> item.sessionId == sessionId }
                     .map { item ->
                         var goodsItem = dao.getGoodsById(item.goodsId)
+                        var cell = dao.getCellById(item.cellId.toString())
                         AssemblyItem(
                     sessionId = sessionId,
                     catalogId = goodsItem.catalogId,
                     assemblyItemId = item.id,
                     amount = goodsItem.amount,
-                    cell = item.cellId.toString(),
+                    cell = cell.name,
                     name = dao.getCatalogById(goodsItem.catalogId).name,
                     status = StatusType.Created.ordinal,
                 )
