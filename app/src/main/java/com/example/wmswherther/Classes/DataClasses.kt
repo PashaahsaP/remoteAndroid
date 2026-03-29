@@ -57,5 +57,10 @@ data class AssemblyItem(
     var amount: Int,
     var cell: String,
     var status: Int,
+    var pickerList: List<PickerItem>// need for adapter
+)
+data class PickerItem(
+    var name: String,
+    var data: List<String>
 )
 

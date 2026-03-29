@@ -9,10 +9,13 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.wmsRemote.Adapters.AdapterHelper
 import com.example.wmsRemote.AssemblyActivity
+import com.example.wmsRemote.data.db.Dao
 import com.example.wmsRemote.data.db.MainDB
 import com.example.wmsRemote.data.enums.StatusType
 import com.example.wmsRemote.models.client
 import com.example.wmswherther.Classes.AssemblyItem
+import com.example.wmswherther.Classes.PickerItem
+import com.example.wmswherther.data.db.Entityes.Cell
 import com.example.wmswherther.data.db.Request
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -44,15 +47,20 @@ class AssemblySessionViewModel : ViewModel() {
                     .filter { item -> item.sessionId == sessionId }
                     .map { item ->
                         var goodsItem = dao.getGoodsById(item.goodsId)
+                        var catalog = dao.getCatalogById(goodsItem.catalogId)
                         var cell = dao.getCellById(item.cellId.toString())
+                        var barcodes = dao.getBarcodes().filter { item -> item.catalogId == catalog.id }.map { item -> item.name }
+                        var pickerList : List<PickerItem> = listOf(PickerItem(catalog.name, barcodes))
+                        pickerList += getPickerCell(dao, cell)
                         AssemblyItem(
                     sessionId = sessionId,
                     catalogId = goodsItem.catalogId,
                     assemblyItemId = item.id,
                     amount = goodsItem.amount,
                     cell = cell.name,
-                    name = dao.getCatalogById(goodsItem.catalogId).name,
+                    name = catalog.name,
                     status = StatusType.Created.ordinal,
+                    pickerList = pickerList
                 )
                     }
             }
@@ -62,14 +70,28 @@ class AssemblySessionViewModel : ViewModel() {
             }
         }
     }
-   /* fun getItem(count: Int) : AssemblyItem{
-        val data = _items.value?.get(count)
-        if(data != null){
-            return data
+
+    private suspend fun getPickerCell(dao: Dao, cell: Cell): List<PickerItem> {
+        var result :List<PickerItem> = listOf()
+        if(isPickerCell(cell.name,dao)){
+            result += PickerItem(cell.name, listOf(cell.name))
         }else{
-            return  AssemblyItem(1,2,1,2,3,"","",1, listOf())
+            result += PickerItem(cell.name, listOf(cell.name))
+            var innerCell = dao.getCellById(cell.parentCellId.toString())
+            result += getPickerCell(dao,innerCell)
+
         }
-    }*/
+        return result
+    }
+
+    /* fun getItem(count: Int) : AssemblyItem{
+         val data = _items.value?.get(count)
+         if(data != null){
+             return data
+         }else{
+             return  AssemblyItem(1,2,1,2,3,"","",1, listOf())
+         }
+     }*/
     fun changeMenuStatus(status: Int){
         _menuStatus.value = status
     }
@@ -183,4 +205,20 @@ class AssemblySessionViewModel : ViewModel() {
            }
         }
     }*/
+}
+suspend fun isPickerCell(cell: String, dao: Dao): Boolean {
+    val cells = dao.getCellTypes().filter { cellType -> cellType.type == "Picker" }
+
+    return cells.any { cellType ->
+        val mask = cellType.mask ?: return@any false
+
+        mask.length == cell.length &&
+                mask.indices.all { i ->
+                    when (mask[i]) {
+                        '*' -> cell[i].isLetter()
+                        '#' -> cell[i].isDigit()
+                        else -> mask[i] == cell[i]
+                    }
+                }
+    }
 }
