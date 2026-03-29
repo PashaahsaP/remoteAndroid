@@ -791,6 +791,25 @@ fun appendPickerDummyData(db: MainDB){
             null
         )
         dao.insertGoodsAsync(goods, goodsChange)
+        var pickerItem = PickerItem(
+            id = UUID.randomUUID().toString(),
+            sessionId = pickerSession.id,
+            goodsId = goods.id,
+            cellId = N00000001.id,
+            status = StatusType.Created.ordinal,
+            startedAt = System.currentTimeMillis(),
+            finishedAt = System.currentTimeMillis(),
+            other = null
+        )
+        var pickerChange = Change(
+            UUID.randomUUID().toString(),
+            pickerItem.id,
+            OperationType.InsertGoods.ordinal,
+            status = StatusType.Created.ordinal,
+            vitekSupplier.id,
+            null
+        )
+        dao.insertPickerItemAsync(pickerItem, pickerChange)
     }
 
 
