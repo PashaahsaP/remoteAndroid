@@ -639,7 +639,83 @@ fun appendPickerDummyData(db: MainDB){
         null
     )
     dao.insertPickerSessionAsync(pickerSession, pickerChange)
+// <editor-fold desc="te first">
+    var catalog = Catalog(
+        UUID.randomUUID().toString(),
+        "Kettle k5345",
+        "3241223",
+        vitekSupplier.id,
+        null
+    )
+    var catalogChange = Change(
+        UUID.randomUUID().toString(),
+        catalog.id,
+        OperationType.InsertCatalog.ordinal,
+        StatusType.Created.ordinal,
+        vitekSupplier.id,
+        null
+    )
 
+
+    var barcode = Barcode(
+        UUID.randomUUID().toString(),
+        "4665453776456",
+        catalog.id,
+        vitekSupplier.id,
+        null
+    )
+    var barcodeChanges = Change(
+        UUID.randomUUID().toString(),
+        barcode.id,
+        OperationType.InsertBarcode.ordinal,
+        StatusType.Created.ordinal,
+        vitekSupplier.id,
+        null
+    )
+    dao.insertCatalogSync(catalog, catalogChange)
+    dao.insertBarcodeAsync(barcode, barcodeChanges)
+    // </editor-fold>
+    // <editor-fold desc="insert goods">
+    var goods = Goods(
+        id = UUID.randomUUID().toString(),
+        amount = 21,
+        cellId = N00000001.id,
+        catalogId = catalog.id,
+        createdAt = System.currentTimeMillis(),
+        isAvailable = true,
+        other = null
+    )
+    var goodsChange = Change(
+        UUID.randomUUID().toString(),
+        goods.id,
+        OperationType.InsertGoods.ordinal,
+        status = StatusType.Created.ordinal,
+        vitekSupplier.id,
+        null
+    )
+    dao.insertGoodsAsync(goods, goodsChange)
+    // </editor-fold>
+    // <editor-fold desc="insert pickerItem">
+    var pickerItem = PickerItem(
+        id = UUID.randomUUID().toString(),
+        sessionId = pickerSession.id,
+        goodsId = goods.id,
+        cellId = N00000001.id,
+        status = StatusType.Created.ordinal,
+        startedAt = System.currentTimeMillis(),
+        finishedAt = System.currentTimeMillis(),
+        other = null
+    )
+    pickerChange = Change(
+        UUID.randomUUID().toString(),
+        pickerItem.id,
+        OperationType.InsertGoods.ordinal,
+        status = StatusType.Created.ordinal,
+        vitekSupplier.id,
+        null
+    )
+    dao.insertPickerItemAsync(pickerItem, pickerChange)
+// </editor-fold>
     for (enum in 10 .. 29){
         // <editor-fold desc="insert cell">
         var A111 = Cell(
