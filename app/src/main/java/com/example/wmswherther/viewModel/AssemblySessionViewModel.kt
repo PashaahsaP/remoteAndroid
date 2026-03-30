@@ -50,8 +50,13 @@ class AssemblySessionViewModel : ViewModel() {
                         var catalog = dao.getCatalogById(goodsItem.catalogId)
                         var cell = dao.getCellById(item.cellId.toString())
                         var barcodes = dao.getBarcodes().filter { item -> item.catalogId == catalog.id }.map { item -> item.name }
-                        var pickerList : List<PickerItem> = listOf(PickerItem(catalog.name, barcodes))
+                        var pickerList : MutableList<PickerItem> = mutableListOf(PickerItem(catalog.name, barcodes, false))
+                        //set selection of last element
                         pickerList += getPickerCell(dao, cell)
+                        var lastElement = pickerList[pickerList.lastIndex]
+                        lastElement.isSelected = true
+                        pickerList[pickerList.lastIndex] = lastElement
+
                         AssemblyItem(
                     sessionId = sessionId,
                     catalogId = goodsItem.catalogId,
@@ -74,9 +79,9 @@ class AssemblySessionViewModel : ViewModel() {
     private suspend fun getPickerCell(dao: Dao, cell: Cell): List<PickerItem> {
         var result :List<PickerItem> = listOf()
         if(isPickerCell(cell.name,dao)){
-            result += PickerItem(cell.name, listOf(cell.name))
+            result += PickerItem(cell.name, listOf(cell.name), false)
         }else{
-            result += PickerItem(cell.name, listOf(cell.name))
+            result += PickerItem(cell.name, listOf(cell.name), false)
             var innerCell = dao.getCellById(cell.parentCellId.toString())
             result += getPickerCell(dao,innerCell)
 

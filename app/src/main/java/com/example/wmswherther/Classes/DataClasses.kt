@@ -61,6 +61,7 @@ data class AssemblyItem(
 )
 data class PickerItem(
     var name: String,
-    var data: List<String>
+    var data: List<String>,
+    var isSelected: Boolean
 )
 
