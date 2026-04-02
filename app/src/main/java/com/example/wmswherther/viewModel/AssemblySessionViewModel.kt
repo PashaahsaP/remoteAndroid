@@ -1,26 +1,19 @@
 
 package com.example.wmsRemote.viewModel
 
-import android.widget.Toast
-import androidx.core.text.isDigitsOnly
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.example.wmsRemote.Adapters.AdapterHelper
-import com.example.wmsRemote.AssemblyActivity
 import com.example.wmsRemote.data.db.Dao
 import com.example.wmsRemote.data.db.MainDB
 import com.example.wmsRemote.data.enums.StatusType
-import com.example.wmsRemote.models.client
 import com.example.wmswherther.Classes.AssemblyItem
 import com.example.wmswherther.Classes.PickerItem
 import com.example.wmswherther.data.db.Entityes.Cell
-import com.example.wmswherther.data.db.Request
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
-import org.json.JSONObject
 
 class AssemblySessionViewModel : ViewModel() {
 
@@ -65,7 +58,7 @@ class AssemblySessionViewModel : ViewModel() {
                     cell = cell.name,
                     name = catalog.name,
                     status = StatusType.Created.ordinal,
-                    pickerList = pickerList
+                    pickerList = pickerList.reversed()
                 )
                     }
             }

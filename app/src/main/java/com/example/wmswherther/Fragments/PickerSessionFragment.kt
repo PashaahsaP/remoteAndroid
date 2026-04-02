@@ -14,6 +14,7 @@ import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.example.wmsRemote.Adapters.AssemblySessionAdapter
+import com.example.wmsRemote.Adapters.AssemblySessionMainAdapter
 import com.example.wmsRemote.R
 import com.example.wmsRemote.data.db.Dao
 import com.example.wmsRemote.data.db.MainDB
@@ -55,9 +56,15 @@ class PickerSessionFragment: Fragment() {
         _binding = ActivityAssemblyBinding.inflate(layoutInflater)
         localViewModel = ViewModelProvider(this).get(AssemblySessionViewModel::class.java)
         var adapter = AssemblySessionAdapter(requireActivity(), lifecycleScope, localViewModel, listOf())
+        var mainAdapter = AssemblySessionMainAdapter(requireActivity(), lifecycleScope, localViewModel, listOf())
+
         var recyclerView: RecyclerView = binding.rwListItem
         recyclerView.layoutManager = LinearLayoutManager(requireActivity())
         recyclerView.adapter = adapter
+
+        var recyclerViewMain: RecyclerView = binding.rwListMain
+        recyclerViewMain.layoutManager = LinearLayoutManager(requireActivity())
+        recyclerViewMain.adapter = mainAdapter
 
         localViewModel.items.observe(viewLifecycleOwner, { items ->
             lifecycleScope.launch {
@@ -83,6 +90,7 @@ class PickerSessionFragment: Fragment() {
         localViewModel.activeElement.observe(viewLifecycleOwner, { element->
             lifecycleScope.launch {
                 withContext(Dispatchers.Main){
+                    mainAdapter.updateData(element.pickerList)
                     updateActiveElement(element)
                 }
             }
@@ -94,7 +102,7 @@ class PickerSessionFragment: Fragment() {
         return  binding.root
     }
     private fun updateAssemblyStyle(status: Int?) {
-        with(binding){
+       /* with(binding){
             if(StatusType.EnterCell.ordinal == status){
                 tvCell.setTextColor(resources.getColor(R.color.white))
                 tvGoodsName.setTextColor(resources.getColor(R.color.regularGrey))
@@ -115,7 +123,7 @@ class PickerSessionFragment: Fragment() {
                 etInput.isEnabled = false
                 etCount.requestFocus()
             }
-        }
+        }*/
     }
     private fun updateMenuStyle(status: Int?) {
         if(status == 0){
@@ -128,11 +136,11 @@ class PickerSessionFragment: Fragment() {
         }
     }
     private fun updateActiveElement(newItem: AssemblyItem) {
-        with(binding){
+       /* with(binding){
             tvCell.text = newItem!!.cell
             //tvBarcode.text = "456546546"
             tvGoodsName.text = newItem.name
             etCount.setText(newItem.amount.toString())
-        }
+        }*/
     }
 }
