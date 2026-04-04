@@ -34,11 +34,7 @@
             android:layout_weight="0.5"
             android:paddingTop="10dp"
             android:orientation="vertical">
-            <EditText
-                android:id="@+id/etInput"
-                android:layout_width="150dp"
-                android:layout_height="wrap_content"
-                android:visibility="visible"/>
+
 
             <ScrollView
                 android:layout_width="match_parent"

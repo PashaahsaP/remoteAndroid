@@ -1,12 +1,10 @@
 package com.example.wmswherther.Fragments
 
-import android.graphics.Color
 import android.os.Bundle
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import androidx.appcompat.app.AlertDialog
-import androidx.core.content.ContextCompat
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
 import androidx.lifecycle.ViewModelProvider
@@ -15,27 +13,17 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.example.wmsRemote.Adapters.AssemblySessionAdapter
 import com.example.wmsRemote.Adapters.AssemblySessionMainAdapter
-import com.example.wmsRemote.R
-import com.example.wmsRemote.data.db.Dao
 import com.example.wmsRemote.data.db.MainDB
-import com.example.wmsRemote.data.enums.StatusType
+import com.example.wmsRemote.data.enums.AssemblySessionMenuType
 import com.example.wmsRemote.databinding.ActivityAssemblyBinding
-import com.example.wmsRemote.databinding.FragmentInventorySessionBinding
 import com.example.wmsRemote.viewModel.AssemblySessionViewModel
-import com.example.wmsRemote.viewModel.AssemblyViewModel
-import com.example.wmswherther.Adapters.InventorySessionAdapter
 import com.example.wmswherther.Classes.AssemblyItem
-import com.example.wmswherther.Classes.InventorySessionItem
+import com.example.wmswherther.Classes.PickerItem
 import com.example.wmswherther.Classes.UiState
-import com.example.wmswherther.data.db.Entityes.Barcode
-import com.example.wmswherther.data.db.Entityes.Cell
-import com.example.wmswherther.data.db.Entityes.SessionPicker
-import com.example.wmswherther.viewModel.InventorySessionViewModel
 import com.example.wmswherther.viewModel.MainViewModel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
-import java.util.UUID
 
 class PickerSessionFragment: Fragment() {
 
@@ -55,6 +43,7 @@ class PickerSessionFragment: Fragment() {
         val db = MainDB.getDB(requireActivity())
         _binding = ActivityAssemblyBinding.inflate(layoutInflater)
         localViewModel = ViewModelProvider(this).get(AssemblySessionViewModel::class.java)
+        localViewModel._menuStatus.value = AssemblySessionMenuType.ScanningMode.ordinal
         var adapter = AssemblySessionAdapter(requireActivity(), lifecycleScope, localViewModel, listOf())
         var mainAdapter = AssemblySessionMainAdapter(requireActivity(), lifecycleScope, localViewModel, listOf())
 
@@ -83,7 +72,7 @@ class PickerSessionFragment: Fragment() {
         localViewModel.menuStatus.observe(viewLifecycleOwner, { status ->
             lifecycleScope.launch {
                 withContext(Dispatchers.Main){
-                    updateMenuStyle(status)
+                    //updateMenuStyle(status)
                 }
             }
         })
@@ -96,6 +85,54 @@ class PickerSessionFragment: Fragment() {
             }
         })
 
+
+        viewModel.Barcode.observe(viewLifecycleOwner, { barcode ->
+            if(barcode != "" && viewModel.uiState.value is UiState.AssemblySessionMenu) {
+                lifecycleScope.launch {
+                    var isCountMode : Boolean = false
+                    var activeElementList = localViewModel.activeElement.value!!.pickerList
+                    withContext(Dispatchers.IO) {
+                        var assemblySession = viewModel.uiState.value as UiState.AssemblySessionMenu
+                        var db = MainDB.getDB(requireActivity())
+                        var dao = db.getDao()
+                        var curOperation = localViewModel.menuStatus.value
+
+                        if(curOperation == AssemblySessionMenuType.ScanningMode.ordinal){
+                            // Найти активный элемент в списке
+                            for (counter in 0 .. activeElementList.count() - 1){
+                                // Получение текущего элемента
+                                var currElement = activeElementList[counter]
+                                if(currElement.isSelected){
+                                    // Если это последний элемент то надо переключить режим на ввод количества
+                                    // Обновить адаптер текущего элемента
+                                    if(counter + 1  == activeElementList.size){
+                                        isCountMode = true
+                                        localViewModel._menuStatus.value = AssemblySessionMenuType.CountMode.ordinal
+                                        activeElementList.map { item -> item.isSelected = false }
+
+                                    }
+                                    // Иначе сделать следующий элемент в списке выбранным
+                                    // Обновить адаптер текущего элемента
+                                    else{
+                                        activeElementList[counter].isSelected = false
+                                        activeElementList[counter + 1].isSelected = true
+                                        break
+                                    }
+                                }
+                            }
+                        }
+                    }
+                    withContext(Dispatchers.Main){
+                        if(isCountMode){
+                            localViewModel._menuStatus.value = AssemblySessionMenuType.CountMode.ordinal
+                        }
+                        var t = localViewModel._activeElement.value
+                        t!!.pickerList = activeElementList
+                        localViewModel._activeElement.value = t
+                    }
+                }
+            }
+        })
         var sessionId = (viewModel.uiState.value as UiState.AssemblySessionMenu).sessionId
         localViewModel.loadCollection(db,sessionId)
 
