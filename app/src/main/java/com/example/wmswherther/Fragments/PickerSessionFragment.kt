@@ -102,12 +102,11 @@ class PickerSessionFragment: Fragment() {
                             for (counter in 0 .. activeElementList.count() - 1){
                                 // Получение текущего элемента
                                 var currElement = activeElementList[counter]
-                                if(currElement.isSelected){
+                                if(currElement.isSelected && currElement.data.any{item -> item == barcode}){
                                     // Если это последний элемент то надо переключить режим на ввод количества
                                     // Обновить адаптер текущего элемента
                                     if(counter + 1  == activeElementList.size){
                                         isCountMode = true
-                                        localViewModel._menuStatus.value = AssemblySessionMenuType.CountMode.ordinal
                                         activeElementList.map { item -> item.isSelected = false }
 
                                     }
