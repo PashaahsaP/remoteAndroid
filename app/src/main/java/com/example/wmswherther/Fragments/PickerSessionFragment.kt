@@ -9,6 +9,7 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.view.inputmethod.EditorInfo
+import android.widget.EditText
 import androidx.appcompat.app.AlertDialog
 import androidx.core.content.ContextCompat
 import androidx.fragment.app.Fragment
@@ -86,6 +87,21 @@ class PickerSessionFragment: Fragment() {
                             binding.etCount.selectAll()
                         }
                         viewModel.switchScanningMode()
+                    }else if (status == AssemblySessionMenuType.OutMode.ordinal){
+                        val editText = EditText(requireContext())
+                        editText.hint = "Введите текст"
+
+                        val dialog = AlertDialog.Builder(requireActivity())
+                            .setTitle("Окончание сборки")
+                            .setMessage("Введите out отгрузки.")
+                            .setView(editText)
+                            .setPositiveButton("Да") { _, _ ->
+                                val text = editText.text.toString()
+                            }
+                            .setNegativeButton("Нет", null)
+                            .create()
+
+                        dialog.show()
                     }else{
                         binding.etCount.setTextColor(ContextCompat.getColor(requireActivity(), R.color.regularGrey))
                         binding.etCount.isEnabled = false
@@ -127,13 +143,15 @@ class PickerSessionFragment: Fragment() {
                             // Иначе надо сменить элемент
                             withContext(Dispatchers.Main) {
                                 localViewModel._items.value = localViewModel._items.value!!.drop(1)
-                                // Обновить текущий элемент
-                                var coll: AssemblyItem = localViewModel._items.value!!.first()
-                                localViewModel._activeElement.value = coll
-                                // TODO добавить сюда окончание сессии и смену страницы, возможно при помощи смены статуса
-                                // Сменить фокус
-                                localViewModel._menuStatus.value =
-                                    AssemblySessionMenuType.ScanningMode.ordinal
+                                if(localViewModel._items.value!!.count() !=0){
+                                    var coll: AssemblyItem = localViewModel._items.value!!.first()
+                                    localViewModel._activeElement.value = coll
+                                    localViewModel._menuStatus.value = AssemblySessionMenuType.ScanningMode.ordinal
+                                }else{
+                                    localViewModel._menuStatus.value = AssemblySessionMenuType.OutMode.ordinal
+
+                                }
+
                             }
                         }
 

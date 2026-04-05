@@ -640,7 +640,7 @@ fun appendPickerDummyData(db: MainDB){
     )
     dao.insertPickerSessionAsync(pickerSession, pickerChange)
 // <editor-fold desc="te first">
-    var catalog = Catalog(
+   /* var catalog = Catalog(
         UUID.randomUUID().toString(),
         "Kettle k5345",
         "3241223",
@@ -714,9 +714,9 @@ fun appendPickerDummyData(db: MainDB){
         vitekSupplier.id,
         null
     )
-    dao.insertPickerItemAsync(pickerItem, pickerChange)
+    dao.insertPickerItemAsync(pickerItem, pickerChange)*/
 // </editor-fold>
-    for (enum in 10 .. 29){
+    for (enum in 10 .. 11){
         // <editor-fold desc="insert cell">
         var A111 = Cell(
             UUID.randomUUID().toString(),
@@ -813,7 +813,7 @@ fun appendPickerDummyData(db: MainDB){
         // </editor-fold>
     }
 
-    for(enum in 50..52){
+    /*for(enum in 50..52){
         var catalog = Catalog(
             UUID.randomUUID().toString(),
             "Kettle k5${enum}",
@@ -886,7 +886,7 @@ fun appendPickerDummyData(db: MainDB){
             null
         )
         dao.insertPickerItemAsync(pickerItem, pickerChange)
-    }
+    }*/
 
 
 }
