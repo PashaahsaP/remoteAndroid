@@ -722,7 +722,7 @@ object AdapterHelper {
         1 to { holder, context, item ->
             if (item is BorkInventoryItem){
                 holder.tvLeft.text = item.name
-                holder.tvLeft.setTextColor(ContextCompat.getColor(context, R.color.regularRed))
+                holder.tvLeft.setTextColor(ContextCompat.getColor(context, R.color.regularGrey))
                 holder.tvRight.text = "${item.amount.first}/${item.amount.second}"
                 holder.tvRight.setTextColor(ContextCompat.getColor(context, R.color.regularRed))
             }

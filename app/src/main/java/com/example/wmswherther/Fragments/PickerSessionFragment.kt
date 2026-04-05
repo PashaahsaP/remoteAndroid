@@ -1,10 +1,13 @@
 package com.example.wmswherther.Fragments
 
+import android.graphics.Color
 import android.os.Bundle
 import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.EditText
+import androidx.core.content.ContextCompat
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
 import androidx.lifecycle.ViewModelProvider
@@ -13,6 +16,7 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.example.wmsRemote.Adapters.AssemblySessionAdapter
 import com.example.wmsRemote.Adapters.AssemblySessionMainAdapter
+import com.example.wmsRemote.R
 import com.example.wmsRemote.data.db.MainDB
 import com.example.wmsRemote.data.enums.AssemblySessionMenuType
 import com.example.wmsRemote.databinding.ActivityAssemblyBinding
@@ -72,7 +76,17 @@ class PickerSessionFragment: Fragment() {
         localViewModel.menuStatus.observe(viewLifecycleOwner, { status ->
             lifecycleScope.launch {
                 withContext(Dispatchers.Main){
-                    //updateMenuStyle(status)
+                    if(status != AssemblySessionMenuType.ScanningMode.ordinal){
+                        binding.etCount.isEnabled = true
+                        binding.etCount.requestFocus()
+                        binding.etCount.post {
+                            binding.etCount.setTextColor(Color.WHITE)
+                            binding.etCount.selectAll()
+                        }
+                    }else{
+                        binding.etCount.setTextColor(ContextCompat.getColor(requireActivity(), R.color.regularGrey))
+                        binding.etCount.isEnabled = false
+                    }
                 }
             }
         })
@@ -81,6 +95,7 @@ class PickerSessionFragment: Fragment() {
                 withContext(Dispatchers.Main){
                     mainAdapter.updateData(element.pickerList)
                     updateActiveElement(element)
+                    binding.etCount.setText(element.amount.toString())
                 }
             }
         })
