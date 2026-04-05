@@ -185,10 +185,14 @@ class PickerSessionFragment: Fragment() {
                     withContext(Dispatchers.Main){
                         if(isCountMode){
                             localViewModel._menuStatus.value = AssemblySessionMenuType.CountMode.ordinal
+                        }else{
+                            viewModel.switchScanningMode()
+                            viewModel.switchScanningMode()
                         }
                         var t = localViewModel._activeElement.value
                         t!!.pickerList = activeElementList
                         localViewModel._activeElement.value = t
+
                     }
                 }
             }
