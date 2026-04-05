@@ -43,7 +43,9 @@ class MainViewModel : ViewModel() {
     val IsSelectedInventoryList: LiveData<Boolean> get() = _isSelectedInventoryList
   //  val MoveSupplierId: LiveData<String> get() = _moveSupplierId
 
-
+    fun switchScanningMode(){
+        _isScanningActive.value = !_isScanningActive.value!!
+    }
     fun switchActivityOfInventorySession(){
         _isActiveSession.value = !IsActiveSession.value!!
     }

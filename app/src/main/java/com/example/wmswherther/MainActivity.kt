@@ -313,6 +313,12 @@ class MainActivity : AppCompatActivity() {
                 is AssemblySessionMenu -> {}
             }
         }
+        viewModel.IsScanningActive.observe(this){ flag ->
+            if(flag){
+                binding.etIncomeBarcode.requestFocus()
+            }
+        }
+
 
         if(savedInstanceState == null){
             supportFragmentManager.commit {

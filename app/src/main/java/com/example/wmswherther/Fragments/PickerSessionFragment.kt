@@ -84,9 +84,11 @@ class PickerSessionFragment: Fragment() {
                             binding.etCount.setTextColor(Color.WHITE)
                             binding.etCount.selectAll()
                         }
+                        viewModel.switchScanningMode()
                     }else{
                         binding.etCount.setTextColor(ContextCompat.getColor(requireActivity(), R.color.regularGrey))
                         binding.etCount.isEnabled = false
+                        viewModel.switchScanningMode()
                     }
                 }
             }
@@ -109,7 +111,17 @@ class PickerSessionFragment: Fragment() {
                 if (text != "") {
                     if (localViewModel.activeElement.value!!.amount == text.toInt()){
 
+                        // Иначе надо сменить элемент
+                            // Добавить запись в бд
+                            // Удалить из списка общего
+                        localViewModel._items.value = localViewModel._items.value!!.drop(1)
+                            // Обновить текущий элемент
+                        var coll : AssemblyItem = localViewModel._items.value!!.first()
+                        localViewModel._activeElement.value = coll
+                            // Сменить фокус
+                        localViewModel._menuStatus.value = AssemblySessionMenuType.ScanningMode.ordinal
                     }else{
+                        // Если количество меньше или больше заявленного то спросить уверен ли что норм все и при нажатии нет надо вернуть фокус
                         val dialog = AlertDialog.Builder(requireActivity())
                             .setTitle("Что-то не так")
                             .setMessage("Количество товара не соответствует заявленом. Продолжить?")
@@ -126,12 +138,7 @@ class PickerSessionFragment: Fragment() {
                             .create()
                         dialog.show()
                     }
-                    // Если количество меньше или больше заявленного то спросить уверен ли что норм все и при нажатии нет надо вернуть фокус
-                    // Иначе надо сменить элемент
-                        // Добавить запись в бд
-                        // Удалить из списка общего
-                        // Обновить текущий элемент
-                        // Сменить фокус
+
                     binding.etCount.setTextColor(ContextCompat.getColor(requireActivity(), R.color.regularGrey))
                 }
                 return@setOnEditorActionListener true
