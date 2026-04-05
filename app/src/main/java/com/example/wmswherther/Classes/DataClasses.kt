@@ -54,6 +54,7 @@ data class AssemblyItem(
     var catalogId: String,
     var name: String,
     var assemblyItemId: String,
+    var goodsId: String,
     var amount: Int,
     var cell: String,
     var status: Int,

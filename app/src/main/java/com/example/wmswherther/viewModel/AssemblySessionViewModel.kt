@@ -54,6 +54,7 @@ class AssemblySessionViewModel : ViewModel() {
                     sessionId = sessionId,
                     catalogId = goodsItem.catalogId,
                     assemblyItemId = item.id,
+                    goodsId = item.goodsId,
                     amount = goodsItem.amount,
                     cell = cell.name,
                     name = catalog.name,

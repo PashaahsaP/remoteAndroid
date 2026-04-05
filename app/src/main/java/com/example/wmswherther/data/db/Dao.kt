@@ -273,6 +273,7 @@ interface Dao {
     suspend fun getPickerItemById(id: String): PickerItem
     @Query("SELECT * FROM picker_items")
     suspend fun getPickerItems(): List<PickerItem>
-
+    @Update
+    suspend fun updatePickerItem(item: PickerItem)
     // </editor-fold>
 }

@@ -22,6 +22,7 @@ import com.example.wmsRemote.Adapters.AssemblySessionMainAdapter
 import com.example.wmsRemote.R
 import com.example.wmsRemote.data.db.MainDB
 import com.example.wmsRemote.data.enums.AssemblySessionMenuType
+import com.example.wmsRemote.data.enums.StatusType
 import com.example.wmsRemote.databinding.ActivityAssemblyBinding
 import com.example.wmsRemote.viewModel.AssemblySessionViewModel
 import com.example.wmswherther.Classes.AssemblyItem
@@ -106,27 +107,49 @@ class PickerSessionFragment: Fragment() {
         localViewModel.loadCollection(db,sessionId)
 
         binding.etCount.setOnEditorActionListener { v, actionId, event ->
-            if (actionId == EditorInfo.IME_ACTION_DONE || actionId == EditorInfo.IME_ACTION_UNSPECIFIED && event.action == ACTION_DOWN) {// &&
+            if (actionId == EditorInfo.IME_ACTION_DONE || actionId == EditorInfo.IME_ACTION_UNSPECIFIED && event.action == ACTION_DOWN) {
                 val text = binding.etCount.text.toString()
                 if (text != "") {
-                    if (localViewModel.activeElement.value!!.amount == text.toInt()){
-
-                        // Иначе надо сменить элемент
+                    if (localViewModel.activeElement.value!!.amount == text.toInt()) {
+                        lifecycleScope.launch {
+                            withContext(Dispatchers.IO) {
+                                var curItem = db.getDao().getPickerItemById(localViewModel.activeElement.value!!.assemblyItemId)
+                                db.getDao().updatePickerItem(curItem.copy(finishedAt = System.currentTimeMillis(), status = StatusType.Finished.ordinal))
+                            }
                             // Добавить запись в бд
-                            // Удалить из списка общего
-                        localViewModel._items.value = localViewModel._items.value!!.drop(1)
-                            // Обновить текущий элемент
-                        var coll : AssemblyItem = localViewModel._items.value!!.first()
-                        localViewModel._activeElement.value = coll
-                            // Сменить фокус
-                        localViewModel._menuStatus.value = AssemblySessionMenuType.ScanningMode.ordinal
+                            // создать запись goods и movement
+                            //если равно
+
+                            //если больше. Создать элемент в more, переместить его в ячейку с товаром, и потом уже выполнить операцию соединения
+                            //если меньше.
+
+
+                            // Иначе надо сменить элемент
+                            withContext(Dispatchers.Main) {
+                                localViewModel._items.value = localViewModel._items.value!!.drop(1)
+                                // Обновить текущий элемент
+                                var coll: AssemblyItem = localViewModel._items.value!!.first()
+                                localViewModel._activeElement.value = coll
+                                // TODO добавить сюда окончание сессии и смену страницы, возможно при помощи смены статуса
+                                // Сменить фокус
+                                localViewModel._menuStatus.value =
+                                    AssemblySessionMenuType.ScanningMode.ordinal
+                            }
+                        }
+
+
                     }else{
                         // Если количество меньше или больше заявленного то спросить уверен ли что норм все и при нажатии нет надо вернуть фокус
                         val dialog = AlertDialog.Builder(requireActivity())
                             .setTitle("Что-то не так")
                             .setMessage("Количество товара не соответствует заявленом. Продолжить?")
                             .setPositiveButton("Да") { _, _ ->
-                                //Смена элемент и тд
+                                localViewModel._items.value = localViewModel._items.value!!.drop(1)
+                                // Обновить текущий элемент
+                                var coll : AssemblyItem = localViewModel._items.value!!.first()
+                                localViewModel._activeElement.value = coll
+                                // Сменить фокус
+                                localViewModel._menuStatus.value = AssemblySessionMenuType.ScanningMode.ordinal
                             }
                             .setNegativeButton("Нет") {_, _ ->
                                 binding.etCount.requestFocus()
@@ -147,6 +170,7 @@ class PickerSessionFragment: Fragment() {
 
         }
 
+
         viewModel.Barcode.observe(viewLifecycleOwner, { barcode ->
             if(barcode != "" && viewModel.uiState.value is UiState.AssemblySessionMenu) {
                 lifecycleScope.launch {
@@ -164,6 +188,11 @@ class PickerSessionFragment: Fragment() {
                                 // Получение текущего элемента
                                 var currElement = activeElementList[counter]
                                 if(currElement.isSelected && currElement.data.any{item -> item == barcode}){
+                                    //обновить время начала сборки элемента
+                                    if(counter == 0){
+                                        var pickerItem = dao.getPickerItemById(localViewModel.activeElement.value!!.assemblyItemId)
+                                        dao.updatePickerItem(pickerItem.copy(startedAt = System.currentTimeMillis(), status = StatusType.Work.ordinal))
+                                    }
                                     // Если это последний элемент то надо переключить режим на ввод количества
                                     // Обновить адаптер текущего элемента
                                     if(counter + 1  == activeElementList.size){
@@ -178,6 +207,7 @@ class PickerSessionFragment: Fragment() {
                                         activeElementList[counter + 1].isSelected = true
                                         break
                                     }
+
                                 }
                             }
                         }
@@ -202,6 +232,20 @@ class PickerSessionFragment: Fragment() {
 
         return  binding.root
     }
+
+   /* private suspend fun prepareItem(
+        db: MainDB,
+        activeElement: AssemblyItem?
+    ) {
+        lifecycleScope.launch {
+            withContext(Dispatchers.IO){
+                var goods = db.getDao().getGoodsById(activeElement!!.goodsId)
+                var sessionItem = db.getDao().getPickerItemById(activeElement.assemblyItemId)
+            }
+        }
+
+    }*/
+
     private fun updateAssemblyStyle(status: Int?) {
        /* with(binding){
             if(StatusType.EnterCell.ordinal == status){
