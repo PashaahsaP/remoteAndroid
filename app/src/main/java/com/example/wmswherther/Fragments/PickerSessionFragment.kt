@@ -2,11 +2,14 @@ package com.example.wmswherther.Fragments
 
 import android.graphics.Color
 import android.os.Bundle
-import android.util.Log
+import android.view.KeyEvent
+import android.view.KeyEvent.ACTION_DOWN
+import android.view.KeyEvent.KEYCODE_ENTER
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.widget.EditText
+import android.view.inputmethod.EditorInfo
+import androidx.appcompat.app.AlertDialog
 import androidx.core.content.ContextCompat
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
@@ -22,7 +25,6 @@ import com.example.wmsRemote.data.enums.AssemblySessionMenuType
 import com.example.wmsRemote.databinding.ActivityAssemblyBinding
 import com.example.wmsRemote.viewModel.AssemblySessionViewModel
 import com.example.wmswherther.Classes.AssemblyItem
-import com.example.wmswherther.Classes.PickerItem
 import com.example.wmswherther.Classes.UiState
 import com.example.wmswherther.viewModel.MainViewModel
 import kotlinx.coroutines.Dispatchers
@@ -50,7 +52,6 @@ class PickerSessionFragment: Fragment() {
         localViewModel._menuStatus.value = AssemblySessionMenuType.ScanningMode.ordinal
         var adapter = AssemblySessionAdapter(requireActivity(), lifecycleScope, localViewModel, listOf())
         var mainAdapter = AssemblySessionMainAdapter(requireActivity(), lifecycleScope, localViewModel, listOf())
-
         var recyclerView: RecyclerView = binding.rwListItem
         recyclerView.layoutManager = LinearLayoutManager(requireActivity())
         recyclerView.adapter = adapter
@@ -99,7 +100,45 @@ class PickerSessionFragment: Fragment() {
                 }
             }
         })
+        var sessionId = (viewModel.uiState.value as UiState.AssemblySessionMenu).sessionId
+        localViewModel.loadCollection(db,sessionId)
 
+        binding.etCount.setOnEditorActionListener { v, actionId, event ->
+            if (actionId == EditorInfo.IME_ACTION_DONE || actionId == EditorInfo.IME_ACTION_UNSPECIFIED && event.action == ACTION_DOWN) {// &&
+                val text = binding.etCount.text.toString()
+                if (text != "") {
+                    if (localViewModel.activeElement.value!!.amount == text.toInt()){
+
+                    }else{
+                        val dialog = AlertDialog.Builder(requireActivity())
+                            .setTitle("Что-то не так")
+                            .setMessage("Количество товара не соответствует заявленом. Продолжить?")
+                            .setPositiveButton("Да") { _, _ ->
+                                //Смена элемент и тд
+                            }
+                            .setNegativeButton("Нет") {_, _ ->
+                                binding.etCount.requestFocus()
+                                binding.etCount.post {
+                                    binding.etCount.setTextColor(Color.WHITE)
+                                    binding.etCount.selectAll()
+                                }
+                            }
+                            .create()
+                        dialog.show()
+                    }
+                    // Если количество меньше или больше заявленного то спросить уверен ли что норм все и при нажатии нет надо вернуть фокус
+                    // Иначе надо сменить элемент
+                        // Добавить запись в бд
+                        // Удалить из списка общего
+                        // Обновить текущий элемент
+                        // Сменить фокус
+                    binding.etCount.setTextColor(ContextCompat.getColor(requireActivity(), R.color.regularGrey))
+                }
+                return@setOnEditorActionListener true
+            }
+            return@setOnEditorActionListener false
+
+        }
 
         viewModel.Barcode.observe(viewLifecycleOwner, { barcode ->
             if(barcode != "" && viewModel.uiState.value is UiState.AssemblySessionMenu) {
@@ -147,8 +186,8 @@ class PickerSessionFragment: Fragment() {
                 }
             }
         })
-        var sessionId = (viewModel.uiState.value as UiState.AssemblySessionMenu).sessionId
-        localViewModel.loadCollection(db,sessionId)
+
+
 
         return  binding.root
     }
