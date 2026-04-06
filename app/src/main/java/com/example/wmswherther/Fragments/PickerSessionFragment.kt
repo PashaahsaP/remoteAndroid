@@ -62,6 +62,53 @@ class PickerSessionFragment: Fragment() {
         recyclerViewMain.layoutManager = LinearLayoutManager(requireActivity())
         recyclerViewMain.adapter = mainAdapter
 
+        viewModel.IsFinishedAssemblySession.observe(viewLifecycleOwner, { status ->
+            if(status){
+                if(localViewModel._items.value!!.size == 0) {
+                    val editText = EditText(requireContext())
+                    editText.hint = "Введите текст"
+
+                    val dialog = AlertDialog.Builder(requireActivity())
+                        .setTitle("Окончание сборки")
+                        .setMessage("Введите out отгрузки.")
+                        .setView(editText)
+                        .setPositiveButton("Да") { _, _ ->
+                            val text = editText.text.toString()
+                        }
+                        .setNegativeButton("Нет", null)
+                        .create()
+
+                    dialog.show()
+                }else{
+                    val editText = EditText(requireContext())
+                    editText.hint = "Введите текст"
+
+                    val dialog = AlertDialog.Builder(requireActivity())
+                        .setTitle("Окончание сборки")
+                        .setMessage("Введите out отгрузки.")
+                        .setView(editText)
+                        .setPositiveButton("Да") { _, _ ->
+                            val text = editText.text.toString()
+                        }
+                        .setNegativeButton("Нет", null)
+                        .create()
+                    val dialogNotification = AlertDialog.Builder(requireActivity())
+                        .setTitle("Предупреждение")
+                        .setMessage("Есть еще не собранный товар. Уверены что хотите завершить сборку")
+                        .setPositiveButton("Да") { _, _ ->
+                            dialog.show()
+                        }
+                        .setNegativeButton("Нет", null)
+                        .create()
+
+                    dialogNotification.show()
+
+
+
+                    //dialog.show()
+                }
+            }
+        })
         localViewModel.items.observe(viewLifecycleOwner, { items ->
             lifecycleScope.launch {
                 withContext(Dispatchers.Main){
@@ -79,7 +126,7 @@ class PickerSessionFragment: Fragment() {
         localViewModel.menuStatus.observe(viewLifecycleOwner, { status ->
             lifecycleScope.launch {
                 withContext(Dispatchers.Main){
-                    if(status != AssemblySessionMenuType.ScanningMode.ordinal){
+                    if(status == AssemblySessionMenuType.CountMode.ordinal){
                         binding.etCount.isEnabled = true
                         binding.etCount.requestFocus()
                         binding.etCount.post {
@@ -87,7 +134,14 @@ class PickerSessionFragment: Fragment() {
                             binding.etCount.selectAll()
                         }
                         viewModel.switchScanningMode()
-                    }else if (status == AssemblySessionMenuType.OutMode.ordinal){
+                    }else if (status == AssemblySessionMenuType.ScanningMode.ordinal){
+                        binding.etCount.setTextColor(ContextCompat.getColor(requireActivity(), R.color.regularGrey))
+                        binding.etCount.isEnabled = false
+                        viewModel.switchScanningMode()
+                    }else{
+                        binding.etCount.setText("")
+                        binding.rwListMain.visibility = View.GONE
+                        binding.etCount.visibility = View.GONE
                         val editText = EditText(requireContext())
                         editText.hint = "Введите текст"
 
@@ -102,10 +156,6 @@ class PickerSessionFragment: Fragment() {
                             .create()
 
                         dialog.show()
-                    }else{
-                        binding.etCount.setTextColor(ContextCompat.getColor(requireActivity(), R.color.regularGrey))
-                        binding.etCount.isEnabled = false
-                        viewModel.switchScanningMode()
                     }
                 }
             }
@@ -131,6 +181,9 @@ class PickerSessionFragment: Fragment() {
                             withContext(Dispatchers.IO) {
                                 var curItem = db.getDao().getPickerItemById(localViewModel.activeElement.value!!.assemblyItemId)
                                 db.getDao().updatePickerItem(curItem.copy(finishedAt = System.currentTimeMillis(), status = StatusType.Finished.ordinal))
+
+                                // Если равно
+                                    //
                             }
                             // Добавить запись в бд
                             // создать запись goods и movement
@@ -143,7 +196,7 @@ class PickerSessionFragment: Fragment() {
                             // Иначе надо сменить элемент
                             withContext(Dispatchers.Main) {
                                 localViewModel._items.value = localViewModel._items.value!!.drop(1)
-                                if(localViewModel._items.value!!.count() !=0){
+                                if(localViewModel._items.value!!.count() != 0){
                                     var coll: AssemblyItem = localViewModel._items.value!!.first()
                                     localViewModel._activeElement.value = coll
                                     localViewModel._menuStatus.value = AssemblySessionMenuType.ScanningMode.ordinal

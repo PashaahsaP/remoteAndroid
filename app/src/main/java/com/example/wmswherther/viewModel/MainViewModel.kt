@@ -25,6 +25,7 @@ class MainViewModel : ViewModel() {
     private val _isSelectedMoveList = MutableLiveData<Boolean>(false)
     private val _isSelectedIncomeList = MutableLiveData<Boolean>(false)
     private val _isSelectedInventoryList = MutableLiveData<Boolean>(false)
+    private  val _isFinishedAssemblySession = MutableLiveData<Boolean>(false)
    // private val _moveSupplierId = MutableLiveData<String>(null)
 
 
@@ -41,8 +42,13 @@ class MainViewModel : ViewModel() {
     val IsSelectedMoveList: LiveData<Boolean> get() = _isSelectedMoveList
     val IsSelectedIncomeList: LiveData<Boolean> get() = _isSelectedIncomeList
     val IsSelectedInventoryList: LiveData<Boolean> get() = _isSelectedInventoryList
+    val IsFinishedAssemblySession: LiveData<Boolean> get() = _isFinishedAssemblySession
+
   //  val MoveSupplierId: LiveData<String> get() = _moveSupplierId
 
+    fun switchAssemblySessionActivity(){
+        _isFinishedAssemblySession.value = !_isFinishedAssemblySession.value!!
+    }
     fun switchScanningMode(){
         _isScanningActive.value = !_isScanningActive.value!!
     }

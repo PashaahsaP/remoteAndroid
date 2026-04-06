@@ -724,6 +724,7 @@ class MainActivity : AppCompatActivity() {
                         val inflater = layoutInflater
                         val popupView = inflater.inflate(R.layout.pop_up_assembly_session_menu, null)
                         var scanBtn = popupView.findViewById<Button>(R.id.btnScanningMode)
+                        var finishBtn = popupView.findViewById<Button>(R.id.btnFinish)
 
                         val popupWindow = PopupWindow(
                             popupView,
@@ -736,6 +737,11 @@ class MainActivity : AppCompatActivity() {
                                 isBarcodeFieldActive = !state.isBarcodeFieldActive,
                                 isBarcodeScanActive = !state.isBarcodeScanActive
                             ))
+                            popupWindow.dismiss()
+                        }
+                        finishBtn.setOnClickListener { view ->
+                            viewModel.switchAssemblySessionActivity()
+                            viewModel.switchAssemblySessionActivity()
                             popupWindow.dismiss()
                         }
                         val location = IntArray(2)
