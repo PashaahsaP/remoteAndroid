@@ -37,7 +37,7 @@ class AssemblySessionViewModel : ViewModel() {
             var data : List<AssemblyItem> = listOf()
             withContext(Dispatchers.IO) {
                 data = dao.getPickerItems()
-                    .filter { item -> item.sessionId == sessionId }
+                    .filter { item -> item.sessionId == sessionId && item.status == StatusType.Created.ordinal }
                     .map { item ->
                         var goodsItem = dao.getGoodsById(item.goodsId)
                         var catalog = dao.getCatalogById(goodsItem.catalogId)
@@ -65,7 +65,9 @@ class AssemblySessionViewModel : ViewModel() {
             }
             withContext(Dispatchers.Main){
                 _items.value = data
-                _activeElement.value = data.first()
+                if (data.isNotEmpty()) {
+                    _activeElement.value = data.first()
+                }
             }
         }
     }

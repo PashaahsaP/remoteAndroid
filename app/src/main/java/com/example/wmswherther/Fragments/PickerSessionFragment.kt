@@ -171,7 +171,6 @@ class PickerSessionFragment: Fragment() {
         })
         var sessionId = (viewModel.uiState.value as UiState.AssemblySessionMenu).sessionId
         localViewModel.loadCollection(db,sessionId)
-
         binding.etCount.setOnEditorActionListener { v, actionId, event ->
             if (actionId == EditorInfo.IME_ACTION_DONE || actionId == EditorInfo.IME_ACTION_UNSPECIFIED && event.action == ACTION_DOWN) {
                 val text = binding.etCount.text.toString()
@@ -240,8 +239,6 @@ class PickerSessionFragment: Fragment() {
             return@setOnEditorActionListener false
 
         }
-
-
         viewModel.Barcode.observe(viewLifecycleOwner, { barcode ->
             if(barcode != "" && viewModel.uiState.value is UiState.AssemblySessionMenu) {
                 lifecycleScope.launch {
@@ -298,8 +295,6 @@ class PickerSessionFragment: Fragment() {
                 }
             }
         })
-
-
 
         return  binding.root
     }
