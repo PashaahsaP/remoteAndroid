@@ -61,6 +61,8 @@ class PickerSessionFragment: Fragment() {
         var recyclerViewMain: RecyclerView = binding.rwListMain
         recyclerViewMain.layoutManager = LinearLayoutManager(requireActivity())
         recyclerViewMain.adapter = mainAdapter
+        var sessionId = (viewModel.uiState.value as UiState.AssemblySessionMenu).sessionId
+
 
         viewModel.IsFinishedAssemblySession.observe(viewLifecycleOwner, { status ->
             if(status){
@@ -74,6 +76,7 @@ class PickerSessionFragment: Fragment() {
                         .setView(editText)
                         .setPositiveButton("Да") { _, _ ->
                             val text = editText.text.toString()
+                            localViewModel.finishSession(db.getDao(), text, sessionId)
                         }
                         .setNegativeButton("Нет", null)
                         .create()
@@ -89,6 +92,7 @@ class PickerSessionFragment: Fragment() {
                         .setView(editText)
                         .setPositiveButton("Да") { _, _ ->
                             val text = editText.text.toString()
+                            localViewModel.finishSession(db.getDao(), text, sessionId)
                         }
                         .setNegativeButton("Нет", null)
                         .create()
@@ -151,6 +155,7 @@ class PickerSessionFragment: Fragment() {
                             .setView(editText)
                             .setPositiveButton("Да") { _, _ ->
                                 val text = editText.text.toString()
+                                localViewModel.finishSession(db.getDao(), text, sessionId)
                             }
                             .setNegativeButton("Нет", null)
                             .create()
@@ -169,7 +174,6 @@ class PickerSessionFragment: Fragment() {
                 }
             }
         })
-        var sessionId = (viewModel.uiState.value as UiState.AssemblySessionMenu).sessionId
         localViewModel.loadCollection(db,sessionId)
         binding.etCount.setOnEditorActionListener { v, actionId, event ->
             if (actionId == EditorInfo.IME_ACTION_DONE || actionId == EditorInfo.IME_ACTION_UNSPECIFIED && event.action == ACTION_DOWN) {

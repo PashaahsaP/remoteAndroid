@@ -557,6 +557,14 @@ fun appendMoveDummyData(db: MainDB){
 }
 fun appendPickerDummyData(db: MainDB){
     val dao = db.getDao()
+    var type = CellType(
+        id = UUID.randomUUID().toString(),
+        type = "Outcome",
+        mask = "OUT##",
+        other = null
+    )
+    dao.insertCellType(type)
+
     val vitekSupplier = Supplier(
         UUID.randomUUID().toString(),
         "Vitek",

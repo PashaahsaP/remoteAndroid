@@ -11,7 +11,9 @@ enum class OperationType {
     InsertInventoryDiff,
     InsertPickerSession,
     InsertPickerItem,
+    InsertMovement,
     UpdateGoods,
     DeleteGoods,
+    UpdatePickerSession,
     UpdateCell
 }

@@ -14,6 +14,7 @@ import com.example.wmswherther.data.db.Entityes.Change
 import com.example.wmswherther.data.db.Entityes.Goods
 import com.example.wmswherther.data.db.Entityes.IncomeItem
 import com.example.wmswherther.data.db.Entityes.InventoryDiffItem
+import com.example.wmswherther.data.db.Entityes.Movement
 import com.example.wmswherther.data.db.Entityes.PickerItem
 import com.example.wmswherther.data.db.Entityes.SessionIncome
 import com.example.wmswherther.data.db.Entityes.SessionInventory
@@ -126,7 +127,7 @@ interface Dao {
     suspend fun getCatalogById(catalogId: String): Catalog
     @Query("SELECT * FROM catalogs ")
     suspend fun getCatalogs(): List<Catalog>
-    // </editor-fold>
+// </editor-fold>
     // <editor-fold desc="Goods">
         @Insert
         fun insertGoods(goods: Goods)
@@ -177,6 +178,8 @@ interface Dao {
     // </editor-fold>
     // <editor-fold desc="Changes">
     @Insert
+    fun insertMovementChanges(change: Change)
+    @Insert
     fun insertCellChanges(change: Change)
     @Insert
     fun insertIncomeSessionChanges(change: Change)
@@ -211,7 +214,20 @@ interface Dao {
 
     // </editor-fold>
     // <editor-fold desc="Movement">
-
+    @Insert
+    fun insertMovement(movement: Movement)
+    @Update
+    suspend fun updateMovement(movement: Movement)
+    @Transaction
+    fun insertMovementSync(movement: Movement, change: Change) : Pair<Unit, Unit> {
+        val from = insertMovement(movement)
+        var to = insertMovementChanges(change)
+        return from to to
+    }
+    @Query("SELECT * FROM movements")
+    fun getAllMovement(): List<Movement>
+    @Query("SELECT * FROM movements WHERE id =:movementId")
+    suspend fun getMovementById(movementId: String): Movement
     // </editor-fold>
     // <editor-fold desc="InventoryDiffItem">
     @Insert
@@ -258,7 +274,12 @@ interface Dao {
     suspend fun getPickerSessions(): List<SessionPicker>
     @Update
     suspend fun updatePickerSession(item: SessionPicker)
-
+    @Transaction
+    suspend fun updatePickerSessionSync(session: SessionPicker, change: Change) : Pair<Unit, Unit> {
+        val from = updatePickerSession(session)
+        var to = insertPickerSessionChanges(change)
+        return from to to
+    }
     // </editor-fold>
     // <editor-fold desc="PickerItem">
     @Insert

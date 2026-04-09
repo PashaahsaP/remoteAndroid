@@ -212,6 +212,7 @@ val MIGRATION_1_2 = object : Migration(1, 2) {
                 cellToId TEXT NOT NULL,
                 qty TEXT NOT NULL,
                 catalogId TEXT NOT NULL,
+                goodsId TEXT NOT NULL,
                 userId TEXT,
                 executedAt INTEGER NOT NULL,
                 operationType INTEGER NOT NULL,

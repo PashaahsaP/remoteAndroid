@@ -7,13 +7,18 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.wmsRemote.data.db.Dao
 import com.example.wmsRemote.data.db.MainDB
+import com.example.wmsRemote.data.enums.OperationType
 import com.example.wmsRemote.data.enums.StatusType
 import com.example.wmswherther.Classes.AssemblyItem
 import com.example.wmswherther.Classes.PickerItem
 import com.example.wmswherther.data.db.Entityes.Cell
+import com.example.wmswherther.data.db.Entityes.CellType
+import com.example.wmswherther.data.db.Entityes.Change
+import com.example.wmswherther.data.db.Entityes.Movement
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import java.util.UUID
 
 class AssemblySessionViewModel : ViewModel() {
 
@@ -22,6 +27,7 @@ class AssemblySessionViewModel : ViewModel() {
     val assemblyStatus: LiveData<Int> get() = _assemblyStatus
     val activeElement: LiveData<AssemblyItem> get() = _activeElement
     val items: LiveData<List<AssemblyItem>> get() = _items
+    val resultCollection:LiveData<List<AssemblyItem>> get() = _resultCollection
     val count: LiveData<Int>get() = _count
 
 
@@ -29,6 +35,7 @@ class AssemblySessionViewModel : ViewModel() {
     var _assemblyStatus = MutableLiveData<Int> ()
     var _activeElement = MutableLiveData<AssemblyItem>()
     var _items = MutableLiveData<List<AssemblyItem>>()
+    var _resultCollection = MutableLiveData<List<AssemblyItem>>()
 
     fun loadCollection(db: MainDB, sessionId: String): Unit
     {
@@ -64,6 +71,7 @@ class AssemblySessionViewModel : ViewModel() {
                     }
             }
             withContext(Dispatchers.Main){
+                _resultCollection.value = data
                 _items.value = data
                 if (data.isNotEmpty()) {
                     _activeElement.value = data.first()
@@ -123,90 +131,87 @@ class AssemblySessionViewModel : ViewModel() {
         _assemblyStatus.value = enterCell
     }
 
-    /*fun searchBtnHandler(trim: String, assemblyActivity: AssemblyActivity, db: MainDB) {
-        if(assemblyStatus.value == StatusType.EnterCell.ordinal) {
-            if (activeElement.value!!.cell != trim) {
-                var act = items.value?.firstOrNull { item -> item.cell == trim }
-                if(act != null) {
-                    setActiveElement(act)
-                }
-            }
-        }
-
-
-        var isHaveBarcodeCount = activeElement.value?.barcodes?.filter { item -> item == trim }
-       if(activeElement.value!!.cell == trim && assemblyStatus.value == StatusType.EnterCell.ordinal){
-            changeAssemblyStatus(StatusType.EnterBarcode.ordinal)
-        }else if (isHaveBarcodeCount?.count() != 0 && assemblyStatus.value == StatusType.EnterBarcode.ordinal){
-            changeAssemblyStatus(StatusType.EnterCount.ordinal)
-        }
-    }*/
-    /*suspend fun searchBtnHandlerCount(trim: String, assemblyActivity: AssemblyActivity, db: MainDB) {
-        val amount = activeElement.value?.amount
-       if(trim.isDigitsOnly()) {
-           val amountInt = trim.toInt()
-           if (amountInt > 0 && amountInt <= amount.toString().toInt()) {
-               val cur = activeElement.value
-               var assItem = client.getAssemblyBorkItemById(ip, cur!!.assemblyItemId)
-               client.updateAssemblyBorkItem(
-                   ip, AssemblyItem(
-                       assemblyItemId = assItem["id"].toString().toInt(),
-                       barcodes = listOf(),
-                       supplierId = 1,
-                       catalogId = cur.catalogId,
-                       cell = cur.cell,
-                       status = cur.status,
-                       name = cur.name,
-                       amount = cur.amount,
-                       sessionId = cur.sessionId,
-                   )
-               )
-               if (_items.value?.count() == 1) {
-                   var assemblyId = assItem["assemblyId"].toString()
-                   var assembly = client.getAssemblySessionById(ip, assemblyId)
-                   client.updateAssemblySession(ip, AssemblySession(
-                       id = assembly["id"].toString().toInt(),
-                       supplier = 1,
-                       out = "1",
-                       status = 1,
-                       finished_at = "",
-                       created_at = "",
-                       lines = assembly["lines"].toString().toInt(),
-                       amount =  assembly["amount"].toString().toInt()
-                   ))
-                   viewModelScope.launch {
-                       withContext(Dispatchers.Main) {
-                           _sessions.value = listOf()
-                           loadCollection(db)
-                           changeMenuStatus(0)
-                       }
-                   }
-               } else
-                   viewModelScope.launch {
-                       withContext(Dispatchers.Main) {
-                           removeElementFromCollection(_activeElement.value)
-                           val next = getItem(_count.value ?: 0)
-                           setActiveElement(next)
-                       }
-                   }
-
-
-            }else{
-                viewModelScope.launch {
-                    withContext(Dispatchers.Main){
-                        Toast.makeText(assemblyActivity,"Число должно быть больше 0 и не больше ${amount}", Toast.LENGTH_SHORT).show()
+    fun finishSession(dao: Dao, outGate: String, sesssionId: String) {
+        viewModelScope.launch {
+            withContext(Dispatchers.IO) {
+                if (isOutCellType(dao, outGate)) {
+                    var outCell = dao.getCellByName(outGate)
+                    if (outCell == null){
+                        var cell = Cell(
+                            id = UUID.randomUUID().toString(),
+                            typeCellId = "0a6064bf-7c6e-4724-bb9b-f0289faf8ca3",
+                            parentCellId = null,
+                            name = outGate
+                        )
+                        dao.insertCell(cell)
+                        outCell = cell
                     }
+
+                    _resultCollection.value?.forEach { item ->
+                        //Надо создать перемещения для goods
+                        var movement = Movement(
+                            id = UUID.randomUUID().toString(),
+                            cellFromId = dao.getCellByName(item.cell).id,
+                            cellToId = outCell.id,
+                            catalogId = item.catalogId,
+                            goodsId = item.goodsId,
+                            qty = item.amount.toString(),
+                            userId = "0",
+                            executedAt = dao.getPickerItemById(item.assemblyItemId).finishedAt!!.toLong(),
+                            operationType = OperationType.InsertMovement.ordinal
+                        )
+                        var session = dao.getPickerSessionById(sesssionId)
+                        val change = Change(
+                            id = UUID.randomUUID().toString(),
+                            entityId = movement.id,
+                            operationType = OperationType.InsertMovement.ordinal,
+                            status = StatusType.Created.ordinal,
+                            supplierId = session.supplierId,
+                            other = null
+                        )
+                        dao.insertMovementSync(movement, change)
+                        //Переместить goods
+                        var goods = dao.getGoodsById(item.goodsId)
+                        var goodsChange = Change(
+                            id = UUID.randomUUID().toString(),
+                            entityId = goods.id,
+                            operationType = OperationType.UpdateGoods.ordinal,
+                            status = StatusType.Finished.ordinal,
+                            supplierId = session.supplierId,
+                            other = null
+                        )
+                        dao.updateGoodsAsync(goods.copy(cellId = outCell.id ), goodsChange)
+
+                    }
+                    //Изменить статус сессии
+                    var session = dao.getPickerSessionById(sesssionId)
+                    var sessionChange = Change(
+                        id = UUID.randomUUID().toString(),
+                        entityId = session.id,
+                        operationType = OperationType.UpdatePickerSession.ordinal,
+                        status = StatusType.Finished.ordinal,
+                        supplierId = session.supplierId,
+                        other = null
+                    )
+                    dao.updatePickerSessionSync(session, sessionChange)
                 }
             }
-        }else{
-           viewModelScope.launch {
-               withContext(Dispatchers.Main){
-                   Toast.makeText(assemblyActivity,"Должны быть только числа", Toast.LENGTH_SHORT).show()
-               }
-           }
         }
-    }*/
-}
+    }
+
+    suspend fun isOutCellType(dao: Dao, outGate: String): Boolean {
+        val types = dao.getCellTypes().filter { cellType -> cellType.type == "Outcome" }
+        return types.any {
+            cellType -> val mask = cellType.mask ?: return@any false
+            mask.length == outGate.length &&
+                    mask.indices.all { i -> when (mask[i]) {
+                        '*' -> outGate[i].isLetter()
+                        '#' -> outGate[i].isDigit()
+                        else -> mask[i] == outGate[i] }
+                    }
+        } }
+    }
+
 suspend fun isPickerCell(cell: String, dao: Dao): Boolean {
     val cells = dao.getCellTypes().filter { cellType -> cellType.type == "Picker" }
 

@@ -20,6 +20,7 @@ data class Movement(
     val cellFromId: String,
     val cellToId: String,
     val catalogId: String,
+    val goodsId: String,
     val qty: String,
     val userId: String?,
     val executedAt: Long,
