@@ -2,9 +2,7 @@ package com.example.wmswherther.Fragments
 
 import android.graphics.Color
 import android.os.Bundle
-import android.view.KeyEvent
 import android.view.KeyEvent.ACTION_DOWN
-import android.view.KeyEvent.KEYCODE_ENTER
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -76,7 +74,8 @@ class PickerSessionFragment: Fragment() {
                         .setView(editText)
                         .setPositiveButton("Да") { _, _ ->
                             val text = editText.text.toString()
-                            localViewModel.finishSession(db.getDao(), text, sessionId)
+                            localViewModel.finishSession(db.getDao(), text, sessionId, viewModel)
+
                         }
                         .setNegativeButton("Нет", null)
                         .create()
@@ -92,7 +91,7 @@ class PickerSessionFragment: Fragment() {
                         .setView(editText)
                         .setPositiveButton("Да") { _, _ ->
                             val text = editText.text.toString()
-                            localViewModel.finishSession(db.getDao(), text, sessionId)
+                            localViewModel.finishSession(db.getDao(), text, sessionId, viewModel)
                         }
                         .setNegativeButton("Нет", null)
                         .create()
@@ -155,7 +154,7 @@ class PickerSessionFragment: Fragment() {
                             .setView(editText)
                             .setPositiveButton("Да") { _, _ ->
                                 val text = editText.text.toString()
-                                localViewModel.finishSession(db.getDao(), text, sessionId)
+                                localViewModel.finishSession(db.getDao(), text, sessionId, viewModel)
                             }
                             .setNegativeButton("Нет", null)
                             .create()

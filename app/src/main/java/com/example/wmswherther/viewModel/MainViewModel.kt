@@ -26,6 +26,7 @@ class MainViewModel : ViewModel() {
     private val _isSelectedIncomeList = MutableLiveData<Boolean>(false)
     private val _isSelectedInventoryList = MutableLiveData<Boolean>(false)
     private  val _isFinishedAssemblySession = MutableLiveData<Boolean>(false)
+    private  val _exitFromSession = MutableLiveData<Boolean>(false)
    // private val _moveSupplierId = MutableLiveData<String>(null)
 
 
@@ -43,6 +44,7 @@ class MainViewModel : ViewModel() {
     val IsSelectedIncomeList: LiveData<Boolean> get() = _isSelectedIncomeList
     val IsSelectedInventoryList: LiveData<Boolean> get() = _isSelectedInventoryList
     val IsFinishedAssemblySession: LiveData<Boolean> get() = _isFinishedAssemblySession
+    val ExitFromSession: LiveData<Boolean> get() = _exitFromSession
 
   //  val MoveSupplierId: LiveData<String> get() = _moveSupplierId
 
@@ -121,6 +123,9 @@ class MainViewModel : ViewModel() {
     }
     fun setActiveUi(state: UiState){
         _uiState.value = state
+    }
+    fun exitFromSession(){
+        _exitFromSession.value = !_exitFromSession.value!!
     }
 
 }

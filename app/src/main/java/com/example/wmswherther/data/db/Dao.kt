@@ -43,6 +43,8 @@ interface Dao {
     @Query("SELECT * FROM cells WHERE id =:cellId")
     suspend fun getCellById(cellId: String): Cell
     @Query("SELECT * FROM cells WHERE name =:cellName")
+    suspend fun getCellsByName(cellName: String): List<Cell>
+    @Query("SELECT * FROM cells WHERE name =:cellName")
     suspend fun getCellByName(cellName: String): Cell
     @Query("SELECT * FROM cells WHERE parentCellId =:parentCellId")
     suspend fun getChildrenCells(parentCellId: String): List<Cell>

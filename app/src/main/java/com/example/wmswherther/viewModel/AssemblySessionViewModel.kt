@@ -12,9 +12,9 @@ import com.example.wmsRemote.data.enums.StatusType
 import com.example.wmswherther.Classes.AssemblyItem
 import com.example.wmswherther.Classes.PickerItem
 import com.example.wmswherther.data.db.Entityes.Cell
-import com.example.wmswherther.data.db.Entityes.CellType
 import com.example.wmswherther.data.db.Entityes.Change
 import com.example.wmswherther.data.db.Entityes.Movement
+import com.example.wmswherther.viewModel.MainViewModel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
@@ -131,15 +131,15 @@ class AssemblySessionViewModel : ViewModel() {
         _assemblyStatus.value = enterCell
     }
 
-    fun finishSession(dao: Dao, outGate: String, sesssionId: String) {
+    fun finishSession(dao: Dao, outGate: String, sesssionId: String, viewModel: MainViewModel) {
         viewModelScope.launch {
             withContext(Dispatchers.IO) {
                 if (isOutCellType(dao, outGate)) {
-                    var outCell = dao.getCellByName(outGate)
+                    var outCell = dao.getCellsByName(outGate).firstOrNull()
                     if (outCell == null){
                         var cell = Cell(
                             id = UUID.randomUUID().toString(),
-                            typeCellId = "0a6064bf-7c6e-4724-bb9b-f0289faf8ca3",
+                            typeCellId = dao.getCellTypes().filter { item -> item.type == "Outcome" }.firstOrNull()!!.id,
                             parentCellId = null,
                             name = outGate
                         )
@@ -149,9 +149,10 @@ class AssemblySessionViewModel : ViewModel() {
 
                     _resultCollection.value?.forEach { item ->
                         //Надо создать перемещения для goods
+                        var cellFrom = dao.getCellByName(item.cell)
                         var movement = Movement(
                             id = UUID.randomUUID().toString(),
-                            cellFromId = dao.getCellByName(item.cell).id,
+                            cellFromId = cellFrom.id,
                             cellToId = outCell.id,
                             catalogId = item.catalogId,
                             goodsId = item.goodsId,
@@ -193,8 +194,12 @@ class AssemblySessionViewModel : ViewModel() {
                         supplierId = session.supplierId,
                         other = null
                     )
-                    dao.updatePickerSessionSync(session, sessionChange)
+                    dao.updatePickerSessionSync(session.copy(status = StatusType.Finished.ordinal.toString()), sessionChange)
                 }
+            }
+            withContext(Dispatchers.Main){
+                viewModel.exitFromSession()
+                viewModel.exitFromSession()
             }
         }
     }

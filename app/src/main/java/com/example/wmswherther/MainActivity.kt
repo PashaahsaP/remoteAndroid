@@ -318,6 +318,11 @@ class MainActivity : AppCompatActivity() {
                 binding.etIncomeBarcode.requestFocus()
             }
         }
+        viewModel.ExitFromSession.observe(this){flag ->
+            if(flag){
+                onBackPressed()
+            }
+        }
 
 
         if(savedInstanceState == null){
