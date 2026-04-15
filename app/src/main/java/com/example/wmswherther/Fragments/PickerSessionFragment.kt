@@ -74,7 +74,7 @@ class PickerSessionFragment: Fragment() {
                         .setView(editText)
                         .setPositiveButton("Да") { _, _ ->
                             val text = editText.text.toString()
-                            localViewModel.finishSession(db.getDao(), text, sessionId, viewModel)
+                            localViewModel.finishSession(db, db.getDao(), text, sessionId, viewModel)
 
                         }
                         .setNegativeButton("Нет", null)
@@ -91,7 +91,13 @@ class PickerSessionFragment: Fragment() {
                         .setView(editText)
                         .setPositiveButton("Да") { _, _ ->
                             val text = editText.text.toString()
-                            localViewModel.finishSession(db.getDao(), text, sessionId, viewModel)
+                            localViewModel.finishSession(
+                                db,
+                                db.getDao(),
+                                text,
+                                sessionId,
+                                viewModel
+                            )
                         }
                         .setNegativeButton("Нет", null)
                         .create()
@@ -154,7 +160,13 @@ class PickerSessionFragment: Fragment() {
                             .setView(editText)
                             .setPositiveButton("Да") { _, _ ->
                                 val text = editText.text.toString()
-                                localViewModel.finishSession(db.getDao(), text, sessionId, viewModel)
+                                localViewModel.finishSession(
+                                    db,
+                                    db.getDao(),
+                                    text,
+                                    sessionId,
+                                    viewModel
+                                )
                             }
                             .setNegativeButton("Нет", null)
                             .create()

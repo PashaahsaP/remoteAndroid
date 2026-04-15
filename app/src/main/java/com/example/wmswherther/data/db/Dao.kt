@@ -11,6 +11,7 @@ import com.example.wmswherther.data.db.Entityes.Catalog
 import com.example.wmswherther.data.db.Entityes.CellType
 import com.example.wmswherther.data.db.Entityes.Cell
 import com.example.wmswherther.data.db.Entityes.Change
+import com.example.wmswherther.data.db.Entityes.Credential
 import com.example.wmswherther.data.db.Entityes.Goods
 import com.example.wmswherther.data.db.Entityes.IncomeItem
 import com.example.wmswherther.data.db.Entityes.InventoryDiffItem
@@ -20,6 +21,7 @@ import com.example.wmswherther.data.db.Entityes.SessionIncome
 import com.example.wmswherther.data.db.Entityes.SessionInventory
 import com.example.wmswherther.data.db.Entityes.SessionPicker
 import com.example.wmswherther.data.db.Entityes.Supplier
+import com.example.wmswherther.data.db.Entityes.User
 
 @Dao
 interface Dao {
@@ -27,14 +29,14 @@ interface Dao {
 
     // <editor-fold desc="Cell">
     @Insert
-    fun insertCell(cell: Cell)
+    suspend fun insertCell(cell: Cell)
     @Update
     suspend fun updateCell(cell: Cell)
     @Transaction
-    fun insertCellSync(cell: Cell, change: Change) : Pair<Unit, Unit> {
+    suspend fun insertCellSync(cell: Cell, change: Change) : Cell {
         val from = insertCell(cell)
         var to = insertCellChanges(change)
-        return from to to
+        return cell
     }
    /* @Update
     suspend fun updateCell(cell: Cell)*/
@@ -65,7 +67,7 @@ interface Dao {
     @Insert
     fun insertIncomeSession(incomeSession: SessionIncome)
     @Insert
-    fun insertIncomeSessionAsync(incomeSession: SessionIncome, change: Change) : Pair<Unit, Unit>{
+    suspend fun insertIncomeSessionAsync(incomeSession: SessionIncome, change: Change) : Pair<Unit, Unit>{
         val from = insertIncomeSession(incomeSession)
         val to = insertIncomeSessionChanges(change)
         return from to to
@@ -79,7 +81,7 @@ interface Dao {
     @Insert
     fun insertIncomeItem(incomeItem: IncomeItem)
     @Insert
-    fun insertIncomeItemSync(incomeItem: IncomeItem, change: Change){
+    suspend fun insertIncomeItemSync(incomeItem: IncomeItem, change: Change){
         val from = insertIncomeItem(incomeItem)
         val to = insertIncomeItemChanges(change)
     }
@@ -92,7 +94,7 @@ interface Dao {
     @Insert
     fun insertCellType(cellType: CellType)
     @Insert
-    fun insertCellTypeSync(cellType: CellType, change: Change):Pair<Unit, Unit>{
+    suspend fun insertCellTypeSync(cellType: CellType, change: Change):Pair<Unit, Unit>{
         val from = insertCellType(cellType)
         val to = insertCellTypeChanges(change)
         return from to to
@@ -106,7 +108,7 @@ interface Dao {
     @Insert
     fun insertSupplier(supplier: Supplier)
     @Insert
-    fun insertSupplierSync(supplier: Supplier, change: Change) : Pair<Unit, Unit> {
+    suspend fun insertSupplierSync(supplier: Supplier, change: Change) : Pair<Unit, Unit> {
         val from = insertSupplier(supplier)
         val  to = insertSupplierChanges(change)
         return from to to
@@ -116,11 +118,27 @@ interface Dao {
     @Query("SELECT * FROM suppliers WHERE id =:id")
     suspend fun getSupplierById(id: String): Supplier
     // </editor-fold>
+    // <editor-fold desc="Credential">
+    @Insert
+    fun insertCredential(credential: Credential) : Long
+    @Query("SELECT * FROM credentials")
+    fun getAllCredential(): List<Credential>
+    @Query("SELECT * FROM credentials WHERE id =:id")
+    suspend fun getCredentialById(id: Long): Credential
+    // </editor-fold>
+    // <editor-fold desc="User">
+    @Insert
+    fun insertUser(user: User)
+    @Query("SELECT * FROM users")
+    fun getAllUser(): List<User>
+    @Query("SELECT * FROM users WHERE id =:id")
+    suspend fun getUserById(id: Long): User
+    // </editor-fold>
     // <editor-fold desc="Catalog">
     @Insert
     fun insertCatalog(catalog: Catalog)
     @Transaction
-    fun insertCatalogSync(catalog: Catalog, change: Change) : Pair<Unit, Unit>{
+    suspend fun insertCatalogSync(catalog: Catalog, change: Change) : Pair<Unit, Unit>{
         val from = insertCatalog(catalog)
         val to = insertCatalogChanges(change)
         return from to to
@@ -134,7 +152,7 @@ interface Dao {
         @Insert
         fun insertGoods(goods: Goods)
         @Transaction
-        fun insertGoodsAsync(goods: Goods, change: Change) : Pair<Unit, Unit>{
+        suspend fun insertGoodsAsync(goods: Goods, change: Change) : Pair<Unit, Unit>{
             val from = insertGoods(goods)
             val to = insertGoodsChanges(change)
             return from to to
@@ -168,7 +186,7 @@ interface Dao {
     @Insert
     fun insertBarcode(barcode: Barcode)
     @Transaction
-    fun insertBarcodeAsync(barcode: Barcode, change: Change) : Pair<Unit, Unit>{
+    suspend fun insertBarcodeAsync(barcode: Barcode, change: Change) : Pair<Unit, Unit>{
         val from = insertBarcode(barcode)
         var to = insertBarcodeChanges(change)
         return from to to
@@ -180,31 +198,31 @@ interface Dao {
     // </editor-fold>
     // <editor-fold desc="Changes">
     @Insert
-    fun insertMovementChanges(change: Change)
+    suspend fun insertMovementChanges(change: Change)
     @Insert
-    fun insertCellChanges(change: Change)
+    suspend fun insertCellChanges(change: Change)
     @Insert
-    fun insertIncomeSessionChanges(change: Change)
+    suspend fun insertIncomeSessionChanges(change: Change)
     @Insert
-    fun insertIncomeItemChanges(change: Change)
+    suspend fun insertIncomeItemChanges(change: Change)
     @Insert
-    fun insertCellTypeChanges(change: Change)
+    suspend fun insertCellTypeChanges(change: Change)
     @Insert
-    fun insertSupplierChanges(change: Change)
+    suspend fun insertSupplierChanges(change: Change)
     @Insert
-    fun insertCatalogChanges(change: Change)
+    suspend fun insertCatalogChanges(change: Change)
     @Insert
-    fun insertGoodsChanges(change: Change)
+    suspend fun insertGoodsChanges(change: Change)
     @Insert
-    fun insertBarcodeChanges(change: Change)
+    suspend fun insertBarcodeChanges(change: Change)
     @Insert
-    fun insertInventoryDiffItemChanges(change: Change)
+    suspend fun insertInventoryDiffItemChanges(change: Change)
     @Insert
-    fun insertInventorySessionChanges(change: Change)
+    suspend fun insertInventorySessionChanges(change: Change)
     @Insert
-    fun insertPickerSessionChanges(change: Change)
+    suspend fun insertPickerSessionChanges(change: Change)
     @Insert
-    fun insertPickerItemChanges(change: Change)
+    suspend fun insertPickerItemChanges(change: Change)
     @Insert
     suspend fun updateGoodsChanges(change: Change)
     @Insert
@@ -217,11 +235,11 @@ interface Dao {
     // </editor-fold>
     // <editor-fold desc="Movement">
     @Insert
-    fun insertMovement(movement: Movement)
+    suspend fun insertMovement(movement: Movement)
     @Update
     suspend fun updateMovement(movement: Movement)
     @Transaction
-    fun insertMovementSync(movement: Movement, change: Change) : Pair<Unit, Unit> {
+    suspend fun insertMovementSync(movement: Movement, change: Change) : Pair<Unit, Unit> {
         val from = insertMovement(movement)
         var to = insertMovementChanges(change)
         return from to to
@@ -235,7 +253,7 @@ interface Dao {
     @Insert
     fun insertInventoryDiffItem(diff: InventoryDiffItem)
     @Transaction
-    fun insertInventoryDiffItemAsync(diff: InventoryDiffItem, change: Change) : Pair<Unit, Unit>{
+    suspend fun insertInventoryDiffItemAsync(diff: InventoryDiffItem, change: Change) : Pair<Unit, Unit>{
         val from = insertInventoryDiffItem(diff)
         var to = insertInventoryDiffItemChanges(change)
         return from to to
@@ -249,7 +267,7 @@ interface Dao {
     @Insert
     fun insertInventorySession(session: SessionInventory)
     @Transaction
-    fun insertInventorySessionAsync(session: SessionInventory, change: Change) : Pair<Unit, Unit>{
+    suspend fun insertInventorySessionAsync(session: SessionInventory, change: Change) : Pair<Unit, Unit>{
         val from = insertInventorySession(session)
         var to = insertInventorySessionChanges(change)
         return from to to
@@ -265,7 +283,7 @@ interface Dao {
     @Insert
     fun insertPickerSession(session: SessionPicker)
     @Transaction
-    fun insertPickerSessionAsync(session: SessionPicker, change: Change) : Pair<Unit, Unit>{
+    suspend fun insertPickerSessionAsync(session: SessionPicker, change: Change) : Pair<Unit, Unit>{
         val from = insertPickerSession(session)
         var to = insertPickerSessionChanges(change)
         return from to to
@@ -287,7 +305,7 @@ interface Dao {
     @Insert
     fun insertPickerItem(item: PickerItem)
     @Transaction
-    fun insertPickerItemAsync(item: PickerItem, change: Change) : Pair<Unit, Unit>{
+    suspend fun insertPickerItemAsync(item: PickerItem, change: Change) : Pair<Unit, Unit>{
         val from = insertPickerItem(item)
         var to = insertPickerItemChanges(change)
         return from to to

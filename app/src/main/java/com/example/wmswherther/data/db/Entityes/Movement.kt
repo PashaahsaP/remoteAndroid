@@ -22,7 +22,7 @@ data class Movement(
     val catalogId: String,
     val goodsId: String,
     val qty: String,
-    val userId: String?,
+    val userId: Long,
     val executedAt: Long,
     val operationType: Int
 )

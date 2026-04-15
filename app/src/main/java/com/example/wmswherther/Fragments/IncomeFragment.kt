@@ -22,6 +22,7 @@ import com.example.wmswherther.data.db.Entityes.Barcode
 import com.example.wmswherther.data.db.Entityes.Catalog
 import com.example.wmswherther.data.db.Entityes.CellType
 import com.example.wmswherther.data.db.Entityes.Change
+import com.example.wmswherther.data.db.Entityes.Credential
 import com.example.wmswherther.data.db.Entityes.Goods
 import com.example.wmswherther.data.db.Entityes.IncomeItem
 import com.example.wmswherther.data.db.Entityes.PickerItem
@@ -29,6 +30,7 @@ import com.example.wmswherther.data.db.Entityes.SessionIncome
 import com.example.wmswherther.data.db.Entityes.SessionInventory
 import com.example.wmswherther.data.db.Entityes.SessionPicker
 import com.example.wmswherther.data.db.Entityes.Supplier
+import com.example.wmswherther.data.db.Entityes.User
 import com.example.wmswherther.viewModel.IncomeMenuViewModel
 import com.example.wmswherther.viewModel.MainViewModel
 import kotlinx.coroutines.Dispatchers
@@ -55,6 +57,7 @@ class IncomeFragment : Fragment() {
                 //appendDummyData(MainDB.getDB(requireActivity()))
                 //appendMoveDummyData(MainDB.getDB(requireActivity()))
                 appendPickerDummyData(MainDB.getDB(requireActivity()))
+                appendUser(MainDB.getDB(requireActivity()))
             }
         }
         //viewModel.setCurrFragment(this)
@@ -83,9 +86,26 @@ class IncomeFragment : Fragment() {
 
         return  binding.root
     }
+
+    private fun appendUser(db: MainDB) {
+        var credential = Credential(
+            id = 0,
+            type = "User",
+            other = null
+        )
+        var credentialId = db.getDao().insertCredential(credential)
+        var user = User(
+            id = 0,
+            firstName = "Pavel",
+            lastName = "Semenov",
+            credentialId = credentialId,
+            other = null
+        )
+        db.getDao().insertUser(user)
+    }
 }
 
-fun appendDummyData(db: MainDB){
+suspend fun appendDummyData(db: MainDB){
     val dao = db.getDao()
     val borkSupplier = Supplier(
         UUID.randomUUID().toString(),
@@ -355,7 +375,7 @@ fun appendDummyData(db: MainDB){
 
 
 }
-fun appendMoveDummyData(db: MainDB){
+suspend fun appendMoveDummyData(db: MainDB){
     val dao = db.getDao()
     val vitekSupplier = Supplier(
         UUID.randomUUID().toString(),
@@ -555,7 +575,7 @@ fun appendMoveDummyData(db: MainDB){
 
 
 }
-fun appendPickerDummyData(db: MainDB){
+suspend fun appendPickerDummyData(db: MainDB){
     val dao = db.getDao()
     var type = CellType(
         id = UUID.randomUUID().toString(),
