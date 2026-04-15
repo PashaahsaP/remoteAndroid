@@ -84,18 +84,7 @@ class AssemblySessionViewModel : ViewModel() {
         }
     }
 
-    private suspend fun getPickerCell(dao: Dao, cell: Cell): List<PickerItem> {
-        var result :List<PickerItem> = listOf()
-        if(isPickerCell(cell.name,dao)){
-            result += PickerItem(cell.name, listOf(cell.name), false)
-        }else{
-            result += PickerItem(cell.name, listOf(cell.name), false)
-            var innerCell = dao.getCellById(cell.parentCellId.toString())
-            result += getPickerCell(dao,innerCell)
 
-        }
-        return result
-    }
 
 
     fun changeMenuStatus(status: Int){
@@ -113,7 +102,6 @@ class AssemblySessionViewModel : ViewModel() {
     fun changeAssemblyStatus(enterCell: Int) {
         _assemblyStatus.value = enterCell
     }
-@Transaction
     fun finishSession(
         db: MainDB,
         dao: Dao,
@@ -124,95 +112,73 @@ class AssemblySessionViewModel : ViewModel() {
         viewModelScope.launch {
             withContext(Dispatchers.IO) {
                 if (isOutCellType(dao, outGate)) {
-                    db.withTransaction {
-                        var session = dao.getPickerSessionById(sesssionId)
-                        //var outCell = getOutCell(dao, outGate, session)
-                        var outCell = dao.getCellsByName(outGate).firstOrNull()
-                        if (outCell == null) {
-                            var cell = Cell(
-                                id = UUID.randomUUID().toString(),
-                                typeCellId = dao.getCellTypes().filter { item -> item.type == "Outcome" }
-                                    .firstOrNull()!!.id,
-                                parentCellId = null,
-                                name = outGate
-                            )
-                            val change = Change(
-                                id = UUID.randomUUID().toString(),
-                                entityId = cell.id,
-                                operationType = OperationType.InsertMovement.ordinal,
-                                status = StatusType.Created.ordinal,
-                                supplierId = session.supplierId,
-                                other = null
-                            )
-                            outCell = dao.insertCellSync(cell, change)
-                        }
-                        var test = dao.getCellByName(outGate)
-                        _resultCollection.value?.forEach { item ->
-                            //Надо создать перемещения для goods
-                            var cellFrom = dao.getCellByName(item.cell)
-                            var movement = Movement(
-                                id = UUID.randomUUID().toString(),
-                                cellFromId = cellFrom.id,
-                                cellToId = test.id,
-                                catalogId = item.catalogId,
-                                goodsId = item.goodsId,
-                                qty = item.amount.toString(),
-                                userId = 1,
-                                executedAt = dao.getPickerItemById(item.assemblyItemId).finishedAt!!.toLong(),
-                                operationType = OperationType.InsertMovement.ordinal
-                            )
-                            val change = Change(
-                                id = UUID.randomUUID().toString(),
-                                entityId = movement.id,
-                                operationType = OperationType.InsertMovement.ordinal,
-                                status = StatusType.Created.ordinal,
-                                supplierId = session.supplierId,
-                                other = null
-                            )
-
-                            dao.insertMovementSync(movement, change)
-                            //Переместить goods
-                            var goods = dao.getGoodsById(item.goodsId)
-                            var goodsChange = Change(
-                                id = UUID.randomUUID().toString(),
-                                entityId = goods.id,
-                                operationType = OperationType.UpdateGoods.ordinal,
-                                status = StatusType.Finished.ordinal,
-                                supplierId = session.supplierId,
-                                other = null
-                            )
-                            dao.updateGoodsAsync(goods.copy(cellId = outCell.id), goodsChange)
-
-                        }
-                        //Изменить статус сессии
-                        session = dao.getPickerSessionById(sesssionId)
-                        var sessionChange = Change(
-                            id = UUID.randomUUID().toString(),
-                            entityId = session.id,
-                            operationType = OperationType.UpdatePickerSession.ordinal,
-                            status = StatusType.Finished.ordinal,
-                            supplierId = session.supplierId,
-                            other = null
-                        )
-                        dao.updatePickerSessionSync(
-                            session.copy(status = StatusType.Finished.ordinal.toString()),
-                            sessionChange
-                        )
-                    }
+                    var session = dao.getPickerSessionById(sesssionId)
+                    var outCell = getOutCell(dao, outGate, session)
+                    moveItemsToOutGate(dao, outCell, session)
+                    changeSessionStatus(session, dao)
                 }
-            }
+                }
             withContext(Dispatchers.Main){
-                viewModel.exitFromSession()
+                viewModel.exitFromSession()//need for vm event
                 viewModel.exitFromSession()
             }
         }
     }
 
-    private suspend fun getOutCell(
-        dao: Dao,
-        outGate: String,
-        session: SessionPicker
-    ): Cell {
+    private suspend fun moveItemsToOutGate(dao: Dao,outCell: Cell, session: SessionPicker) {
+        _resultCollection.value?.forEach { item ->
+            //Надо создать перемещения для goods
+            var cellFrom = dao.getCellByName(item.cell)
+            var movement = Movement(
+                id = UUID.randomUUID().toString(),
+                cellFromId = cellFrom.id,
+                cellToId = outCell.id,
+                catalogId = item.catalogId,
+                goodsId = item.goodsId,
+                qty = item.amount.toString(),
+                userId = 1,
+                executedAt = dao.getPickerItemById(item.assemblyItemId).finishedAt!!.toLong(),
+                operationType = OperationType.InsertMovement.ordinal
+            )
+            val change = Change(
+                id = UUID.randomUUID().toString(),
+                entityId = movement.id,
+                operationType = OperationType.InsertMovement.ordinal,
+                status = StatusType.Created.ordinal,
+                supplierId = session.supplierId,
+                other = null
+            )
+
+            dao.insertMovementSync(movement, change)
+            //Переместить goods
+            var goods = dao.getGoodsById(item.goodsId)
+            var goodsChange = Change(
+                id = UUID.randomUUID().toString(),
+                entityId = goods.id,
+                operationType = OperationType.UpdateGoods.ordinal,
+                status = StatusType.Finished.ordinal,
+                supplierId = session.supplierId,
+                other = null
+            )
+            dao.updateGoodsAsync(goods.copy(cellId = outCell.id), goodsChange)
+
+        }
+    }
+    private suspend fun changeSessionStatus(session: SessionPicker, dao: Dao) {
+        var sessionChange = Change(
+            id = UUID.randomUUID().toString(),
+            entityId = session.id,
+            operationType = OperationType.UpdatePickerSession.ordinal,
+            status = StatusType.Finished.ordinal,
+            supplierId = session.supplierId,
+            other = null
+        )
+        dao.updatePickerSessionSync(
+            session.copy(status = StatusType.Finished.ordinal.toString()),
+            sessionChange
+        )
+    }
+    private suspend fun getOutCell(dao: Dao, outGate: String, session: SessionPicker): Cell {
         var outCell = dao.getCellsByName(outGate).firstOrNull()
         if (outCell == null) {
             var cell = Cell(
@@ -234,7 +200,6 @@ class AssemblySessionViewModel : ViewModel() {
         }
         return dao.getCellById(outCell.id)
     }
-
     suspend fun isOutCellType(dao: Dao, outGate: String): Boolean {
         val types = dao.getCellTypes().filter { cellType -> cellType.type == "Outcome" }
         return types.any {
@@ -246,6 +211,18 @@ class AssemblySessionViewModel : ViewModel() {
                         else -> mask[i] == outGate[i] }
                     }
         } }
+    private suspend fun getPickerCell(dao: Dao, cell: Cell): List<PickerItem> {
+        var result :List<PickerItem> = listOf()
+        if(isPickerCell(cell.name,dao)){
+            result += PickerItem(cell.name, listOf(cell.name), false)
+        }else{
+            result += PickerItem(cell.name, listOf(cell.name), false)
+            var innerCell = dao.getCellById(cell.parentCellId.toString())
+            result += getPickerCell(dao,innerCell)
+
+        }
+        return result
+    }
     }
 
 suspend fun isPickerCell(cell: String, dao: Dao): Boolean {
