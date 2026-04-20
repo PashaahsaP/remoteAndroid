@@ -7,13 +7,17 @@ import androidx.lifecycle.viewModelScope
 import com.example.wmsRemote.data.db.Dao
 import com.example.wmswherther.data.db.Entityes.Cell
 import com.example.wmsRemote.data.db.MainDB
+import com.example.wmsRemote.data.enums.OperationType
+import com.example.wmsRemote.data.enums.StatusType
 import com.example.wmswherther.Classes.IncomeItem
-import com.example.wmswherther.Classes.InventorySessionItem
 import com.example.wmswherther.data.db.Entityes.Barcode
+import com.example.wmswherther.data.db.Entityes.Change
 import com.example.wmswherther.data.db.Entityes.Goods
+import com.example.wmswherther.data.db.Entityes.Movement
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import java.util.UUID
 
 class IncomeSessionViewModel : ViewModel() {
     private val _items = MutableLiveData<List<IncomeItem>>()
@@ -183,6 +187,7 @@ class IncomeSessionViewModel : ViewModel() {
                         name =  item.second.name,
                         TE = if(isShown) item.second.name else "",
                         catalogId = "",
+                        goodsId = item.first.id,
                         allCount = item.first.amount,
                         haveCount = 0,
                         isExpandable = true,
@@ -191,6 +196,7 @@ class IncomeSessionViewModel : ViewModel() {
                         name =  catalog.name,
                         TE = if(isShown) item.second.name else "",
                         catalogId = catalog.id,
+                        goodsId = item.first.id,
                         allCount = item.first.amount,
                         haveCount = 0,
                         isExpandable = false,
@@ -200,6 +206,7 @@ class IncomeSessionViewModel : ViewModel() {
                         name =  catalog.name,
                         TE = if(isShown) item.second.name else "",
                         catalogId = catalog.id,
+                        goodsId = item.first.id,
                         allCount = item.first.amount,
                         haveCount = 0,
                         isExpandable = false,
@@ -210,6 +217,7 @@ class IncomeSessionViewModel : ViewModel() {
                     name =  catalog.name,
                     TE = currentCellName.value.toString(),
                     catalogId = catalog.id,
+                    goodsId = item.first.id,
                     allCount = item.first.amount,
                     haveCount = 0,
                     isExpandable = false,
@@ -221,6 +229,74 @@ class IncomeSessionViewModel : ViewModel() {
     }
     suspend fun getBarcode(db : MainDB, barcode: String) : Barcode {
         return db.getDao().getBarcodeByName(barcode)
+    }
+    suspend fun finishSession(db: MainDB, sessionId: String){
+        // получить goods
+            // получить goods ячейки
+        var dao = db.getDao()
+        var session = dao.getIncomeSessionById(sessionId)
+        var cellTo = dao.getCellById(session.toCellId.toString())
+        var sessionItems = dao.getAllIncomeItemBySessionId(sessionId)
+        /*var goods = sessionItems.map { item -> dao.getGoodsById(item.goodsId) }
+            // получить те текущей ячейки и все goods к ним
+        var te = dao.getAllCells().filter { te -> te.parentCellId == cellTo.id }
+        te.forEach { inner ->
+            var innerGoods = dao.getGoodsByCellId(inner.id)
+            goods += innerGoods
+        }*/
+        // обновить goods
+        items.value?.forEach { item ->
+            // если количество равно то обновить статус и добавить movement
+            if(item.haveCount == item.allCount){
+                var innerGoods = dao.getGoodsById(item.goodsId)
+                var goodsChange = Change(
+                    id = UUID.randomUUID().toString(),
+                    entityId = innerGoods.id,
+                    operationType = OperationType.UpdateGoods.ordinal,
+                    status = StatusType.Work.ordinal,
+                    supplierId = session.supplierId,
+                    other = null
+                )
+                dao.updateGoodsAsync(innerGoods.copy(isAvailable = true),goodsChange)
+
+                var incomeCell = dao.getCellByName("income")
+                var innerMovement = Movement(
+                    id = UUID.randomUUID().toString(),
+                    cellFromId = incomeCell.id,
+                    cellToId = session.toCellId.toString(),
+                    catalogId = innerGoods.catalogId,
+                    goodsId = innerGoods.id,
+                    qty = innerGoods.amount.toString(),
+                    userId = 1,
+                    executedAt = System.currentTimeMillis(),
+                    operationType = OperationType.IncomeMovement.ordinal,
+                    entityId = sessionId
+                )
+            }
+
+            // если количество не равно то создать movement для изменения количества и movement прихода
+
+            else{
+            //  если больше то
+                // создать goods на разницу количества в приемочной ячейке
+                // создать перемещение в More
+                // удалить goods
+                // увеличить количество товара в основном goods
+                // обновить статус goods
+                // создать перемещение
+            //  если меньше то
+                // создать goods на разницу количества в приемочной ячейке
+                // создать перемещение в Less
+                // удалить goods
+                // уменьшить количество товара в основном goods
+                // обновить статус goods
+                // создать перемещение
+            }
+        }
+
+        // добавить перемещения
+
+        // обновить сессию
     }
     fun setSelection(checked: Boolean) {
         var list: MutableList<IncomeItem> = mutableListOf()

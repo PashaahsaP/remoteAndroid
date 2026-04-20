@@ -273,6 +273,7 @@ class IncomeSessionAdapter(
                                    name = group.first().name,
                                    TE = group.first().TE,
                                    catalogId = id,
+                                   goodsId = group.first().goodsId,
                                    haveCount = group.sumOf { it.haveCount },
                                    allCount = group.sumOf { it.allCount },
                                    teCount = group.sumOf { it.teCount },

@@ -53,11 +53,12 @@ class IncomeFragment : Fragment() {
         savedInstanceState: Bundle?
     ): View? {
         lifecycleScope.launch {
-            withContext(Dispatchers.IO){
+        withContext(Dispatchers.IO){
+                //appendFunctionality(MainDB.getDB(requireActivity()))
                 //appendDummyData(MainDB.getDB(requireActivity()))
                 //appendMoveDummyData(MainDB.getDB(requireActivity()))
-                appendPickerDummyData(MainDB.getDB(requireActivity()))
-                appendUser(MainDB.getDB(requireActivity()))
+                //appendPickerDummyData(MainDB.getDB(requireActivity()))
+                //appendUser(MainDB.getDB(requireActivity()))
             }
         }
         //viewModel.setCurrFragment(this)
@@ -85,6 +86,66 @@ class IncomeFragment : Fragment() {
 
 
         return  binding.root
+    }
+
+    suspend fun appendFunctionality(db: MainDB) {
+        var cellType  = CellType(
+            id = UUID.randomUUID().toString(),
+            type = "Movement",
+            mask = "",
+            other = null
+        )
+        var opTye  = CellType(
+            id = UUID.randomUUID().toString(),
+            type = "OperationType",
+            mask = "",
+            other = null
+        )
+        var income = Cell(
+            id = UUID.randomUUID().toString(),
+            typeCellId = opTye.id,
+            parentCellId = null,
+            name = "income"
+        )
+        var outcome = Cell(
+            id = UUID.randomUUID().toString(),
+            typeCellId = opTye.id,
+            parentCellId = null,
+            name = "outcome"
+        )
+        var cellLess = Cell(
+            id = UUID.randomUUID().toString(),
+            typeCellId = cellType.id,
+            parentCellId = null,
+            name = "less"
+        )
+        var cellMore = Cell(
+            id = UUID.randomUUID().toString(),
+            typeCellId = cellType.id,
+            parentCellId = null,
+            name = "more"
+        )
+        var cellSplit = Cell(
+            id = UUID.randomUUID().toString(),
+            typeCellId = cellType.id,
+            parentCellId = null,
+            name = "split"
+        )
+        var cellMerge = Cell(
+            id = UUID.randomUUID().toString(),
+            typeCellId = cellType.id,
+            parentCellId = null,
+            name = "merge"
+        )
+        var dao = db.getDao()
+        dao.insertCellType(cellType)
+        dao.insertCellType(opTye)
+        dao.insertCell(income)
+        dao.insertCell(outcome)
+        dao.insertCell(cellLess)
+        dao.insertCell(cellMore)
+        dao.insertCell(cellSplit)
+        dao.insertCell(cellMerge)
     }
 
     private fun appendUser(db: MainDB) {

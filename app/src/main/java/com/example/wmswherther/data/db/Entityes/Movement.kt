@@ -24,5 +24,6 @@ data class Movement(
     val qty: String,
     val userId: Long,
     val executedAt: Long,
-    val operationType: Int
+    val operationType: Int?,
+    val entityId: String?
 )

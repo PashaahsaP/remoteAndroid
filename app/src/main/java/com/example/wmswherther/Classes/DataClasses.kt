@@ -12,6 +12,7 @@ data class IncomeItem(
     var name: String,
     var TE: String,
     var catalogId: String,
+    var goodsId: String,
     var haveCount: Int,
     var allCount: Int,
     var teCount:Int = 0,

@@ -76,6 +76,7 @@ class IncomeSessionFragment : Fragment() {
                                             name = item.name,
                                             TE = item.TE,
                                             catalogId = item.catalogId,
+                                            goodsId = item.goodsId,
                                             haveCount = item.haveCount + 1,
                                             allCount = item.allCount,
                                             teCount = teCount,
@@ -95,6 +96,7 @@ class IncomeSessionFragment : Fragment() {
                                             name = catalog.name,
                                             TE = localViewModel.currentCellName.value.toString(),
                                             catalogId = catalog.id,
+                                            goodsId = "",
                                             haveCount = 1,
                                             allCount = 0,
                                             teCount = if (viewModel.IsIncomeSessionTEModeActive.value == true) 1 else 0,
@@ -135,6 +137,7 @@ class IncomeSessionFragment : Fragment() {
                             name = TE,
                             TE = TE,
                             catalogId = "",
+                            goodsId = "",
                             haveCount = 0,
                             allCount = 0,
                             teCount = 0,
@@ -217,6 +220,7 @@ class IncomeSessionFragment : Fragment() {
                                 name = group.first().name,
                                 TE = group.first().TE,
                                 catalogId = id,
+                                goodsId = group.first().goodsId,
                                 haveCount = group.sumOf { it.haveCount },
                                 allCount = group.sumOf { it.allCount },
                                 teCount = group.sumOf { it.teCount },
@@ -329,6 +333,16 @@ class IncomeSessionFragment : Fragment() {
                 withContext(Dispatchers.Main){
                     localViewModel.updateItems(data)
                     localViewModel.setSelectedItem(0)
+                }
+            }
+
+            binding.btnFinish.setOnClickListener {
+                lifecycleScope.launch {
+                   withContext(Dispatchers.IO) {
+                        localViewModel.finishSession(db = MainDB.getDB(requireActivity()), sessionId.toString())
+
+                    }
+
                 }
             }
 

@@ -138,7 +138,8 @@ class AssemblySessionViewModel : ViewModel() {
                 qty = item.amount.toString(),
                 userId = 1,
                 executedAt = dao.getPickerItemById(item.assemblyItemId).finishedAt!!.toLong(),
-                operationType = OperationType.InsertMovement.ordinal
+                operationType = OperationType.AssemblyMovement.ordinal,
+                entityId = session.id
             )
             val change = Change(
                 id = UUID.randomUUID().toString(),
