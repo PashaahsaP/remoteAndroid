@@ -15,7 +15,10 @@ enum class OperationType {
     UpdateGoods,
     DeleteGoods,
     UpdatePickerSession,
+    UpdateIncomeSession,
     UpdateCell,
     AssemblyMovement,
-    IncomeMovement
+    IncomeMovement,
+    MoreMovement,
+    LessMovement,
 }

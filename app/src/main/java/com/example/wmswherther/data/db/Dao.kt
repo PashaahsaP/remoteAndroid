@@ -76,6 +76,14 @@ interface Dao {
     fun getAllIncomeSession(): List<SessionIncome>
     @Query("SELECT * FROM sessions_income WHERE id =:sessionId")
     suspend fun getIncomeSessionById(sessionId: String): SessionIncome
+    @Update
+    suspend fun updateIncomeSession(session: SessionIncome)
+    @Transaction
+    suspend fun updateIncomeSessionAsync(session: SessionIncome, change: Change) : Pair<Unit, Unit>{
+        val from = updateIncomeSession(session)
+        val to = updateIncomeSessionChanges(change)
+        return from to to
+    }
     // </editor-fold>
     // <editor-fold desc="IncomeItem">
     @Insert
@@ -227,6 +235,8 @@ interface Dao {
     suspend fun updateGoodsChanges(change: Change)
     @Insert
     suspend fun updatePickerSessionChanges(change: Change)
+    @Insert
+    suspend fun updateIncomeSessionChanges(change: Change)
     @Insert
     suspend fun updateCellChanges(change: Change)
     @Delete

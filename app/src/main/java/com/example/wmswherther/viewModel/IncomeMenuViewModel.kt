@@ -19,7 +19,9 @@ class IncomeMenuViewModel : ViewModel() {
             var data: List<TaskMenuItem> = listOf()
                 var dao = db.getDao()
                 var suppliers = dao.getAllSuppliers()
-                dao.getAllIncomeSession().forEach { item ->
+                dao.getAllIncomeSession()
+                    .filter { item -> item.status == 0 }
+                    .forEach { item ->
                     var supplier = suppliers.firstOrNull { inner -> inner.id == item.supplierId }
                     data += TaskMenuItem(
                         supplier = supplier!!.name,

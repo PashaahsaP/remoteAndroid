@@ -14,6 +14,7 @@ import com.example.wmswherther.data.db.Entityes.Barcode
 import com.example.wmswherther.data.db.Entityes.Change
 import com.example.wmswherther.data.db.Entityes.Goods
 import com.example.wmswherther.data.db.Entityes.Movement
+import com.example.wmswherther.data.db.Entityes.SessionIncome
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
@@ -231,73 +232,226 @@ class IncomeSessionViewModel : ViewModel() {
         return db.getDao().getBarcodeByName(barcode)
     }
     suspend fun finishSession(db: MainDB, sessionId: String){
-        // получить goods
-            // получить goods ячейки
         var dao = db.getDao()
         var session = dao.getIncomeSessionById(sessionId)
-        var cellTo = dao.getCellById(session.toCellId.toString())
-        var sessionItems = dao.getAllIncomeItemBySessionId(sessionId)
-        /*var goods = sessionItems.map { item -> dao.getGoodsById(item.goodsId) }
-            // получить те текущей ячейки и все goods к ним
-        var te = dao.getAllCells().filter { te -> te.parentCellId == cellTo.id }
-        te.forEach { inner ->
-            var innerGoods = dao.getGoodsByCellId(inner.id)
-            goods += innerGoods
-        }*/
-        // обновить goods
+
         items.value?.forEach { item ->
-            // если количество равно то обновить статус и добавить movement
             if(item.haveCount == item.allCount){
-                var innerGoods = dao.getGoodsById(item.goodsId)
-                var goodsChange = Change(
-                    id = UUID.randomUUID().toString(),
-                    entityId = innerGoods.id,
-                    operationType = OperationType.UpdateGoods.ordinal,
-                    status = StatusType.Work.ordinal,
-                    supplierId = session.supplierId,
-                    other = null
-                )
-                dao.updateGoodsAsync(innerGoods.copy(isAvailable = true),goodsChange)
-
-                var incomeCell = dao.getCellByName("income")
-                var innerMovement = Movement(
-                    id = UUID.randomUUID().toString(),
-                    cellFromId = incomeCell.id,
-                    cellToId = session.toCellId.toString(),
-                    catalogId = innerGoods.catalogId,
-                    goodsId = innerGoods.id,
-                    qty = innerGoods.amount.toString(),
-                    userId = 1,
-                    executedAt = System.currentTimeMillis(),
-                    operationType = OperationType.IncomeMovement.ordinal,
-                    entityId = sessionId
-                )
+                prepareEqualItem(dao, item, session, sessionId)
             }
-
-            // если количество не равно то создать movement для изменения количества и movement прихода
-
-            else{
-            //  если больше то
-                // создать goods на разницу количества в приемочной ячейке
-                // создать перемещение в More
-                // удалить goods
-                // увеличить количество товара в основном goods
-                // обновить статус goods
-                // создать перемещение
-            //  если меньше то
-                // создать goods на разницу количества в приемочной ячейке
-                // создать перемещение в Less
-                // удалить goods
-                // уменьшить количество товара в основном goods
-                // обновить статус goods
-                // создать перемещение
+            if(item.haveCount > item.allCount){
+                prepareMoreItem(dao, item, session, sessionId)
+            }
+            if(item.haveCount < item.allCount){
+                prepareLessItem(dao, item, session, sessionId)
             }
         }
-
-        // добавить перемещения
-
-        // обновить сессию
+        updateSession(session, dao)
     }
+
+    private suspend fun updateSession(
+        session: SessionIncome,
+        dao: Dao
+    ) {
+        var sessionChange = Change(
+            id = UUID.randomUUID().toString(),
+            entityId = session.id,
+            operationType = OperationType.UpdateIncomeSession.ordinal,
+            status = StatusType.Finished.ordinal,
+            supplierId = session.supplierId,
+            other = null
+        )
+        dao.updateIncomeSessionAsync(
+            session.copy(
+                status = StatusType.Finished.ordinal,
+                finishedAt = System.currentTimeMillis()
+            ), change = sessionChange
+        )
+    }
+
+    private suspend fun prepareLessItem(
+        dao: Dao,
+        item: IncomeItem,
+        session: SessionIncome,
+        sessionId: String
+    ) {
+        var goods = dao.getGoodsById(item.goodsId)
+        // если больше то
+        // создать перемещение в Less
+        var cellLess = dao.getCellByName("less")
+        var diffMove = Movement(
+            id = UUID.randomUUID().toString(),
+            cellFromId = goods.cellId,
+            cellToId = cellLess.id,
+            catalogId = item.catalogId,
+            goodsId = goods.id,
+            qty = (item.allCount - item.haveCount).toString(),
+            userId = 1,
+            executedAt = System.currentTimeMillis(),
+            operationType = OperationType.LessMovement.ordinal,
+            entityId = item.goodsId
+        )
+        var moreChange = Change(
+            id = UUID.randomUUID().toString(),
+            entityId = diffMove.id,
+            operationType = OperationType.IncomeMovement.ordinal,
+            status = StatusType.Work.ordinal,
+            supplierId = session.supplierId,
+            other = null
+        )
+        dao.insertMovementSync(diffMove, moreChange)
+        // увеличить количество товара в основном goods
+        // обновить статус goods
+        var updateGoodsChange = Change(
+            id = UUID.randomUUID().toString(),
+            entityId = item.goodsId,
+            operationType = OperationType.UpdateGoods.ordinal,
+            status = StatusType.Created.ordinal,
+            supplierId = session.supplierId,
+            other = null
+        )
+        dao.updateGoodsAsync(
+            goods.copy(amount = item.haveCount, isAvailable = true),
+            updateGoodsChange
+        )
+
+        // создать перемещение
+        var incomeCell = dao.getCellByName("income")
+        var innerMovement = Movement(
+            id = UUID.randomUUID().toString(),
+            cellFromId = incomeCell.id,
+            cellToId = session.toCellId.toString(),
+            catalogId = item.catalogId,
+            goodsId = item.goodsId,
+            qty = item.haveCount.toString(),
+            userId = 1,
+            executedAt = System.currentTimeMillis(),
+            operationType = OperationType.IncomeMovement.ordinal,
+            entityId = sessionId
+        )
+        var movementChange = Change(
+            id = UUID.randomUUID().toString(),
+            entityId = innerMovement.id,
+            operationType = OperationType.IncomeMovement.ordinal,
+            status = StatusType.Work.ordinal,
+            supplierId = session.supplierId,
+            other = null
+        )
+        dao.insertMovementSync(innerMovement, movementChange)
+    }
+
+    private suspend fun prepareMoreItem(
+        dao: Dao,
+        item: IncomeItem,
+        session: SessionIncome,
+        sessionId: String
+    ) {
+        var goods = dao.getGoodsById(item.goodsId)
+        // если больше то
+        // создать перемещение в More
+        var cellMore = dao.getCellByName("more")
+        var diffMove = Movement(
+            id = UUID.randomUUID().toString(),
+            cellFromId = cellMore.id,
+            cellToId = goods.cellId,
+            catalogId = item.catalogId,
+            goodsId = goods.id,
+            qty = (item.haveCount - item.allCount).toString(),
+            userId = 1,
+            executedAt = System.currentTimeMillis(),
+            operationType = OperationType.MoreMovement.ordinal,
+            entityId = item.goodsId
+        )
+        var moreChange = Change(
+            id = UUID.randomUUID().toString(),
+            entityId = diffMove.id,
+            operationType = OperationType.IncomeMovement.ordinal,
+            status = StatusType.Work.ordinal,
+            supplierId = session.supplierId,
+            other = null
+        )
+        dao.insertMovementSync(diffMove, moreChange)
+        // увеличить количество товара в основном goods
+        // обновить статус goods
+        var updateGoodsChange = Change(
+            id = UUID.randomUUID().toString(),
+            entityId = item.goodsId,
+            operationType = OperationType.UpdateGoods.ordinal,
+            status = StatusType.Created.ordinal,
+            supplierId = session.supplierId,
+            other = null
+        )
+        dao.updateGoodsAsync(
+            goods.copy(amount = item.haveCount, isAvailable = true),
+            updateGoodsChange
+        )
+
+        // создать перемещение
+        var incomeCell = dao.getCellByName("income")
+        var innerMovement = Movement(
+            id = UUID.randomUUID().toString(),
+            cellFromId = incomeCell.id,
+            cellToId = session.toCellId.toString(),
+            catalogId = item.catalogId,
+            goodsId = item.goodsId,
+            qty = item.haveCount.toString(),
+            userId = 1,
+            executedAt = System.currentTimeMillis(),
+            operationType = OperationType.IncomeMovement.ordinal,
+            entityId = sessionId
+        )
+        var movementChange = Change(
+            id = UUID.randomUUID().toString(),
+            entityId = innerMovement.id,
+            operationType = OperationType.IncomeMovement.ordinal,
+            status = StatusType.Work.ordinal,
+            supplierId = session.supplierId,
+            other = null
+        )
+        dao.insertMovementSync(innerMovement, movementChange)
+    }
+
+    private suspend fun prepareEqualItem(
+        dao: Dao,
+        item: IncomeItem,
+        session: SessionIncome,
+        sessionId: String
+    ) {
+        var innerGoods = dao.getGoodsById(item.goodsId)
+        var goodsChange = Change(
+            id = UUID.randomUUID().toString(),
+            entityId = innerGoods.id,
+            operationType = OperationType.UpdateGoods.ordinal,
+            status = StatusType.Work.ordinal,
+            supplierId = session.supplierId,
+            other = null
+        )
+        dao.updateGoodsAsync(innerGoods.copy(isAvailable = true), goodsChange)
+
+        var incomeCell = dao.getCellByName("income")
+        var innerMovement = Movement(
+            id = UUID.randomUUID().toString(),
+            cellFromId = incomeCell.id,
+            cellToId = session.toCellId.toString(),
+            catalogId = innerGoods.catalogId,
+            goodsId = innerGoods.id,
+            qty = innerGoods.amount.toString(),
+            userId = 1,
+            executedAt = System.currentTimeMillis(),
+            operationType = OperationType.IncomeMovement.ordinal,
+            entityId = sessionId
+        )
+        var movementChange = Change(
+            id = UUID.randomUUID().toString(),
+            entityId = innerMovement.id,
+            operationType = OperationType.IncomeMovement.ordinal,
+            status = StatusType.Work.ordinal,
+            supplierId = session.supplierId,
+            other = null
+        )
+        dao.insertMovementSync(innerMovement, movementChange)
+    }
+
     fun setSelection(checked: Boolean) {
         var list: MutableList<IncomeItem> = mutableListOf()
         if (checked){
