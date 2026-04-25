@@ -556,13 +556,18 @@ class MainActivity : AppCompatActivity() {
                         var scanBtn = popupView.findViewById<Button>(R.id.btnScanningMode)
                         var selectBtn = popupView.findViewById<Button>(R.id.btnSelectAll)
                         var deselectBtn = popupView.findViewById<Button>(R.id.btnDeselectAll)
-
+                        var btnFinishSession = popupView.findViewById<Button>(R.id.btnFinishSession)
                         val popupWindow = PopupWindow(
                             popupView,
                             WindowManager.LayoutParams.WRAP_CONTENT,
                             WindowManager.LayoutParams.WRAP_CONTENT,
                             true
                         )
+
+                        btnFinishSession.setOnClickListener { view ->
+                            viewModel.switchIncomeSessionActivity()
+                            viewModel.switchIncomeSessionActivity()
+                        }
                         scanBtn.setOnClickListener { view ->
                             viewModel.setActiveUi(state.copy(
                                 isBarcodeFieldActive = !state.isBarcodeFieldActive,

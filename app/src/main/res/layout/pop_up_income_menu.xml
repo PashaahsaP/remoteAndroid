@@ -34,6 +34,15 @@
         android:background="@android:color/transparent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/btnSelectAll" />
+    <Button
+        android:id="@+id/btnFinishSession"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Finish"
+        android:textColor="@color/regularBlue"
+        android:background="@android:color/transparent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/btnDeselectAll" />
 
 
 </androidx.constraintlayout.widget.ConstraintLayout>

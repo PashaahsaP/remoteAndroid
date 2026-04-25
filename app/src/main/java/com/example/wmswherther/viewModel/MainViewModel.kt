@@ -11,6 +11,7 @@ class MainViewModel : ViewModel() {
     private val _uiState = MutableLiveData<UiState>(UiState.MainMenu())
     val uiState: LiveData<UiState> = _uiState
 
+    private val _isFinishIncomeSession = MutableLiveData<Boolean>(false)
     private val _isActiveSession = MutableLiveData<Boolean>(true)
     private val _mainActivityBinding = MutableLiveData<ActivityMainBinding>()
     private val _isScanningActive = MutableLiveData<Boolean>(false)
@@ -29,7 +30,7 @@ class MainViewModel : ViewModel() {
     private  val _exitFromSession = MutableLiveData<Boolean>(false)
    // private val _moveSupplierId = MutableLiveData<String>(null)
 
-
+    val IsFinishIncomeSession: LiveData<Boolean> get() = _isFinishIncomeSession
     val WidthScanningField: LiveData<Int> get() = _widhtScanningField
     val IsActiveSession: LiveData<Boolean> get() = _isActiveSession
     val IsScanningActive: LiveData<Boolean> get() = _isScanningActive
@@ -47,7 +48,9 @@ class MainViewModel : ViewModel() {
     val ExitFromSession: LiveData<Boolean> get() = _exitFromSession
 
   //  val MoveSupplierId: LiveData<String> get() = _moveSupplierId
-
+    fun switchIncomeSessionActivity(){
+      _isFinishIncomeSession.value = !_isFinishIncomeSession.value!!
+    }
     fun switchAssemblySessionActivity(){
         _isFinishedAssemblySession.value = !_isFinishedAssemblySession.value!!
     }

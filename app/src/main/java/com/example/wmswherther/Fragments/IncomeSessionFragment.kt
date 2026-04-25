@@ -5,7 +5,9 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.EditText
 import androidx.activity.addCallback
+import androidx.appcompat.app.AlertDialog
 import androidx.core.content.ContextCompat
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
@@ -264,6 +266,44 @@ class IncomeSessionFragment : Fragment() {
             })
             viewModel.IsSelectedIncomeList.observe(viewLifecycleOwner, {flag : Boolean->
                 localViewModel.setSelection(flag)
+            })
+            viewModel.IsFinishIncomeSession.observe(viewLifecycleOwner, { status ->
+                if(status &&  localViewModel.IsOverCounter.value != true) {
+                    val dialogNotification = AlertDialog.Builder(requireActivity())
+                        .setTitle("Предупреждение")
+                        .setMessage("Есть не отсканированный товар. Уверены что хотите завершить приёмку")
+                        .setPositiveButton("Да") { _, _ ->
+                            lifecycleScope.launch {
+                                withContext(Dispatchers.IO){
+                                    localViewModel.finishSession(
+                                        db = MainDB.getDB(requireActivity()),
+                                        sessionId = sessionId.toString()
+                                    )
+                                }
+                                withContext(Dispatchers.Main){
+                                    requireActivity().onBackPressedDispatcher.onBackPressed()
+                                }
+                            }
+                        }
+                        .setNegativeButton("Нет", null)
+                        .create()
+
+                    dialogNotification.show()
+                }
+                if(status) {
+                    lifecycleScope.launch {
+                        withContext(Dispatchers.IO){
+                            localViewModel.finishSession(
+                                db = MainDB.getDB(requireActivity()),
+                                sessionId = sessionId.toString()
+                            )
+                        }
+                        withContext(Dispatchers.Main){
+                            requireActivity().onBackPressedDispatcher.onBackPressed()
+                        }
+                    }
+                }
+
             })
             localViewModel.CurrentCountOfCount.observe(viewLifecycleOwner, {counter ->
                 binding.tvLineCounter.text = "${counter.toString()}  /"
