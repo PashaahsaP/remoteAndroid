@@ -132,15 +132,17 @@ class MoveRepository(
     }
 
     suspend fun moveCellToCell(item: MoveSessionItem, cellTo: Cell, dao: Dao, viewModel: MainViewModel) {
-        var changes = Change(
-            id = UUID.randomUUID().toString(),
-            entityId = item.catalogId,
-            operationType = OperationType.UpdateCell.ordinal,
-            status = StatusType.Created.ordinal,
-            supplierId = (viewModel.uiState.value as UiState.MoveSessionMenu).supplierId,
-            other = null
-        )
-        var cell = dao.getCellById(item.catalogId)
-        dao.updateCellAsync(cell.copy(parentCellId = cellTo.id), changes)
+        if(item.haveCount == 1) { // ячейка выбрана поэтому 1, больше 1 быть не может
+            var changes = Change(
+                id = UUID.randomUUID().toString(),
+                entityId = item.catalogId,
+                operationType = OperationType.UpdateCell.ordinal,
+                status = StatusType.Created.ordinal,
+                supplierId = (viewModel.uiState.value as UiState.MoveSessionMenu).supplierId,
+                other = null
+            )
+            var cell = dao.getCellById(item.catalogId)
+            dao.updateCellAsync(cell.copy(parentCellId = cellTo.id), changes)
+        }
     }
 }

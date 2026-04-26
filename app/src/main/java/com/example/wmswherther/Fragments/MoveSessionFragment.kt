@@ -93,7 +93,8 @@ class MoveSessionFragment: Fragment() {
                         }
                     }
                 } else {
-                    localViewModel.changeList(barcode, dao)
+                    if(barcode != null)
+                        localViewModel.changeList(barcode, dao)
                     //TODO шк тут надо, НАЙТИ в бд и ...
                 }
             }

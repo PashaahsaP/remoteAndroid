@@ -54,11 +54,11 @@ class IncomeFragment : Fragment() {
     ): View? {
         lifecycleScope.launch {
         withContext(Dispatchers.IO){
-                //appendFunctionality(MainDB.getDB(requireActivity()))
+                appendFunctionality(MainDB.getDB(requireActivity()))
                 //appendDummyData(MainDB.getDB(requireActivity()))
-                //appendMoveDummyData(MainDB.getDB(requireActivity()))
+                appendMoveDummyData(MainDB.getDB(requireActivity()))
                 //appendPickerDummyData(MainDB.getDB(requireActivity()))
-                //appendUser(MainDB.getDB(requireActivity()))
+                appendUser(MainDB.getDB(requireActivity()))
             }
         }
         //viewModel.setCurrFragment(this)
