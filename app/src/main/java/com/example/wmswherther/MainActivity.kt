@@ -567,6 +567,7 @@ class MainActivity : AppCompatActivity() {
                         btnFinishSession.setOnClickListener { view ->
                             viewModel.switchIncomeSessionActivity()
                             viewModel.switchIncomeSessionActivity()
+                            popupWindow.dismiss()
                         }
                         scanBtn.setOnClickListener { view ->
                             viewModel.setActiveUi(state.copy(
