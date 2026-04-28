@@ -5,6 +5,7 @@ import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import com.example.wmsRemote.data.db.MainDB
 import com.example.wmswherther.Classes.TaskMenuItem
+import com.example.wmswherther.data.db.Repositories.IncomeRepository
 import java.time.LocalDate
 
 class IncomeMenuViewModel : ViewModel() {
@@ -15,24 +16,11 @@ class IncomeMenuViewModel : ViewModel() {
         _tasksList.value = list
     }
 
-    fun updateSupplierList(db : MainDB) : List<TaskMenuItem>{
-            var data: List<TaskMenuItem> = listOf()
-                var dao = db.getDao()
-                var suppliers = dao.getAllSuppliers()
-                dao.getAllIncomeSession()
-                    .filter { item -> item.status == 0 }
-                    .forEach { item ->
-                    var supplier = suppliers.firstOrNull { inner -> inner.id == item.supplierId }
-                    data += TaskMenuItem(
-                        supplier = supplier!!.name,
-                        progress = "0/1",
-                        number = item.id,
-                        date = LocalDate.now().toString(),
-                        supplierId = supplier!!.id,
-                        sessionId = supplier!!.id
+    fun updateSupplierList(incomeRepo: IncomeRepository) : List<TaskMenuItem>{
+        var data: List<TaskMenuItem> = listOf()
 
-                    )
-                }
+        data = incomeRepo.getAllActiveIncomeSession()
+
         return data
     }
 

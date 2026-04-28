@@ -14,7 +14,10 @@ import java.util.UUID
 class MoveRepository(
     private val dao: Dao
 ) {
-    suspend  fun createGoodsInDestinationCell(dao: Dao, item: MoveSessionItem, cellTo: Cell, viewModel: MainViewModel) {
+    suspend  fun createGoodsInDestinationCell(
+        item: MoveSessionItem,
+        cellTo: Cell,
+        viewModel: MainViewModel) {
         var goods : Goods = createGoods(item.catalogId, item.haveCount, cellTo)
         var changes = createChangeForGoods(goods.id, viewModel, OperationType.InsertGoods)
         dao.insertGoodsAsync(goods,changes)
@@ -64,11 +67,9 @@ class MoveRepository(
         dao.updateGoodsAsync(destinationGoods.copy(amount = item.haveCount + destinationGoods.amount), destinationChange)
     }
     suspend fun moveGoodsToCell(
-        dao: Dao,
         item: MoveSessionItem,
         allGoods: List<Goods>,
         cellTo: Cell,
-        moveRepo: MoveRepository,
         viewModel: MainViewModel
     ) {
 
@@ -77,16 +78,16 @@ class MoveRepository(
             .filter { goodsItem -> goodsItem.cellId == cellTo.id && goodsItem.catalogId == catalog.id }
         // update db
         if (listOfGoodsInCellTo.isEmpty() && item.haveCount != 0) {
-            moveRepo.createGoodsInDestinationCell(dao, item, cellTo, viewModel)
-            moveRepo.updateOrRemoveGoodsInSource(item, viewModel, dao)
+            createGoodsInDestinationCell(item, cellTo, viewModel)
+            updateOrRemoveGoodsInSource(item, viewModel, dao)
         } else if (listOfGoodsInCellTo.isNotEmpty() && item.haveCount != 0) {
-            moveRepo.updateGoodsInDestinationCell(
+            updateGoodsInDestinationCell(
                 allGoods,
                 item,
                 viewModel,
                 dao
             )
-            moveRepo.updateOrRemoveGoodsInSource(item, viewModel, dao)
+            updateOrRemoveGoodsInSource(item, viewModel, dao)
         }
 
     }
@@ -107,7 +108,9 @@ class MoveRepository(
         supplierId = (viewModel.uiState.value as UiState.MoveSessionMenu).supplierId,
         other = null
     )
-     suspend fun getCell(dao: Dao, barcode: String, viewModel: MainViewModel, sourceCellName: String): Cell {
+    suspend fun getCell(barcode: String,
+                        viewModel: MainViewModel,
+                        sourceCellName: String): Cell {
         var cell = dao.getCellByName(barcode)
         if (cell == null) {
             var curCell = dao.getCellByName(sourceCellName) // откуда идет перемещение
@@ -131,7 +134,9 @@ class MoveRepository(
         return cell
     }
 
-    suspend fun moveCellToCell(item: MoveSessionItem, cellTo: Cell, dao: Dao, viewModel: MainViewModel) {
+    suspend fun moveCellToCell(item: MoveSessionItem,
+                               cellTo: Cell, dao: Dao,
+                               viewModel: MainViewModel) {
         if(item.haveCount == 1) { // ячейка выбрана поэтому 1, больше 1 быть не может
             var changes = Change(
                 id = UUID.randomUUID().toString(),

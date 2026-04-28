@@ -6,7 +6,6 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.wmsRemote.data.db.Dao
 import com.example.wmswherther.data.db.Entityes.Cell
-import com.example.wmsRemote.data.db.MainDB
 import com.example.wmsRemote.data.enums.OperationType
 import com.example.wmsRemote.data.enums.StatusType
 import com.example.wmswherther.Classes.IncomeItem
@@ -15,6 +14,9 @@ import com.example.wmswherther.data.db.Entityes.Change
 import com.example.wmswherther.data.db.Entityes.Goods
 import com.example.wmswherther.data.db.Entityes.Movement
 import com.example.wmswherther.data.db.Entityes.SessionIncome
+import com.example.wmswherther.data.db.Repositories.IncomeRepository
+import com.example.wmswherther.data.factory.ChangeFactory
+import com.example.wmswherther.data.factory.MovementFactory
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
@@ -24,63 +26,31 @@ class IncomeSessionViewModel : ViewModel() {
     private val _items = MutableLiveData<List<IncomeItem>>()
     private val _selectedItem = MutableLiveData<Int>()
     private  val _currentCellName = MutableLiveData<String>()
-
-
-    private  val _currentLineCount = MutableLiveData<Int>()
-    private  val _lineCount = MutableLiveData<Int>()
     private  val _currentCountOfCount = MutableLiveData<Int>()
     private  val _countOfCount = MutableLiveData<Int>()
     private  val _isOverCounter = MutableLiveData<Boolean>()
     private  val _finish = MutableLiveData<Boolean>()
 
     val items: LiveData<List<IncomeItem>> get() = _items
-    val selectedItem: LiveData<Int> get() = _selectedItem
     val currentCellName: LiveData<String> get() = _currentCellName
-    val CurrentLineCount: LiveData<Int> get() = _currentLineCount
-    val LineCount: LiveData<Int> get() = _lineCount
     val CurrentCountOfCount: LiveData<Int> get() = _currentCountOfCount
     val CountOfCount: LiveData<Int> get() = _countOfCount
     val IsOverCounter: LiveData<Boolean> get() = _isOverCounter
     val IsFinish: LiveData<Boolean> get() = _finish
-
     val stack: ArrayDeque<List<IncomeItem>> = ArrayDeque()
     val cellStack: ArrayDeque<String> = ArrayDeque()
 
     fun setCounterValidation(isOverFlag: Boolean){
         _isOverCounter.value = isOverFlag
     }
-    fun getCounterValidation() : Boolean?{
-        return _isOverCounter.value
-    }
     fun setFinishValidation(isOverFlag: Boolean){
         _finish.value = isOverFlag
-    }
-    fun getFinishValidation() : Boolean?{
-        return _finish.value
-    }
-    fun setCurLineCount(count: Int){
-        _currentLineCount.value = count
-    }
-    fun getCurLineCount() : Int{
-        return CurrentLineCount.value!!.toInt()
-    }
-    fun setLineCount(count: Int){
-        _lineCount.value = count
-    }
-    fun getLineCount() : Int{
-        return LineCount.value!!.toInt()
     }
     fun setCurCountOfCount(count: Int){
         _currentCountOfCount.value = count
     }
-    fun getCurCountOfCount() : Int{
-        return CurrentCountOfCount.value!!.toInt()
-    }
     fun setCountOfCount(count: Int){
         _countOfCount.value = count
-    }
-    fun getCountOfCount() : Int{
-        return _countOfCount.value!!.toInt()
     }
     fun updateItems(items: List<IncomeItem>){
         var sortedCollection : MutableList<IncomeItem> = mutableListOf()
@@ -139,12 +109,12 @@ class IncomeSessionViewModel : ViewModel() {
     fun setCellName(cellName: String){
         _currentCellName.value = cellName
     }
-    fun updateCollection(db : MainDB, barcode: String?){
+    fun updateCollection(incomeRepo: IncomeRepository, barcode: String?){
         var barcoded = Barcode("","","","","")
         viewModelScope.launch {
             var result : List<IncomeItem> = mutableListOf()
             withContext(Dispatchers.IO) {
-                barcoded = getBarcode(db, if (barcode == null) "" else barcode)
+                barcoded = incomeRepo.getBarcodeByName(if (barcode == null) "" else barcode)
 
             }
             withContext(Dispatchers.Main){
@@ -165,22 +135,18 @@ class IncomeSessionViewModel : ViewModel() {
             }
         }
     }
-    suspend fun loadItems (db : MainDB, sessionId: String) : List<IncomeItem>{
-        var dao = db.getDao()
-
+    suspend fun loadItems (incomeRepo: IncomeRepository, sessionId: String) : List<IncomeItem>{
         var listOfGoods: List<Pair<Goods, Cell>> = listOf()
-        listOfGoods = dao.getAllIncomeItem()
-            .filter { item -> item.sessionId == sessionId}
-            .map { item ->  dao.getGoodsById(item.goodsId) }
-            .map { inner -> Pair(inner, dao.getCellById(inner.cellId)) }
+        listOfGoods = incomeRepo.getGoodsAndTheirCells(sessionId)
+
 
         var result : List<IncomeItem> = listOf()
         var previousCellId: String = ""
         var counter: Int = 0
         for (item in listOfGoods){
-            var catalog = dao.getCatalogById(item.first.catalogId)
-            if (isTE(item.second.name, dao)){
-                var parentCell = dao.getCellById(item.second.parentCellId.toString())
+            var catalog = incomeRepo.getCatalogById(item.first.catalogId)
+            if (isTE(item.second.name, incomeRepo)){
+                var parentCell = incomeRepo.getCellById(item.second.parentCellId.toString())
                 var isShown = if(parentCell.name.contains("IN")) true else false
                 if(item.second.id != previousCellId){
                     previousCellId = item.second.id
@@ -188,7 +154,7 @@ class IncomeSessionViewModel : ViewModel() {
                         name =  item.second.name,
                         TE = if(isShown) item.second.name else "",
                         catalogId = "",
-                        goodsId = item.first.id,
+                        goodsId = "",
                         allCount = item.first.amount,
                         haveCount = 0,
                         isExpandable = true,
@@ -228,228 +194,205 @@ class IncomeSessionViewModel : ViewModel() {
 
         return  result
     }
-    suspend fun getBarcode(db : MainDB, barcode: String) : Barcode {
-        return db.getDao().getBarcodeByName(barcode)
-    }
-    suspend fun finishSession(db: MainDB, sessionId: String){
-        var dao = db.getDao()
-        var session = dao.getIncomeSessionById(sessionId)
+    suspend fun finishSession(incomeRepo: IncomeRepository, sessionId: String){
+        var session = incomeRepo.getIncomeSessionById(sessionId)
 
+        prepareIncomeItem(incomeRepo, session, sessionId)
+        updateSession(session, incomeRepo)
+    }
+
+    private suspend fun prepareIncomeItem(
+        incomeRepo: IncomeRepository,
+        session: SessionIncome,
+        sessionId: String
+    ) {
         items.value?.forEach { item ->
-            if(item.haveCount == item.allCount){
-                prepareEqualItem(dao, item, session, sessionId)
+
+            if (item.haveCount == item.allCount && item.catalogId != "") {
+                prepareEqualItem(incomeRepo, item, session, sessionId)
             }
-            if(item.haveCount > item.allCount){
-                prepareMoreItem(dao, item, session, sessionId)
+            if (item.haveCount > item.allCount && item.catalogId != "") {
+                prepareMoreItem(incomeRepo, item, session, sessionId)
             }
-            if(item.haveCount < item.allCount){
-                prepareLessItem(dao, item, session, sessionId)
+            if (item.haveCount < item.allCount && item.catalogId != "") {
+                prepareLessItem(incomeRepo, item, session, sessionId)
             }
         }
-        updateSession(session, dao)
     }
 
     private suspend fun updateSession(
         session: SessionIncome,
-        dao: Dao
+        incomeRepo: IncomeRepository
     ) {
-        var sessionChange = Change(
-            id = UUID.randomUUID().toString(),
+        var sessionChange = ChangeFactory.create(
             entityId = session.id,
-            operationType = OperationType.UpdateIncomeSession.ordinal,
-            status = StatusType.Finished.ordinal,
-            supplierId = session.supplierId,
-            other = null
+            supplierId = session.supplierId.toString(),
+            operationType = OperationType.UpdateIncomeSession
         )
-        dao.updateIncomeSessionAsync(
-            session.copy(
-                status = StatusType.Finished.ordinal,
-                finishedAt = System.currentTimeMillis()
-            ), change = sessionChange
+
+        incomeRepo.updateIncomeSessionAsync(
+            session.copy(status = StatusType.Finished.ordinal, finishedAt = System.currentTimeMillis()),
+            change = sessionChange
         )
     }
 
     private suspend fun prepareLessItem(
-        dao: Dao,
+        incomeRepo: IncomeRepository,
         item: IncomeItem,
         session: SessionIncome,
         sessionId: String
     ) {
-        var goods = dao.getGoodsById(item.goodsId)
+        var goods = incomeRepo.getGoodsById(item.goodsId)
         // если больше то
         // создать перемещение в Less
-        var cellLess = dao.getCellByName("less")
-        var diffMove = Movement(
-            id = UUID.randomUUID().toString(),
+        var cellLess = incomeRepo.getCellByName("less")
+        var diffMove = MovementFactory.create(
             cellFromId = goods.cellId,
             cellToId = cellLess.id,
             catalogId = item.catalogId,
             goodsId = goods.id,
             qty = (item.allCount - item.haveCount).toString(),
-            userId = 1,
-            executedAt = System.currentTimeMillis(),
-            operationType = OperationType.LessMovement.ordinal,
+            operationType = OperationType.LessMovement,
             entityId = item.goodsId
         )
-        var moreChange = Change(
-            id = UUID.randomUUID().toString(),
+        var moreChange = ChangeFactory.create(
             entityId = diffMove.id,
-            operationType = OperationType.IncomeMovement.ordinal,
-            status = StatusType.Work.ordinal,
-            supplierId = session.supplierId,
-            other = null
+            supplierId = session.supplierId.toString(),
+            operationType = OperationType.IncomeMovement
         )
-        dao.insertMovementSync(diffMove, moreChange)
+
+        incomeRepo.insertMovementAsync(diffMove, moreChange)
         // увеличить количество товара в основном goods
         // обновить статус goods
-        var updateGoodsChange = Change(
-            id = UUID.randomUUID().toString(),
+        var updateGoodsChange = ChangeFactory.create(
             entityId = item.goodsId,
-            operationType = OperationType.UpdateGoods.ordinal,
-            status = StatusType.Created.ordinal,
-            supplierId = session.supplierId,
-            other = null
+            supplierId = session.supplierId.toString(),
+            operationType = OperationType.UpdateGoods
         )
-        dao.updateGoodsAsync(
+        incomeRepo.updateGoodsAsync(
             goods.copy(amount = item.haveCount, isAvailable = true),
             updateGoodsChange
         )
 
         // создать перемещение
-        var incomeCell = dao.getCellByName("income")
-        var innerMovement = Movement(
-            id = UUID.randomUUID().toString(),
-            cellFromId = incomeCell.id,
-            cellToId = session.toCellId.toString(),
-            catalogId = item.catalogId,
-            goodsId = item.goodsId,
-            qty = item.haveCount.toString(),
-            userId = 1,
-            executedAt = System.currentTimeMillis(),
-            operationType = OperationType.IncomeMovement.ordinal,
-            entityId = sessionId
-        )
-        var movementChange = Change(
-            id = UUID.randomUUID().toString(),
-            entityId = innerMovement.id,
-            operationType = OperationType.IncomeMovement.ordinal,
-            status = StatusType.Work.ordinal,
-            supplierId = session.supplierId,
-            other = null
-        )
-        dao.insertMovementSync(innerMovement, movementChange)
+        // если количество равно 0 то удалить goods
+        if (item.haveCount == 0) {
+            var removeChange = ChangeFactory.create(
+                entityId = goods.id,
+                supplierId = session.id,
+                operationType = OperationType.DeleteGoods
+            )
+            incomeRepo.deleteGoodsAsync(goods = goods, change = removeChange)
+        } else {
+            var incomeCell = incomeRepo.getCellByName("income")
+            var innerMovement = MovementFactory.create(
+                cellFromId = incomeCell.id,
+                cellToId = session.toCellId.toString(),
+                catalogId = item.catalogId,
+                goodsId = item.goodsId,
+                qty = item.haveCount.toString(),
+                operationType = OperationType.IncomeMovement,
+                entityId = sessionId
+            )
+            var movementChange = ChangeFactory.create(
+                entityId = innerMovement.id,
+                supplierId = session.supplierId.toString(),
+                operationType = OperationType.IncomeMovement
+            )
+            incomeRepo.insertMovementAsync(innerMovement, movementChange)
+        }
     }
 
     private suspend fun prepareMoreItem(
-        dao: Dao,
+        incomeRepo: IncomeRepository,
         item: IncomeItem,
         session: SessionIncome,
         sessionId: String
     ) {
-        var goods = dao.getGoodsById(item.goodsId)
+        var goods = incomeRepo.getGoodsById(item.goodsId)
         // если больше то
         // создать перемещение в More
-        var cellMore = dao.getCellByName("more")
-        var diffMove = Movement(
-            id = UUID.randomUUID().toString(),
+        var cellMore = incomeRepo.getCellByName("more")
+        var diffMove = MovementFactory.create(
             cellFromId = cellMore.id,
             cellToId = goods.cellId,
             catalogId = item.catalogId,
             goodsId = goods.id,
             qty = (item.haveCount - item.allCount).toString(),
-            userId = 1,
-            executedAt = System.currentTimeMillis(),
-            operationType = OperationType.MoreMovement.ordinal,
+            operationType = OperationType.MoreMovement,
             entityId = item.goodsId
         )
-        var moreChange = Change(
-            id = UUID.randomUUID().toString(),
+
+        var moreChange = ChangeFactory.create(
             entityId = diffMove.id,
-            operationType = OperationType.IncomeMovement.ordinal,
-            status = StatusType.Work.ordinal,
-            supplierId = session.supplierId,
-            other = null
+            supplierId = session.supplierId.toString(),
+            operationType = OperationType.IncomeMovement
         )
-        dao.insertMovementSync(diffMove, moreChange)
+        incomeRepo.insertMovementAsync(diffMove, moreChange)
+
         // увеличить количество товара в основном goods
         // обновить статус goods
-        var updateGoodsChange = Change(
-            id = UUID.randomUUID().toString(),
+        var updateGoodsChange = ChangeFactory.create(
             entityId = item.goodsId,
-            operationType = OperationType.UpdateGoods.ordinal,
-            status = StatusType.Created.ordinal,
-            supplierId = session.supplierId,
-            other = null
+            supplierId = session.supplierId.toString(),
+            operationType = OperationType.UpdateGoods
         )
-        dao.updateGoodsAsync(
+        incomeRepo.updateGoodsAsync(
             goods.copy(amount = item.haveCount, isAvailable = true),
             updateGoodsChange
         )
 
         // создать перемещение
-        var incomeCell = dao.getCellByName("income")
-        var innerMovement = Movement(
-            id = UUID.randomUUID().toString(),
+        var incomeCell = incomeRepo.getCellByName("income")
+        var innerMovement = MovementFactory.create(
             cellFromId = incomeCell.id,
             cellToId = session.toCellId.toString(),
             catalogId = item.catalogId,
             goodsId = item.goodsId,
             qty = item.haveCount.toString(),
-            userId = 1,
-            executedAt = System.currentTimeMillis(),
-            operationType = OperationType.IncomeMovement.ordinal,
+            operationType = OperationType.IncomeMovement,
             entityId = sessionId
         )
-        var movementChange = Change(
-            id = UUID.randomUUID().toString(),
+
+        var movementChange = ChangeFactory.create(
             entityId = innerMovement.id,
-            operationType = OperationType.IncomeMovement.ordinal,
-            status = StatusType.Work.ordinal,
-            supplierId = session.supplierId,
-            other = null
+            supplierId = session.supplierId.toString(),
+            operationType = OperationType.IncomeMovement
         )
-        dao.insertMovementSync(innerMovement, movementChange)
+        incomeRepo.insertMovementAsync(innerMovement, movementChange)
     }
 
     private suspend fun prepareEqualItem(
-        dao: Dao,
+        incomeRepo: IncomeRepository,
         item: IncomeItem,
         session: SessionIncome,
         sessionId: String
     ) {
-        var innerGoods = dao.getGoodsById(item.goodsId)
-        var goodsChange = Change(
-            id = UUID.randomUUID().toString(),
-            entityId = innerGoods.id,
-            operationType = OperationType.UpdateGoods.ordinal,
-            status = StatusType.Work.ordinal,
-            supplierId = session.supplierId,
-            other = null
-        )
-        dao.updateGoodsAsync(innerGoods.copy(isAvailable = true), goodsChange)
+        var innerGoods = incomeRepo.getGoodsById(item.goodsId)
+        var goodsChange = ChangeFactory.create(
+            innerGoods.id,
+            session.supplierId.toString(),
+            OperationType.UpdateGoods)
+        incomeRepo.updateGoodsAsync(innerGoods.copy(isAvailable = true, amount = innerGoods.amount), goodsChange)
 
-        var incomeCell = dao.getCellByName("income")
-        var innerMovement = Movement(
-            id = UUID.randomUUID().toString(),
+        var incomeCell = incomeRepo.getCellByName("income")
+        var innerMovement = MovementFactory.create(
             cellFromId = incomeCell.id,
             cellToId = session.toCellId.toString(),
             catalogId = innerGoods.catalogId,
             goodsId = innerGoods.id,
             qty = innerGoods.amount.toString(),
-            userId = 1,
-            executedAt = System.currentTimeMillis(),
-            operationType = OperationType.IncomeMovement.ordinal,
+            operationType = OperationType.IncomeMovement,
             entityId = sessionId
         )
-        var movementChange = Change(
-            id = UUID.randomUUID().toString(),
+
+        var movementChange = ChangeFactory.create(
             entityId = innerMovement.id,
-            operationType = OperationType.IncomeMovement.ordinal,
-            status = StatusType.Work.ordinal,
-            supplierId = session.supplierId,
-            other = null
+            supplierId = session.supplierId.toString(),
+            operationType = OperationType.IncomeMovement
         )
-        dao.insertMovementSync(innerMovement, movementChange)
+
+        incomeRepo.insertMovementAsync(innerMovement, movementChange)
     }
 
     fun setSelection(checked: Boolean) {
@@ -464,8 +407,9 @@ class IncomeSessionViewModel : ViewModel() {
             updateItems(list)
         }
     }
-    suspend private fun isTE(cell: String, dao: Dao): Boolean {
-        val cells = dao.getCellTypes().filter { cellType -> cellType.type == "BoxTE" }
+    suspend private fun isTE(cell: String, incomeRepo: IncomeRepository): Boolean {
+
+        val cells = incomeRepo.getTETypes()
 
         return cells.any { cellType ->
             val mask = cellType.mask ?: return@any false

@@ -21,6 +21,7 @@ import com.example.wmswherther.Adapters.IncomeSessionAdapter
 import com.example.wmswherther.Classes.IncomeItem
 import com.example.wmswherther.Classes.UiState
 import com.example.wmswherther.data.db.Entityes.Barcode
+import com.example.wmswherther.data.db.Repositories.IncomeRepository
 import com.example.wmswherther.viewModel.IncomeSessionViewModel
 import com.example.wmswherther.viewModel.MainViewModel
 import kotlinx.coroutines.Dispatchers
@@ -35,17 +36,12 @@ class IncomeSessionFragment : Fragment() {
         private val viewModel: MainViewModel by activityViewModels()
         private val localViewModel: IncomeSessionViewModel by activityViewModels()
 
-
         override fun onCreateView(
             inflater: LayoutInflater,
             container: ViewGroup?,
             savedInstanceState: Bundle?
         ): View? {
-            //val localViewModel = ViewModelProvider(requireActivity()).get(IncomeSessionViewModel::class)
             _binding = FragmentIncomeSessionBinding.inflate(inflater, container, false)
-            //viewModel.setCurrFragment(this)
-
-
             var recyclerView: RecyclerView = binding.rwIncomeSessionList
             var adapterCollection = mutableListOf<IncomeItem>()
             if( localViewModel.items.value != null){
@@ -55,16 +51,16 @@ class IncomeSessionFragment : Fragment() {
             recyclerView.layoutManager = LinearLayoutManager(requireActivity())
             recyclerView.adapter = adapter
             val sessionId = arguments?.getString("id")
+            var incomeRepo = IncomeRepository(MainDB.getDB(requireActivity()).getDao())
 
             viewModel.Barcode.observe(viewLifecycleOwner, { barcode ->
                 //TODO сделать чтобы была сортировка по те, количеству и прочему перед добавлением
                 //TODO  Если нажал ТЕ надо сделать чтобы можно было отменить добавление товара в те.
-                //if(barcode != "" && viewModel.IsActiveSearchWindow.value == false) {
                 if(barcode != "" && viewModel.uiState.value is UiState.IncomeSessionMenu) {
                     lifecycleScope.launch {
                         var newItems: List<IncomeItem> = listOf()
-                        var bar =
-                            MainDB.getDB(requireActivity()).getDao().getBarcodeByName(barcode)
+                        var bar = incomeRepo.getBarcodeByName(barcode)
+
                         if (bar != null && bar is Barcode) {
                             var isAdded = false
                             withContext(Dispatchers.IO) {
@@ -93,7 +89,7 @@ class IncomeSessionFragment : Fragment() {
 
                                 }
                                 if(!isAdded){
-                                    var catalog = MainDB.getDB(requireActivity()).getDao().getCatalogById(bar.catalogId)
+                                    var catalog = incomeRepo.getCatalogById(bar.catalogId)
                                     if (catalog != null){
                                         newItems += IncomeItem(
                                             name = catalog.name,
@@ -268,42 +264,42 @@ class IncomeSessionFragment : Fragment() {
                 localViewModel.setSelection(flag)
             })
             viewModel.IsFinishIncomeSession.observe(viewLifecycleOwner, { status ->
-                if(status &&  localViewModel.IsOverCounter.value != true) {
-                    val dialogNotification = AlertDialog.Builder(requireActivity())
-                        .setTitle("Предупреждение")
-                        .setMessage("Есть не отсканированный товар. Уверены что хотите завершить приёмку")
-                        .setPositiveButton("Да") { _, _ ->
-                            lifecycleScope.launch {
-                                withContext(Dispatchers.IO){
-                                    localViewModel.finishSession(
-                                        db = MainDB.getDB(requireActivity()),
-                                        sessionId = sessionId.toString()
-                                    )
-                                }
-                                withContext(Dispatchers.Main){
-                                    requireActivity().onBackPressedDispatcher.onBackPressed()
+                if(status) {
+                    if(localViewModel.CurrentCountOfCount.value != localViewModel.CountOfCount.value || localViewModel.IsOverCounter.value == true){
+                        val dialogNotification = AlertDialog.Builder(requireActivity())
+                            .setTitle("Предупреждение")
+                            .setMessage("Есть не отсканированный товар. Уверены что хотите завершить приёмку")
+                            .setPositiveButton("Да") { _, _ ->
+                                lifecycleScope.launch {
+                                    withContext(Dispatchers.IO) {
+                                        localViewModel.finishSession(
+                                            incomeRepo = incomeRepo,
+                                            sessionId = sessionId.toString()
+                                        )
+                                    }
+                                    withContext(Dispatchers.Main) {
+                                        requireActivity().onBackPressedDispatcher.onBackPressed()
+                                    }
                                 }
                             }
-                        }
-                        .setNegativeButton("Нет", null)
-                        .create()
+                            .setNegativeButton("Нет", null)
+                            .create()
 
-                    dialogNotification.show()
-                }
-                if(status) {
-                    lifecycleScope.launch {
-                        withContext(Dispatchers.IO){
-                            localViewModel.finishSession(
-                                db = MainDB.getDB(requireActivity()),
-                                sessionId = sessionId.toString()
-                            )
-                        }
-                        withContext(Dispatchers.Main){
-                            requireActivity().onBackPressedDispatcher.onBackPressed()
+                        dialogNotification.show()
+                    }else{
+                        lifecycleScope.launch {
+                            withContext(Dispatchers.IO) {
+                                localViewModel.finishSession(
+                                    incomeRepo = incomeRepo,
+                                    sessionId = sessionId.toString()
+                                )
+                            }
+                            withContext(Dispatchers.Main) {
+                                requireActivity().onBackPressedDispatcher.onBackPressed()
+                            }
                         }
                     }
                 }
-
             })
             localViewModel.CurrentCountOfCount.observe(viewLifecycleOwner, {counter ->
                 binding.tvLineCounter.text = "${counter.toString()}  /"
@@ -369,7 +365,9 @@ class IncomeSessionFragment : Fragment() {
                     localViewModel.setCellName(cellName)
                 }
                 withContext(Dispatchers.IO){
-                    data = localViewModel.loadItems(MainDB.getDB(requireActivity()), sessionId.toString())
+                    data = localViewModel.loadItems(
+                        incomeRepo = incomeRepo,
+                        sessionId =  sessionId.toString())
                 }
                 withContext(Dispatchers.Main){
                     localViewModel.updateItems(data)
@@ -380,7 +378,9 @@ class IncomeSessionFragment : Fragment() {
             binding.btnFinish.setOnClickListener {
                 lifecycleScope.launch {
                    withContext(Dispatchers.IO) {
-                       localViewModel.finishSession(db = MainDB.getDB(requireActivity()), sessionId.toString())
+                       localViewModel.finishSession(
+                           incomeRepo = incomeRepo,
+                           sessionId = sessionId.toString())
 
                     }
                     withContext(Dispatchers.Main){

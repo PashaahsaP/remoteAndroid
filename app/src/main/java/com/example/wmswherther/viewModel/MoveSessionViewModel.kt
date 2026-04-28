@@ -169,13 +169,13 @@ class MoveSessionViewModel : ViewModel() {
             viewModelScope.launch {
                 var localCounter : Int = counter.value ?: 0
                 withContext(Dispatchers.IO) {
-                    var cellTo = moveRepo.getCell(dao, barcode, viewModel, _cell.value.toString())
+                var cellTo = moveRepo.getCell(barcode, viewModel, _cell.value.toString())
                     var allGoods: List<Goods> = dao.getGoods().filter { goods -> goods.cellId == cellTo.id }
                     myData.value?.forEach { item ->
                         if (item.isCell){
                             moveRepo.moveCellToCell(item, cellTo, dao, viewModel)//TODO make validation is Cell
                         }else {
-                            moveRepo.moveGoodsToCell(dao, item, allGoods, cellTo, moveRepo, viewModel)
+                            moveRepo.moveGoodsToCell(item, allGoods, cellTo, viewModel)
                         }
                         // update ui
                         if(item.allCount == item.haveCount){

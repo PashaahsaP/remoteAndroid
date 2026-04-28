@@ -31,6 +31,7 @@ import com.example.wmswherther.data.db.Entityes.SessionInventory
 import com.example.wmswherther.data.db.Entityes.SessionPicker
 import com.example.wmswherther.data.db.Entityes.Supplier
 import com.example.wmswherther.data.db.Entityes.User
+import com.example.wmswherther.data.db.Repositories.IncomeRepository
 import com.example.wmswherther.viewModel.IncomeMenuViewModel
 import com.example.wmswherther.viewModel.MainViewModel
 import kotlinx.coroutines.Dispatchers
@@ -54,11 +55,12 @@ class IncomeFragment : Fragment() {
     ): View? {
         lifecycleScope.launch {
         withContext(Dispatchers.IO){
-                appendFunctionality(MainDB.getDB(requireActivity()))
-                //appendDummyData(MainDB.getDB(requireActivity()))
-                appendMoveDummyData(MainDB.getDB(requireActivity()))
+
+                appendDummyData(MainDB.getDB(requireActivity()))
+                //appendMoveDummyData(MainDB.getDB(requireActivity()))
                 //appendPickerDummyData(MainDB.getDB(requireActivity()))
-                appendUser(MainDB.getDB(requireActivity()))
+                //appendUser(MainDB.getDB(requireActivity()))
+                //appendFunctionality(MainDB.getDB(requireActivity()))
             }
         }
         //viewModel.setCurrFragment(this)
@@ -68,6 +70,7 @@ class IncomeFragment : Fragment() {
         var recyclerView: RecyclerView = binding.rwIncomeMenu
         recyclerView.layoutManager = LinearLayoutManager(requireActivity())
         recyclerView.adapter = adapter
+        var incomeRepo = IncomeRepository(dao = MainDB.getDB(requireActivity()).getDao())
 
         localViewModel.tasksList.observe(requireActivity(), Observer { items ->
             adapter.updateMenuItems(items)
@@ -76,7 +79,7 @@ class IncomeFragment : Fragment() {
         lifecycleScope.launch {
             var data : List<TaskMenuItem> = listOf()
             withContext(Dispatchers.IO) {
-                data = localViewModel.updateSupplierList(MainDB.getDB(requireActivity()))
+                data = localViewModel.updateSupplierList(incomeRepo)
             }
             withContext(Dispatchers.Main) {
                 localViewModel.setTaskCollection(data)
@@ -88,82 +91,7 @@ class IncomeFragment : Fragment() {
         return  binding.root
     }
 
-    suspend fun appendFunctionality(db: MainDB) {
-        var cellType  = CellType(
-            id = UUID.randomUUID().toString(),
-            type = "Movement",
-            mask = "",
-            other = null
-        )
-        var opTye  = CellType(
-            id = UUID.randomUUID().toString(),
-            type = "OperationType",
-            mask = "",
-            other = null
-        )
-        var income = Cell(
-            id = UUID.randomUUID().toString(),
-            typeCellId = opTye.id,
-            parentCellId = null,
-            name = "income"
-        )
-        var outcome = Cell(
-            id = UUID.randomUUID().toString(),
-            typeCellId = opTye.id,
-            parentCellId = null,
-            name = "outcome"
-        )
-        var cellLess = Cell(
-            id = UUID.randomUUID().toString(),
-            typeCellId = cellType.id,
-            parentCellId = null,
-            name = "less"
-        )
-        var cellMore = Cell(
-            id = UUID.randomUUID().toString(),
-            typeCellId = cellType.id,
-            parentCellId = null,
-            name = "more"
-        )
-        var cellSplit = Cell(
-            id = UUID.randomUUID().toString(),
-            typeCellId = cellType.id,
-            parentCellId = null,
-            name = "split"
-        )
-        var cellMerge = Cell(
-            id = UUID.randomUUID().toString(),
-            typeCellId = cellType.id,
-            parentCellId = null,
-            name = "merge"
-        )
-        var dao = db.getDao()
-        dao.insertCellType(cellType)
-        dao.insertCellType(opTye)
-        dao.insertCell(income)
-        dao.insertCell(outcome)
-        dao.insertCell(cellLess)
-        dao.insertCell(cellMore)
-        dao.insertCell(cellSplit)
-        dao.insertCell(cellMerge)
-    }
 
-    private fun appendUser(db: MainDB) {
-        var credential = Credential(
-            id = 0,
-            type = "User",
-            other = null
-        )
-        var credentialId = db.getDao().insertCredential(credential)
-        var user = User(
-            id = 0,
-            firstName = "Pavel",
-            lastName = "Semenov",
-            credentialId = credentialId,
-            other = null
-        )
-        db.getDao().insertUser(user)
-    }
 }
 
 suspend fun appendDummyData(db: MainDB){
@@ -978,4 +906,87 @@ suspend fun appendPickerDummyData(db: MainDB){
     }*/
 
 
+}
+suspend fun appendFunctionality(db: MainDB) {
+    var cellType  = CellType(
+        id = UUID.randomUUID().toString(),
+        type = "Movement",
+        mask = "",
+        other = null
+    )
+    var opTye  = CellType(
+        id = UUID.randomUUID().toString(),
+        type = "OperationType",
+        mask = "",
+        other = null
+    )
+    var income = Cell(
+        id = UUID.randomUUID().toString(),
+        typeCellId = opTye.id,
+        parentCellId = null,
+        name = "income"
+    )
+    var outcome = Cell(
+        id = UUID.randomUUID().toString(),
+        typeCellId = opTye.id,
+        parentCellId = null,
+        name = "outcome"
+    )
+    var cellLess = Cell(
+        id = UUID.randomUUID().toString(),
+        typeCellId = cellType.id,
+        parentCellId = null,
+        name = "less"
+    )
+    var cellMore = Cell(
+        id = UUID.randomUUID().toString(),
+        typeCellId = cellType.id,
+        parentCellId = null,
+        name = "more"
+    )
+    var cellSplit = Cell(
+        id = UUID.randomUUID().toString(),
+        typeCellId = cellType.id,
+        parentCellId = null,
+        name = "split"
+    )
+    var cellMerge = Cell(
+        id = UUID.randomUUID().toString(),
+        typeCellId = cellType.id,
+        parentCellId = null,
+        name = "merge"
+    )
+    var catalogTE  = Catalog(
+        id = "",
+        name = "TE",
+        sku = "TE",
+        supplierId = db.getDao().getAllSuppliers().first().id,
+        other = null
+    )
+    var dao = db.getDao()
+    dao.insertCatalog(catalogTE)
+    dao.insertCellType(cellType)
+    dao.insertCellType(opTye)
+    dao.insertCell(income)
+    dao.insertCell(outcome)
+    dao.insertCell(cellLess)
+    dao.insertCell(cellMore)
+    dao.insertCell(cellSplit)
+    dao.insertCell(cellMerge)
+}
+private fun appendUser(db: MainDB) {
+    var credential = Credential(
+        id = 0,
+        type = "User",
+        other = null
+    )
+    var credentialId = db.getDao().insertCredential(credential)
+    var user = User(
+        id = 0,
+        firstName = "Pavel",
+        lastName = "Semenov",
+        credentialId = credentialId,
+        other = null
+    )
+    db.getDao().insertUser(user)
 }
