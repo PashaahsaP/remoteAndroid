@@ -18,6 +18,7 @@ import com.example.wmswherther.data.db.Entityes.SessionInventory
 import com.example.wmswherther.data.db.Repositories.InventoryRepository
 import com.example.wmswherther.data.factory.ChangeFactory
 import com.example.wmswherther.data.factory.InventoryDiffFactory
+import com.example.wmswherther.data.factory.InventorySessionFactory
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
@@ -93,16 +94,13 @@ class InventorySessionViewModel : ViewModel(){
             setFinishValidation(false)
         }
     }
-
-
-
     suspend fun loadItems (inventoryRepo: InventoryRepository, cell: Cell) : List<InventorySessionItem>{
         var listOfGoods: List<Pair<Goods, Cell>> = getAllGoods(inventoryRepo, cell)
-        var result : List<InventorySessionItem> = listOf()
+        var result : MutableList<InventorySessionItem> = mutableListOf()
 
-        result = loadTE(cell, inventoryRepo, result)
-        result = loadGoods(listOfGoods, inventoryRepo, result, cell)
-        result = loadInnerCells(inventoryRepo, cell, result)
+        loadTE(cell, inventoryRepo, result)
+        loadGoods(listOfGoods, inventoryRepo, result, cell)
+        loadInnerCells(inventoryRepo, cell, result)
 
         return result
     }
@@ -165,19 +163,12 @@ class InventorySessionViewModel : ViewModel(){
         inventoryRepo: InventoryRepository
     ): SessionInventory {
         // создание сессии
-        var session = SessionInventory(
-            id = UUID.randomUUID().toString(),
-            supplierId = supplierId,
+        var session = InventorySessionFactory.createNotInventoryTask(
+            supplierId = supplierId.toString(),
             cellId = baseCell.id,
-            prevSessionId = "",
-            status = StatusType.Created.ordinal,
-            createdAt = System.currentTimeMillis(),
-            startedAt = System.currentTimeMillis(),
-            finishedAt = System.currentTimeMillis(),
-            other = null
+            status = StatusType.Created
         )
         // Получение данных
-
         var changes = ChangeFactory.create(
             entityId = session.id,
             supplierId = supplierId.toString(),
@@ -328,30 +319,27 @@ class InventorySessionViewModel : ViewModel(){
 private suspend fun loadInnerCells(
     inventoryRepo: InventoryRepository,
     cell: Cell,
-    result: List<InventorySessionItem>
-): List<InventorySessionItem> {
-    var result1 = result
+    result: MutableList<InventorySessionItem>
+) {
     var listOfCells = inventoryRepo.getAllCells()
         .filter { innerCell: Cell -> innerCell.parentCellId == cell.id }
     if (listOfCells.count() != 0) {
         listOfCells.forEach { innerCell ->
             var innerResult = loadItems(inventoryRepo, innerCell)
-            result1 += innerResult
+            result += innerResult
         }
     }
-    return result1
 }
 
     private suspend fun loadGoods(
         listOfGoods: List<Pair<Goods, Cell>>,
         inventoryRepo: InventoryRepository,
-        result: List<InventorySessionItem>,
+        result: MutableList<InventorySessionItem>,
         cell: Cell
-    ): List<InventorySessionItem> {
-        var result1 = result
+    ) {
         listOfGoods.forEach { goods ->
             var catalog = inventoryRepo.getCatalogById(goods.first.catalogId)
-            result1 += InventorySessionItem(
+            result += InventorySessionItem(
                 name = catalog.name,
                 TE = cell.name,
                 catalogId = catalog.id,
@@ -361,18 +349,16 @@ private suspend fun loadInnerCells(
                 isShown = if (isTE(cell.name, inventoryRepo)) false else true
             )
         }
-        return result1
     }
 
     private suspend fun loadTE(
         cell: Cell,
         inventoryRepo: InventoryRepository,
-        result: List<InventorySessionItem>
-    ): List<InventorySessionItem> {
-        var result1 = result
+        result: MutableList<InventorySessionItem>
+    ) {
         if (isTE(cell.name, inventoryRepo)) {
             var parent = inventoryRepo.getCellById(cell.parentCellId.toString())
-            result1 += InventorySessionItem(
+            result += InventorySessionItem(
                 name = cell.name,
                 TE = if (isTE(cell.name, inventoryRepo)) cell.name else "",
                 catalogId = "",
@@ -382,7 +368,6 @@ private suspend fun loadInnerCells(
                 isShown = if (isPickerCell(parent.name, inventoryRepo)) true else false
             )
         }
-        return result1
     }
     private fun sortCollection(
         items: List<InventorySessionItem>,
