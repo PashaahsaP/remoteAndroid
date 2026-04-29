@@ -4,7 +4,6 @@ import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.example.wmsRemote.data.db.Dao
 import com.example.wmsRemote.data.db.MainDB
 import com.example.wmsRemote.data.enums.OperationType
 import com.example.wmsRemote.data.enums.StatusType
@@ -16,6 +15,7 @@ import com.example.wmswherther.data.db.Entityes.Change
 import com.example.wmswherther.data.db.Entityes.Goods
 import com.example.wmswherther.data.db.Entityes.InventoryDiffItem
 import com.example.wmswherther.data.db.Entityes.SessionInventory
+import com.example.wmswherther.data.db.Repositories.InventoryRepository
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
@@ -108,29 +108,28 @@ class InventorySessionViewModel : ViewModel(){
             setFinishValidation(false)
         }
     }
-    suspend fun loadItems (db: MainDB, cell: Cell) : List<InventorySessionItem>{
+    suspend fun loadItems (inventoryRepo: InventoryRepository, cell: Cell) : List<InventorySessionItem>{
         // Загрузить goods.
-        var dao = db.getDao()
-        var listOfGoods: List<Pair<Goods, Cell>> = getAllGoods(dao, cell)
+        var listOfGoods: List<Pair<Goods, Cell>> = getAllGoods(inventoryRepo, cell)
         // Создать inventory item.
         var result : List<InventorySessionItem> = listOf()
         // для Cell
-        if(isTE(cell.name, dao)) {
-            var parent = dao.getCellById(cell.parentCellId.toString())
+        if(isTE(cell.name, inventoryRepo)) {
+            var parent = inventoryRepo.getCellById(cell.parentCellId.toString())
             result += InventorySessionItem(
                 name = cell.name,
-                TE = if (isTE(cell.name, dao)) cell.name else "",
+                TE = if (isTE(cell.name, inventoryRepo)) cell.name else "",
                 catalogId = "",
                 allCount = 1,
                 haveCount = 0,
                 isExpandable = true,
-                isShown = if (isPickerCell(parent.name, dao)) true else false
+                isShown = if (isPickerCell(parent.name, inventoryRepo)) true else false
             )
         }
 
         // для goods
         listOfGoods.forEach { goods ->
-            var catalog = dao.getCatalogById(goods.first.catalogId)
+            var catalog = inventoryRepo.getCatalogById(goods.first.catalogId)
             result += InventorySessionItem(
                 name =  catalog.name,
                 TE = cell.name,
@@ -138,16 +137,16 @@ class InventorySessionViewModel : ViewModel(){
                 allCount = goods.first.amount,
                 haveCount = 0,
                 isExpandable = false,
-                isShown = if(isTE(cell.name, dao)) false else true)
+                isShown = if(isTE(cell.name, inventoryRepo)) false else true)
         }
 
         // Загрузить cells
-        var listOfCells = dao.getAllCells().filter { innerCell: Cell -> innerCell.parentCellId == cell.id }
+        var listOfCells = inventoryRepo.getAllCells().filter { innerCell: Cell -> innerCell.parentCellId == cell.id }
         if(listOfCells.count() == 0){
             return  result
         }else{
             listOfCells.forEach { innerCell ->
-                var innerResult = loadItems(db, innerCell)
+                var innerResult = loadItems(inventoryRepo, innerCell)
                 result += innerResult
             }
             return result
@@ -158,11 +157,11 @@ class InventorySessionViewModel : ViewModel(){
 
     }
     suspend fun finishSession(
-        dao: Dao,
+        inventoryRepo: InventoryRepository,
         state: UiState.InventorySessionMenu,
         supplierId: String?
     ){
-        var baseCell = dao.getCellByName(currentCellName.value.toString())
+        var baseCell = inventoryRepo.getCellByName(currentCellName.value.toString())
         if(state.isSupplierModeActive){
             // создание сессии
             var session = SessionInventory(
@@ -177,7 +176,7 @@ class InventorySessionViewModel : ViewModel(){
                 other = null
             )
             // Получение данных
-            var diffs : List<InventoryDiffItem> = getDiffs(baseCell, items.value ?: listOf(), dao, session.id)
+            var diffs : List<InventoryDiffItem> = getDiffs(baseCell, items.value ?: listOf(), inventoryRepo, session.id)
             // Загрузить данные в бд
             var changes = Change(
                 id = UUID.randomUUID().toString(),
@@ -187,7 +186,7 @@ class InventorySessionViewModel : ViewModel(){
                 supplierId = supplierId,
                 other = null
             )
-            dao.insertInventorySessionAsync(session, changes)
+            inventoryRepo.insertInventorySessionAsync(session, changes)
             diffs.forEach { item ->
                 changes = Change(
                     id = UUID.randomUUID().toString(),
@@ -197,12 +196,12 @@ class InventorySessionViewModel : ViewModel(){
                     supplierId = supplierId,
                     other = null
                 )
-                dao.insertInventoryDiffItemAsync(item, changes)
+                inventoryRepo.insertInventoryDiffItemAsync(item, changes)
             }
         }
         else{
             var sessionId = state.sessionId
-            var diffs : List<InventoryDiffItem> = getDiffs(baseCell, items.value ?: listOf(), dao, sessionId)
+            var diffs : List<InventoryDiffItem> = getDiffs(baseCell, items.value ?: listOf(), inventoryRepo, sessionId)
             println(diffs)
             // Загрузить данные в бд
             diffs.forEach { item ->
@@ -214,17 +213,17 @@ class InventorySessionViewModel : ViewModel(){
                     supplierId = supplierId,
                     other = null
                 )
-                dao.insertInventoryDiffItemAsync(item, changes)
+                inventoryRepo.insertInventoryDiffItemAsync(item, changes)
             }
 
         }
 
     }
 //что если вообще нет такого шк, как будет сохранятся
-    suspend fun getDiffs(baseCell: Cell, data: List<InventorySessionItem>, dao: Dao, sessionId: String): List<InventoryDiffItem> {
+    suspend fun getDiffs(baseCell: Cell, data: List<InventorySessionItem>, inventoryRepo: InventoryRepository, sessionId: String): List<InventoryDiffItem> {
         // Проверить все те и добавить те которых нет в бд
         // Проверить товар в текущей ячейке
-        var goods = dao.getGoodsByCellId(baseCell.id)
+        var goods = inventoryRepo.getGoodsByCellId(baseCell.id)
         var diffs : List<InventoryDiffItem> = listOf()
         var isCorrect = false
         data.filter {inner -> inner.TE == baseCell.name}.forEach { innerGoods ->
@@ -250,8 +249,8 @@ class InventorySessionViewModel : ViewModel(){
             }
             //Обработка элемента которого нет изначально
             //если это те проверить есть ли такая те у ячейки, если нет то добавить диф
-            if(isTE(innerGoods.name, dao)){
-                var checkCell = dao.getCellByName(innerGoods.name)
+            if(isTE(innerGoods.name, inventoryRepo)){
+                var checkCell = inventoryRepo.getCellByName(innerGoods.name)
                 if(isCorrect == false  && checkCell == null){
                     var diff = InventoryDiffItem(
                         id = UUID.randomUUID().toString(),
@@ -284,13 +283,13 @@ class InventorySessionViewModel : ViewModel(){
             }
         }
         // Получить все вложенные те
-        var cells = dao.getChildrenCells(baseCell.id)
+        var cells = inventoryRepo.getChildrenCells(baseCell.id)
         if(cells.isEmpty()){
             // Если пустая ячейка то вернуть диффы
             return diffs
         }else{
             cells.forEach { innerCell ->
-                diffs += getDiffs(innerCell, data, dao, sessionId)
+                diffs += getDiffs(innerCell, data, inventoryRepo, sessionId)
                 return diffs
             }
         }
@@ -313,19 +312,17 @@ class InventorySessionViewModel : ViewModel(){
 
 // <editor-fold desc="Helper function">
     private suspend fun getAllGoods(
-        dao: Dao,
+        inventoryRepo: InventoryRepository,
         cell: Cell
     ): List<Pair<Goods, Cell>> {
         var listOfGoods: List<Pair<Goods, Cell>> = listOf()
-        listOfGoods = dao.getGoodsByCellId(cell.id)
+        listOfGoods = inventoryRepo.getGoodsByCellId(cell.id)
             .map { goods -> Pair(goods, cell) }
 
         return listOfGoods
     }
 // </editor-fold>
-    suspend fun getBarcode(db : MainDB, barcode: String) : Barcode {
-        return db.getDao().getBarcodeByName(barcode)
-    }
+
     fun setSelection(checked: Boolean) {
         var list: MutableList<InventorySessionItem> = mutableListOf()
         if (checked){
@@ -340,8 +337,8 @@ class InventorySessionViewModel : ViewModel(){
     }
 
 }
-suspend private fun isTE(cell: String, dao: Dao): Boolean {
-    val cells = dao.getCellTypes().filter { cellType -> cellType.type == "BoxTE" }
+suspend private fun isTE(cell: String, inventoryRepo: InventoryRepository): Boolean {
+    val cells = inventoryRepo.getCellTypes().filter { cellType -> cellType.type == "BoxTE" }
 
     return cells.any { cellType ->
         val mask = cellType.mask ?: return@any false
@@ -355,8 +352,8 @@ suspend private fun isTE(cell: String, dao: Dao): Boolean {
                 }
     }
 }
-suspend private fun isPickerCell(cell: String, dao: Dao): Boolean {
-    val cells = dao.getCellTypes().filter { cellType -> cellType.type == "Picker" }
+suspend private fun isPickerCell(cell: String, inventoryRepo: InventoryRepository): Boolean {
+    val cells = inventoryRepo.getCellTypes().filter { cellType -> cellType.type == "Picker" }
 
     return cells.any { cellType ->
         val mask = cellType.mask ?: return@any false

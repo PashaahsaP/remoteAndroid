@@ -14,7 +14,6 @@ import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.example.wmsRemote.R
-import com.example.wmsRemote.data.db.Dao
 import com.example.wmsRemote.data.db.MainDB
 import com.example.wmsRemote.databinding.FragmentInventorySessionBinding
 import com.example.wmswherther.Adapters.InventorySessionAdapter
@@ -22,6 +21,7 @@ import com.example.wmswherther.Classes.InventorySessionItem
 import com.example.wmswherther.Classes.UiState
 import com.example.wmswherther.data.db.Entityes.Barcode
 import com.example.wmswherther.data.db.Entityes.Cell
+import com.example.wmswherther.data.db.Repositories.InventoryRepository
 import com.example.wmswherther.viewModel.InventorySessionViewModel
 import com.example.wmswherther.viewModel.MainViewModel
 import kotlinx.coroutines.Dispatchers
@@ -53,14 +53,15 @@ class InventorySessionFragment: Fragment() {
         val adapter = InventorySessionAdapter(adapterCollection, recyclerView, localViewModel, requireActivity(), viewModel)
         recyclerView.layoutManager = LinearLayoutManager(requireActivity())
         recyclerView.adapter = adapter
-        val db = MainDB.getDB(requireActivity())
+        val inventoryRepo = InventoryRepository(MainDB.getDB(requireActivity()).getDao())
 
-        initOrder(localViewModel)
+        initOrder(localViewModel, inventoryRepo)
 
         binding.btnFinish.setOnClickListener {
             lifecycleScope.launch {
                 withContext(Dispatchers.IO) {
-                    localViewModel.finishSession(db.getDao(),
+                    localViewModel.finishSession(
+                        inventoryRepo,
                         viewModel.uiState.value as UiState.InventorySessionMenu,
                         viewModel.CurrentSupplierId.value)
                 }
@@ -68,20 +69,6 @@ class InventorySessionFragment: Fragment() {
         }
 
         localViewModel.items.observe(viewLifecycleOwner,{ items ->
-            var curLineCounter = 0
-            var lineCounter = 0
-            var curCounterOfCounter = 0
-            var counterOfCounter = 0
-            items.forEach { item ->
-                if(item.catalogId != ""){
-                    lineCounter += 1
-                    if(item.haveCount == item.allCount){
-                        curLineCounter += 1
-                    }
-                    curCounterOfCounter += item.haveCount
-                    counterOfCounter += item.haveCount
-                }
-            }
             adapter.updateCollection(items, localViewModel.getSelectedItem())
             recyclerView.smoothScrollToPosition(localViewModel.getSelectedItem())
         })
@@ -90,17 +77,15 @@ class InventorySessionFragment: Fragment() {
                 lifecycleScope.launch {
                     withContext(Dispatchers.IO) {
                         var inventorySession = viewModel.uiState.value as UiState.InventorySessionMenu
-                        var db = MainDB.getDB(requireActivity())
-                        var dao = db.getDao()
-                        if (isPickerCell(barcode, dao)) {
+                        if (isPickerCell(barcode, inventoryRepo)) {
                             if (inventorySession.isSupplierModeActive) {  // Проверить isOrderMode Active то ничего делать т.к. это заявка(особенность)
-                                loadNewCell(localViewModel, barcode, db)
+                                loadNewCell(localViewModel, barcode, inventoryRepo)
                             }
                         } else {
-                            if(isTE(barcode, dao)){
-                                prepareTE(inventorySession, dao, localViewModel, barcode)
+                            if(isTE(barcode, inventoryRepo)){
+                                prepareTE(inventorySession, localViewModel, barcode)
                             }else{
-                                prepareBarcode(dao, barcode, localViewModel)
+                                prepareBarcode(inventoryRepo, barcode, localViewModel)
                             }
                         }
                     }
@@ -117,7 +102,7 @@ class InventorySessionFragment: Fragment() {
             itemsInVm = localViewModel.items.value ?: listOf()
             cellName = localViewModel.currentCellName.value.toString()
             lifecycleScope.launch {
-                if(isTE(cellName, dao = db.getDao())) {
+                if(isTE(cellName, inventoryRepo)) {
                     var coll: List<InventorySessionItem> = listOf()
                     withContext(Dispatchers.IO) {
                         itemsInVm.forEach { item ->
@@ -172,7 +157,7 @@ class InventorySessionFragment: Fragment() {
             if (!flag){
                 lifecycleScope.launch {
                     withContext(Dispatchers.Main) {
-                        while (isTE(localViewModel.currentCellName.value.toString(), db.getDao()))
+                        while (isTE(localViewModel.currentCellName.value.toString(), inventoryRepo))
                         {
                             var prevStack = localViewModel.stack.removeLast()
                             localViewModel.cellStack.removeLast()
@@ -183,7 +168,7 @@ class InventorySessionFragment: Fragment() {
                     }
                     withContext(Dispatchers.IO) {
                     localViewModel.finishSession(
-                        db.getDao(),
+                        inventoryRepo,
                         viewModel.uiState.value as UiState.InventorySessionMenu,
                         viewModel.CurrentSupplierId.value
                     )
@@ -203,13 +188,13 @@ class InventorySessionFragment: Fragment() {
     }
     //TODO refactor func
     private suspend fun prepareBarcode(
-        dao: Dao,
+        inventoryRepo: InventoryRepository,
         barcode: String,
         localViewModel: InventorySessionViewModel
     ) {
         // поиск товара и изменение его количества
         // найти barcode
-        var searchBarcode: Barcode = dao.getBarcodeByName(barcode)
+        var searchBarcode: Barcode = inventoryRepo.getBarcodeByName(barcode)
         var newCol: List<InventorySessionItem> = listOf()
         if (searchBarcode != null) {
             var isHave = false // если вообще не было в коллекции такого элемента то добавить новый(с условим того что он есть каталоге)
@@ -223,7 +208,7 @@ class InventorySessionFragment: Fragment() {
                 }
             }
             if(!isHave){
-                var catalogItem = dao.getCatalogById(searchBarcode.catalogId)
+                var catalogItem = inventoryRepo.getCatalogById(searchBarcode.catalogId)
                 newCol += InventorySessionItem(
                     name = catalogItem.name,
                     TE = localViewModel.currentCellName.value.toString(),
@@ -269,13 +254,9 @@ class InventorySessionFragment: Fragment() {
 
     private suspend fun prepareTE(
         inventorySession: UiState.InventorySessionMenu,
-        dao: Dao,
         localViewModel: InventorySessionViewModel,
         barcode: String
     ) {
-        var curCell = dao.getCellByName(localViewModel.currentCellName.value.toString())
-
-
         if(localViewModel.currentCellName.value != barcode) {
             if (inventorySession.isTEIsCell) {
                 lifecycleScope.launch {
@@ -356,14 +337,14 @@ class InventorySessionFragment: Fragment() {
     suspend private fun loadNewCell(
         localViewModel: InventorySessionViewModel,
         barcode: String,
-        db: MainDB
+        inventoryRepo: InventoryRepository
     ) {
         // если было что то отсканированно в текущий момент то спросить уверен ли
         lifecycleScope.launch {
             var inventoryItems : List<InventorySessionItem> = listOf()
             withContext(Dispatchers.IO){
-                var cell = getCell(db, barcode)
-                inventoryItems = localViewModel.loadItems(db, cell)
+                var cell = getCell(inventoryRepo, barcode)
+                inventoryItems = localViewModel.loadItems(inventoryRepo, cell)
             }
             withContext(Dispatchers.Main){
                 if (localViewModel.CurrentCountOfCount.value != 0) {
@@ -390,22 +371,21 @@ class InventorySessionFragment: Fragment() {
     }
 
     private suspend fun getCell(
-        db: MainDB,
+        inventoryRepo: InventoryRepository,
         barcode: String
     ) : Cell {
-        var dao = db.getDao()
-        var cell = dao.getCellByName(barcode)
+        var cell = inventoryRepo.getCellByName(barcode)
         if(cell == null){
-            if(isPickerCell(barcode, dao)) {
-                var cellType = dao.getCellTypeByName("Picker").first()
+            if(isPickerCell(barcode, inventoryRepo)) {
+                var cellType =  inventoryRepo.getCellTypeByName("Picker").first()
                 val uuid = UUID.randomUUID()
                 var newCell = Cell(
                     id = uuid.toString(),
                     typeCellId = cellType.id,
-                    parentCellId = dao.getCellByName(localViewModel.currentCellName.value.toString()).id,
+                    parentCellId = inventoryRepo.getCellByName(localViewModel.currentCellName.value.toString()).id,
                     name = barcode
                 )
-                db.getDao().insertCell(newCell)
+                inventoryRepo.insertCell(newCell)
                 return newCell
             }
         }
@@ -414,7 +394,7 @@ class InventorySessionFragment: Fragment() {
 
     }
 
-    private fun initOrder(localViewModel: InventorySessionViewModel) {
+    private fun initOrder(localViewModel: InventorySessionViewModel, inventoryRepo: InventoryRepository) {
         if (viewModel.uiState.value is UiState.InventorySessionMenu) {
             var state = viewModel.uiState.value as UiState.InventorySessionMenu
             var cell: Cell
@@ -422,14 +402,13 @@ class InventorySessionFragment: Fragment() {
                 lifecycleScope.launch {
                     var data: List<InventorySessionItem> = listOf()
                     withContext(Dispatchers.Main) {
-                        var dao = MainDB.getDB(requireActivity()).getDao()
-                        var session = dao.getInventorySessionById(state.sessionId)
-                        cell = dao.getCellById(session.cellId.toString())
+                        var session = inventoryRepo.getInventorySessionById(state.sessionId)
+                        cell = inventoryRepo.getCellById(session.cellId.toString())
                         localViewModel.cellStack.addLast(cell.name)
                         localViewModel.setCellName(cell.name)
                     }
                     withContext(Dispatchers.IO) {
-                        data = localViewModel.loadItems(MainDB.getDB(requireActivity()), cell)
+                        data = localViewModel.loadItems(inventoryRepo = inventoryRepo, cell)
                     }
                     withContext(Dispatchers.Main) {
                         localViewModel.updateItems(data)
@@ -439,7 +418,7 @@ class InventorySessionFragment: Fragment() {
             }
         }
     }//вызывается когда в inventoryMenu выбран режим заказы и выбран определенный заказ
-    private fun loadCell(localViewModel: InventorySessionViewModel, cell: Cell) {
+    private fun loadCell(localViewModel: InventorySessionViewModel, inventoryRepo: InventoryRepository) {
         if (viewModel.uiState.value is UiState.InventorySessionMenu) {
             var state = viewModel.uiState.value as UiState.InventorySessionMenu
             var cell: Cell
@@ -447,14 +426,13 @@ class InventorySessionFragment: Fragment() {
                 lifecycleScope.launch {
                     var data: List<InventorySessionItem> = listOf()
                     withContext(Dispatchers.Main) {
-                        var dao = MainDB.getDB(requireActivity()).getDao()
-                        var session = dao.getInventorySessionById(state.sessionId)
-                        cell = dao.getCellById(session.cellId.toString())
+                        var session = inventoryRepo.getInventorySessionById(state.sessionId)
+                        cell = inventoryRepo.getCellById(session.cellId.toString())
                         localViewModel.cellStack.addLast(cell.name)
                         localViewModel.setCellName(cell.name)
                     }
                     withContext(Dispatchers.IO) {
-                        data = localViewModel.loadItems(MainDB.getDB(requireActivity()), cell)
+                        data = localViewModel.loadItems(inventoryRepo, cell)
                     }
                     withContext(Dispatchers.Main) {
                         localViewModel.updateItems(data)
@@ -464,8 +442,8 @@ class InventorySessionFragment: Fragment() {
             }
         }
     }//вызывается когда в inventoryMenu выбран режим заказы и выбран определенный заказ
-    suspend private fun isTE(cell: String, dao: Dao): Boolean {
-        val cells = dao.getCellTypes().filter { cellType -> cellType.type == "BoxTE" }
+    suspend private fun isTE(cell: String, inventoryRepo: InventoryRepository): Boolean {
+        val cells = inventoryRepo.getCellTypes().filter { cellType -> cellType.type == "BoxTE" }
 
         return cells.any { cellType ->
             val mask = cellType.mask ?: return@any false
@@ -479,8 +457,8 @@ class InventorySessionFragment: Fragment() {
                     }
         }
     }
-    suspend private fun isPickerCell(cell: String, dao: Dao): Boolean {
-        val cells = dao.getCellTypes().filter { cellType -> cellType.type == "Picker" }
+    suspend private fun isPickerCell(cell: String, inventoryRepo: InventoryRepository): Boolean {
+        val cells =  inventoryRepo.getCellTypes().filter { cellType -> cellType.type == "Picker" }
 
         return cells.any { cellType ->
             val mask = cellType.mask ?: return@any false
