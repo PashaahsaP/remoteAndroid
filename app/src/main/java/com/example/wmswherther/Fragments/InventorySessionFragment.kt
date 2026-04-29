@@ -97,32 +97,7 @@ class InventorySessionFragment: Fragment() {
 
         })
         localViewModel.CurrentCountOfCount.observe(viewLifecycleOwner, {counter ->
-            var itemsInVm : List<InventorySessionItem> = listOf()
-            var cellName : String = ""
-            itemsInVm = localViewModel.items.value ?: listOf()
-            cellName = localViewModel.currentCellName.value.toString()
-            lifecycleScope.launch {
-                if(isTE(cellName, inventoryRepo)) {
-                    var coll: List<InventorySessionItem> = listOf()
-                    withContext(Dispatchers.IO) {
-                        itemsInVm.forEach { item ->
-                            if (item.name == cellName) {
-                                coll += item.copy(haveCount = if (localViewModel.CountOfCount.value!! <= localViewModel.CurrentCountOfCount.value!!) 1 else 0)
-                            } else {
-                                coll += item
-                            }
-                        }
-                    }
-                    withContext(Dispatchers.Main) {
-                        binding.tvLineCounter.text = "${counter.toString()}  /"
-                        if (coll != localViewModel.items.value) {
-                            localViewModel.updateItems(coll)
-                        }
-                    }
-                }else{
-                    binding.tvLineCounter.text = "${counter.toString()}  /"
-                }
-            }
+            prepareTeCounterOrMainCounter(localViewModel, inventoryRepo, counter)
 
             // Если количество товара добило счетчик и ячейка текущая является те то
             // Изменить счетчик для те
@@ -186,6 +161,40 @@ class InventorySessionFragment: Fragment() {
 
         return  binding.root
     }
+
+    private fun prepareTeCounterOrMainCounter(
+        localViewModel: InventorySessionViewModel,
+        inventoryRepo: InventoryRepository,
+        counter: Int
+    ) {
+        var itemsInVm: List<InventorySessionItem> = listOf()
+        var cellName: String = ""
+        itemsInVm = localViewModel.items.value ?: listOf()
+        cellName = localViewModel.currentCellName.value.toString()
+        lifecycleScope.launch {
+            if (isTE(cellName, inventoryRepo)) {
+                var coll: List<InventorySessionItem> = listOf()
+                withContext(Dispatchers.IO) {
+                    itemsInVm.forEach { item ->
+                        if (item.name == cellName) {
+                            coll += item.copy(haveCount = if (localViewModel.CountOfCount.value!! <= localViewModel.CurrentCountOfCount.value!!) 1 else 0)
+                        } else {
+                            coll += item
+                        }
+                    }
+                }
+                withContext(Dispatchers.Main) {
+                    binding.tvLineCounter.text = "${counter.toString()}  /"
+                    if (coll != localViewModel.items.value) {
+                        localViewModel.updateItems(coll)
+                    }
+                }
+            } else {
+                binding.tvLineCounter.text = "${counter.toString()}  /"
+            }
+        }
+    }
+
     //TODO refactor func
     private suspend fun prepareBarcode(
         inventoryRepo: InventoryRepository,

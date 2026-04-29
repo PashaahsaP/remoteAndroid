@@ -16,10 +16,16 @@ import com.example.wmswherther.data.db.Entityes.Goods
 import com.example.wmswherther.data.db.Entityes.InventoryDiffItem
 import com.example.wmswherther.data.db.Entityes.SessionInventory
 import com.example.wmswherther.data.db.Repositories.InventoryRepository
+import com.example.wmswherther.data.factory.ChangeFactory
+import com.example.wmswherther.data.factory.InventoryDiffFactory
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import java.util.UUID
+
+data class SortCollectionResult(val counter: Int,
+                                val curCount: Int,
+                                val isOver: Boolean)
 
 class InventorySessionViewModel : ViewModel(){
     private val _items = MutableLiveData<List<InventorySessionItem>>()
@@ -62,45 +68,24 @@ class InventorySessionViewModel : ViewModel(){
         }
     }
     fun updateItems(items: List<InventorySessionItem>){
+        //init
         var sortedCollection : MutableList<InventorySessionItem> = mutableListOf()
         var teCollection : MutableList<InventorySessionItem> = mutableListOf()
         var otherCollection : MutableList<InventorySessionItem> = mutableListOf()
-        var counter = 0
-        var curCounter = 0
-        var isOver = false
-        // get collections
-        items.forEach { item ->
-            if(item.isExpandable){
-                teCollection.add(item)
-            }else if(!item.isShown){
-                teCollection.add(item)
-                counter += item.allCount
-                if(item.haveCount > item.allCount){
-                    isOver = true
-                }
-                curCounter += item.haveCount
-            }else{
-                otherCollection.add(item)
-                if(item.haveCount > item.allCount){
-                    isOver = true
-                }
-                counter += item.allCount
-                curCounter += item.haveCount
-            }
 
-        }
-        // insert collections in certain order
-        teCollection.forEach { item ->
-            sortedCollection.add(item)
-        }
-        otherCollection.forEach { item ->
-            sortedCollection.add(item)
-        }
-        //set properties
+        //sort
+        val result = sortCollection(
+            items,
+            teCollection,
+            otherCollection,
+            sortedCollection
+        )
         _items.value = sortedCollection
-        setCountOfCount(counter)
-        setCurCountOfCount(curCounter)
-        setCounterValidation(isOver)
+
+        //update properties
+        setCountOfCount(result.counter)
+        setCurCountOfCount(result.curCount)
+        setCounterValidation(result.isOver)
         //set is over session btn
         if(IsOverCounter.value == false && CurrentCountOfCount.value == CountOfCount.value){
             setFinishValidation(true)
@@ -108,54 +93,22 @@ class InventorySessionViewModel : ViewModel(){
             setFinishValidation(false)
         }
     }
+
+
+
     suspend fun loadItems (inventoryRepo: InventoryRepository, cell: Cell) : List<InventorySessionItem>{
-        // Загрузить goods.
         var listOfGoods: List<Pair<Goods, Cell>> = getAllGoods(inventoryRepo, cell)
-        // Создать inventory item.
         var result : List<InventorySessionItem> = listOf()
-        // для Cell
-        if(isTE(cell.name, inventoryRepo)) {
-            var parent = inventoryRepo.getCellById(cell.parentCellId.toString())
-            result += InventorySessionItem(
-                name = cell.name,
-                TE = if (isTE(cell.name, inventoryRepo)) cell.name else "",
-                catalogId = "",
-                allCount = 1,
-                haveCount = 0,
-                isExpandable = true,
-                isShown = if (isPickerCell(parent.name, inventoryRepo)) true else false
-            )
-        }
 
-        // для goods
-        listOfGoods.forEach { goods ->
-            var catalog = inventoryRepo.getCatalogById(goods.first.catalogId)
-            result += InventorySessionItem(
-                name =  catalog.name,
-                TE = cell.name,
-                catalogId = catalog.id,
-                allCount = goods.first.amount,
-                haveCount = 0,
-                isExpandable = false,
-                isShown = if(isTE(cell.name, inventoryRepo)) false else true)
-        }
+        result = loadTE(cell, inventoryRepo, result)
+        result = loadGoods(listOfGoods, inventoryRepo, result, cell)
+        result = loadInnerCells(inventoryRepo, cell, result)
 
-        // Загрузить cells
-        var listOfCells = inventoryRepo.getAllCells().filter { innerCell: Cell -> innerCell.parentCellId == cell.id }
-        if(listOfCells.count() == 0){
-            return  result
-        }else{
-            listOfCells.forEach { innerCell ->
-                var innerResult = loadItems(inventoryRepo, innerCell)
-                result += innerResult
-            }
-            return result
-        }
-        // Базовый случай. Если нет ячеек больше то вернуть коллекцию
-        // Иначе Загрузить goods  и соединить коллекции
-
-
+        return result
     }
+
+
+
     suspend fun finishSession(
         inventoryRepo: InventoryRepository,
         state: UiState.InventorySessionMenu,
@@ -163,129 +116,102 @@ class InventorySessionViewModel : ViewModel(){
     ){
         var baseCell = inventoryRepo.getCellByName(currentCellName.value.toString())
         if(state.isSupplierModeActive){
-            // создание сессии
-            var session = SessionInventory(
-                id = UUID.randomUUID().toString(),
+            var session = createNewSessionAndSaveInDB(
                 supplierId = supplierId,
-                cellId = baseCell.id,
-                prevSessionId = "",
-                status = StatusType.Created.ordinal,
-                createdAt = System.currentTimeMillis(),
-                startedAt = System.currentTimeMillis(),
-                finishedAt = System.currentTimeMillis(),
-                other = null
+                baseCell = baseCell,
+                inventoryRepo = inventoryRepo
             )
-            // Получение данных
-            var diffs : List<InventoryDiffItem> = getDiffs(baseCell, items.value ?: listOf(), inventoryRepo, session.id)
-            // Загрузить данные в бд
-            var changes = Change(
-                id = UUID.randomUUID().toString(),
-                entityId = session.id,
-                operationType = OperationType.InsertInventorySession.ordinal,
-                status = StatusType.Created.ordinal,
-                supplierId = supplierId,
-                other = null
+            createDiffsAndAppendToDb(
+                baseCell = baseCell,
+                inventoryRepo = inventoryRepo,
+                sessionId = session.id,
+                supplierId = supplierId
             )
-            inventoryRepo.insertInventorySessionAsync(session, changes)
-            diffs.forEach { item ->
-                changes = Change(
-                    id = UUID.randomUUID().toString(),
-                    entityId = item.id,
-                    operationType = OperationType.InsertInventoryDiff.ordinal,
-                    status = StatusType.Created.ordinal,
-                    supplierId = supplierId,
-                    other = null
-                )
-                inventoryRepo.insertInventoryDiffItemAsync(item, changes)
-            }
         }
         else{
-            var sessionId = state.sessionId
-            var diffs : List<InventoryDiffItem> = getDiffs(baseCell, items.value ?: listOf(), inventoryRepo, sessionId)
-            println(diffs)
-            // Загрузить данные в бд
-            diffs.forEach { item ->
-                var changes = Change(
-                    id = UUID.randomUUID().toString(),
-                    entityId = item.id,
-                    operationType = OperationType.InsertInventoryDiff.ordinal,
-                    status = StatusType.Created.ordinal,
-                    supplierId = supplierId,
-                    other = null
-                )
-                inventoryRepo.insertInventoryDiffItemAsync(item, changes)
-            }
-
+            createDiffsAndAppendToDb(
+                baseCell = baseCell,
+                inventoryRepo = inventoryRepo,
+                sessionId = state.sessionId,
+                supplierId = state.supplierId
+            )
         }
 
     }
-//что если вообще нет такого шк, как будет сохранятся
-    suspend fun getDiffs(baseCell: Cell, data: List<InventorySessionItem>, inventoryRepo: InventoryRepository, sessionId: String): List<InventoryDiffItem> {
-        // Проверить все те и добавить те которых нет в бд
-        // Проверить товар в текущей ячейке
-        var goods = inventoryRepo.getGoodsByCellId(baseCell.id)
-        var diffs : List<InventoryDiffItem> = listOf()
-        var isCorrect = false
-        data.filter {inner -> inner.TE == baseCell.name}.forEach { innerGoods ->
-            isCorrect = false
-            for (item in goods){
-                if(item.catalogId == innerGoods.catalogId && innerGoods.TE == baseCell.name){
-                    isCorrect = true
-                    if(item.amount != innerGoods.haveCount){
-                        var diff = InventoryDiffItem(
-                            id = UUID.randomUUID().toString(),
-                            inventorySessionId = sessionId,
-                            catalogId = item.catalogId,
-                            parentCellId = baseCell.id,
-                            diffCount = item.amount - innerGoods.haveCount,
-                            status = StatusType.Created.ordinal,
-                            isTE = false,
-                            barcode = innerGoods.name,
-                            other = null
-                        )
-                        diffs += diff
-                    }
-                }
-            }
-            //Обработка элемента которого нет изначально
-            //если это те проверить есть ли такая те у ячейки, если нет то добавить диф
-            if(isTE(innerGoods.name, inventoryRepo)){
-                var checkCell = inventoryRepo.getCellByName(innerGoods.name)
-                if(isCorrect == false  && checkCell == null){
-                    var diff = InventoryDiffItem(
-                        id = UUID.randomUUID().toString(),
-                        inventorySessionId = sessionId,
-                        catalogId = innerGoods.catalogId,
-                        parentCellId = baseCell.id,
-                        diffCount = 0 - innerGoods.haveCount,
-                        status = StatusType.Created.ordinal,
-                        isTE = true,
-                        barcode = innerGoods.name,
-                        other = null
-                    )
-                    diffs += diff
-                }
-            }else{
-                if(isCorrect == false ){
-                    var diff = InventoryDiffItem(
-                        id = UUID.randomUUID().toString(),
-                        inventorySessionId = sessionId,
-                        catalogId = innerGoods.catalogId,
-                        parentCellId = baseCell.id,
-                        diffCount = 0 - innerGoods.haveCount,
-                        status = StatusType.Created.ordinal,
-                        isTE = false,
-                        barcode = innerGoods.name,
-                        other = null
-                    )
-                    diffs += diff
-                }
-            }
+
+    private suspend fun createDiffsAndAppendToDb(
+        baseCell: Cell,
+        inventoryRepo: InventoryRepository,
+        sessionId: String,
+        supplierId: String?
+    ) {
+        // get diffs
+        var diffs: List<InventoryDiffItem> =
+            getDiffs(baseCell, items.value ?: listOf(), inventoryRepo, sessionId)
+        // create changes and save in bd
+        diffs.forEach { item ->
+            var changes = ChangeFactory.create(
+                entityId = item.id,
+                supplierId = supplierId.toString(),
+                operationType = OperationType.InsertInventoryDiff
+            )
+            inventoryRepo.insertInventoryDiffItemAsync(item, changes)
         }
-        // Получить все вложенные те
+    }
+
+    private suspend fun createNewSessionAndSaveInDB(
+        supplierId: String?,
+        baseCell: Cell,
+        inventoryRepo: InventoryRepository
+    ): SessionInventory {
+        // создание сессии
+        var session = SessionInventory(
+            id = UUID.randomUUID().toString(),
+            supplierId = supplierId,
+            cellId = baseCell.id,
+            prevSessionId = "",
+            status = StatusType.Created.ordinal,
+            createdAt = System.currentTimeMillis(),
+            startedAt = System.currentTimeMillis(),
+            finishedAt = System.currentTimeMillis(),
+            other = null
+        )
+        // Получение данных
+
+        var changes = ChangeFactory.create(
+            entityId = session.id,
+            supplierId = supplierId.toString(),
+            operationType = OperationType.InsertInventorySession
+        )
+
+        inventoryRepo.insertInventorySessionAsync(session, changes)
+        return session
+    }
+
+    /**
+     * RecursiveFunc
+     */
+    suspend fun getDiffs(baseCell: Cell, data: List<InventorySessionItem>, inventoryRepo: InventoryRepository, sessionId: String): List<InventoryDiffItem> {
+        // main work
+        var goods = inventoryRepo.getGoodsByCellId(baseCell.id)
+        var diffs : MutableList<InventoryDiffItem> = mutableListOf()
+        var isCorrect = false
+        data.filter {inner -> inner.TE == baseCell.name}
+            .forEach { innerGoods ->
+
+                isCorrect = false
+                isCorrect = prepareBaseCase(goods, innerGoods, baseCell, sessionId, diffs)
+
+                if(isTE(innerGoods.name, inventoryRepo)){
+                    prepareTeCase(inventoryRepo, innerGoods, isCorrect, sessionId, baseCell, diffs)
+                }else{
+                    prepareNewItemCase(isCorrect, sessionId, innerGoods, baseCell, diffs)
+                }
+        }
+
+        // Stop condition
         var cells = inventoryRepo.getChildrenCells(baseCell.id)
         if(cells.isEmpty()){
-            // Если пустая ячейка то вернуть диффы
             return diffs
         }else{
             cells.forEach { innerCell ->
@@ -294,6 +220,83 @@ class InventorySessionViewModel : ViewModel(){
             }
         }
         return diffs
+    }
+
+    private fun prepareNewItemCase(
+        isCorrect: Boolean,
+        sessionId: String,
+        innerGoods: InventorySessionItem,
+        baseCell: Cell,
+        diffs: MutableList<InventoryDiffItem>
+    ) {
+        //Обработка элемента которого нет изначально
+        if (isCorrect == false) {
+            var diff = InventoryDiffFactory.create(
+                sessionId = sessionId,
+                catalogId = innerGoods.catalogId,
+                parentCellId = baseCell.id,
+                diffCount = 0 - innerGoods.haveCount,
+                status = StatusType.Created,
+                isTe = false,
+                barcoder = innerGoods.name
+            )
+            diffs += diff
+        }
+    }
+
+    private suspend fun prepareTeCase(
+        inventoryRepo: InventoryRepository,
+        innerGoods: InventorySessionItem,
+        isCorrect: Boolean,
+        sessionId: String,
+        baseCell: Cell,
+        diffs: MutableList<InventoryDiffItem>
+    ) {
+        //если это те проверить есть ли такая те у ячейки, если нет то добавить диф
+        var checkCell = inventoryRepo.getCellByName(innerGoods.name)
+        if (isCorrect == false && checkCell == null) {
+            var diff = InventoryDiffFactory.create(
+                sessionId = sessionId,
+                catalogId = innerGoods.catalogId,
+                parentCellId = baseCell.id,
+                diffCount = 0 - innerGoods.haveCount,
+                status = StatusType.Created,
+                isTe = true,
+                barcoder = innerGoods.name
+            )
+            diffs += diff
+        }
+    }
+
+    /**
+     * Case when item is Goods and he's in db, not new
+     */
+    private fun prepareBaseCase(
+        goods: List<Goods>,
+        innerGoods: InventorySessionItem,
+        baseCell: Cell,
+        sessionId: String,
+        diffs: MutableList<InventoryDiffItem>
+    ): Boolean {
+        var isCorrect = false
+        for (item in goods) {
+            if (item.catalogId == innerGoods.catalogId && innerGoods.TE == baseCell.name) {
+                isCorrect = true
+                if (item.amount != innerGoods.haveCount) {
+                    var diff = InventoryDiffFactory.create(
+                        sessionId = sessionId,
+                        catalogId = item.catalogId,
+                        parentCellId = baseCell.id,
+                        diffCount = item.amount - innerGoods.haveCount,
+                        status = StatusType.Created,
+                        isTe = false,
+                        barcoder = innerGoods.name
+                    )
+                    diffs += diff
+                }
+            }
+        }
+        return isCorrect
     }
 
     fun getSelectedItem() : Int{
@@ -322,7 +325,104 @@ class InventorySessionViewModel : ViewModel(){
         return listOfGoods
     }
 // </editor-fold>
+private suspend fun loadInnerCells(
+    inventoryRepo: InventoryRepository,
+    cell: Cell,
+    result: List<InventorySessionItem>
+): List<InventorySessionItem> {
+    var result1 = result
+    var listOfCells = inventoryRepo.getAllCells()
+        .filter { innerCell: Cell -> innerCell.parentCellId == cell.id }
+    if (listOfCells.count() != 0) {
+        listOfCells.forEach { innerCell ->
+            var innerResult = loadItems(inventoryRepo, innerCell)
+            result1 += innerResult
+        }
+    }
+    return result1
+}
 
+    private suspend fun loadGoods(
+        listOfGoods: List<Pair<Goods, Cell>>,
+        inventoryRepo: InventoryRepository,
+        result: List<InventorySessionItem>,
+        cell: Cell
+    ): List<InventorySessionItem> {
+        var result1 = result
+        listOfGoods.forEach { goods ->
+            var catalog = inventoryRepo.getCatalogById(goods.first.catalogId)
+            result1 += InventorySessionItem(
+                name = catalog.name,
+                TE = cell.name,
+                catalogId = catalog.id,
+                allCount = goods.first.amount,
+                haveCount = 0,
+                isExpandable = false,
+                isShown = if (isTE(cell.name, inventoryRepo)) false else true
+            )
+        }
+        return result1
+    }
+
+    private suspend fun loadTE(
+        cell: Cell,
+        inventoryRepo: InventoryRepository,
+        result: List<InventorySessionItem>
+    ): List<InventorySessionItem> {
+        var result1 = result
+        if (isTE(cell.name, inventoryRepo)) {
+            var parent = inventoryRepo.getCellById(cell.parentCellId.toString())
+            result1 += InventorySessionItem(
+                name = cell.name,
+                TE = if (isTE(cell.name, inventoryRepo)) cell.name else "",
+                catalogId = "",
+                allCount = 1,
+                haveCount = 0,
+                isExpandable = true,
+                isShown = if (isPickerCell(parent.name, inventoryRepo)) true else false
+            )
+        }
+        return result1
+    }
+    private fun sortCollection(
+        items: List<InventorySessionItem>,
+        teCollection: MutableList<InventorySessionItem>,
+        otherCollection: MutableList<InventorySessionItem>,
+        sortedCollection: MutableList<InventorySessionItem>
+    ): SortCollectionResult {
+    // get collections
+    var counter = 0
+    var curCounter = 0
+    var isOver = false
+    items.forEach { item ->
+        if (item.isExpandable) {
+            teCollection.add(item)
+        } else if (!item.isShown) {
+            teCollection.add(item)
+            counter += item.allCount
+            if (item.haveCount > item.allCount) {
+                isOver = true
+            }
+            curCounter += item.haveCount
+        } else {
+            otherCollection.add(item)
+            if (item.haveCount > item.allCount) {
+                isOver = true
+            }
+            counter += item.allCount
+            curCounter += item.haveCount
+        }
+
+    }
+    // insert collections in certain order
+    teCollection.forEach { item ->
+        sortedCollection.add(item)
+    }
+    otherCollection.forEach { item ->
+        sortedCollection.add(item)
+    }
+    return SortCollectionResult(counter, curCounter, isOver)
+}
     fun setSelection(checked: Boolean) {
         var list: MutableList<InventorySessionItem> = mutableListOf()
         if (checked){
