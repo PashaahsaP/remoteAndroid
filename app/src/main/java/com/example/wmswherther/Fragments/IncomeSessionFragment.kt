@@ -54,72 +54,7 @@ class IncomeSessionFragment : Fragment() {
             var incomeRepo = IncomeRepository(MainDB.getDB(requireActivity()).getDao())
 
             viewModel.Barcode.observe(viewLifecycleOwner, { barcode ->
-                //TODO сделать чтобы была сортировка по те, количеству и прочему перед добавлением
-                //TODO  Если нажал ТЕ надо сделать чтобы можно было отменить добавление товара в те.
-                if(barcode != "" && viewModel.uiState.value is UiState.IncomeSessionMenu) {
-                    lifecycleScope.launch {
-                        var newItems: List<IncomeItem> = listOf()
-                        var bar = incomeRepo.getBarcodeByName(barcode)
-
-                        if (bar != null && bar is Barcode) {
-                            var isAdded = false
-                            withContext(Dispatchers.IO) {
-                                localViewModel.items.value?.forEach { item ->
-                                    var teCount = item.teCount
-                                    if((viewModel.uiState.value as UiState.IncomeSessionMenu).isTEModeActive){
-                                        teCount = teCount + 1
-                                    }
-                                    if (item.catalogId == bar.catalogId && localViewModel.currentCellName.value.toString() == item.TE) {
-                                        isAdded = true
-                                        newItems += IncomeItem(
-                                            name = item.name,
-                                            TE = item.TE,
-                                            catalogId = item.catalogId,
-                                            goodsId = item.goodsId,
-                                            haveCount = item.haveCount + 1,
-                                            allCount = item.allCount,
-                                            teCount = teCount,
-                                            isSelected = item.isSelected,
-                                            isExpanded = item.isExpanded,
-                                            isShown = item.isShown,
-                                            isExpandable = item.isExpandable)
-                                    }else {
-                                        newItems += item
-                                    }
-
-                                }
-                                if(!isAdded){
-                                    var catalog = incomeRepo.getCatalogById(bar.catalogId)
-                                    if (catalog != null){
-                                        newItems += IncomeItem(
-                                            name = catalog.name,
-                                            TE = localViewModel.currentCellName.value.toString(),
-                                            catalogId = catalog.id,
-                                            goodsId = "",
-                                            haveCount = 1,
-                                            allCount = 0,
-                                            teCount = if (viewModel.IsIncomeSessionTEModeActive.value == true) 1 else 0,
-                                            isSelected = false,
-                                            isExpanded = false,
-                                            isShown = true,
-                                            isExpandable = false)
-                                    }
-                                }
-                            }
-                            withContext(Dispatchers.Main) {
-                                localViewModel.updateItems(newItems)
-                                var binding = viewModel.getMainBinding()
-                                if(viewModel.IsScanningActive.value == true) {
-                                    binding?.etIncomeBarcode?.requestFocus()
-
-                                }else{
-                                    binding?.etIncomeBarcodeScan?.requestFocus()
-                                }
-                            }
-                        }
-                    }
-                }
-
+                prepareBarcodeAndUpdateUI(barcode, incomeRepo)
             })
             viewModel.TE.observe(viewLifecycleOwner, { TE ->
                 var innerIncomeItems: MutableList<IncomeItem> = mutableListOf()
@@ -194,6 +129,103 @@ class IncomeSessionFragment : Fragment() {
             
             return  binding.root
         }
+
+    private fun prepareBarcodeAndUpdateUI(
+        barcode: String,
+        incomeRepo: IncomeRepository
+    ) {
+        if (barcode != "" && viewModel.uiState.value is UiState.IncomeSessionMenu) {
+            lifecycleScope.launch {
+                var newItems: List<IncomeItem> = listOf()
+                var bar = incomeRepo.getBarcodeByName(barcode)
+                if (bar != null && bar is Barcode) {
+                    var isAdded = false
+                    withContext(Dispatchers.IO) {
+                        val pair = increaseCounterInMainListForBarcode(bar, isAdded, newItems)
+                        isAdded = pair.first
+                        newItems = pair.second
+                        createNewItemIfNotFoundInMainList(isAdded, incomeRepo, bar, newItems)
+                    }
+                    withContext(Dispatchers.Main) {
+                        updateUiAndReturnFocus(newItems)
+                    }
+                }
+            }
+        }
+    }
+
+    private fun updateUiAndReturnFocus(newItems: List<IncomeItem>): Boolean? {
+        localViewModel.updateItems(newItems)
+        var binding = viewModel.getMainBinding()
+        return if (viewModel.IsScanningActive.value == true) {
+            binding?.etIncomeBarcode?.requestFocus()
+
+        } else {
+            binding?.etIncomeBarcodeScan?.requestFocus()
+        }
+    }
+
+    private suspend fun createNewItemIfNotFoundInMainList(
+        isAdded: Boolean,
+        incomeRepo: IncomeRepository,
+        bar: Barcode,
+        newItems: List<IncomeItem>
+    ) {
+        var newItems1 = newItems
+        if (!isAdded) {
+            var catalog = incomeRepo.getCatalogById(bar.catalogId)
+            if (catalog != null) {
+                newItems1 += IncomeItem(
+                    name = catalog.name,
+                    TE = localViewModel.currentCellName.value.toString(),
+                    catalogId = catalog.id,
+                    goodsId = "",
+                    haveCount = 1,
+                    allCount = 0,
+                    teCount = if (viewModel.IsIncomeSessionTEModeActive.value == true) 1 else 0,
+                    isSelected = false,
+                    isExpanded = false,
+                    isShown = true,
+                    isExpandable = false
+                )
+            }
+        }
+    }
+
+    private fun increaseCounterInMainListForBarcode(
+        bar: Barcode,
+        isAdded: Boolean,
+        newItems: List<IncomeItem>
+    ): Pair<Boolean, List<IncomeItem>> {
+        var isAdded1 = isAdded
+        var newItems1 = newItems
+        localViewModel.items.value?.forEach { item ->
+            var teCount = item.teCount
+            if ((viewModel.uiState.value as UiState.IncomeSessionMenu).isTEModeActive) {
+                teCount = teCount + 1
+            }
+            if (item.catalogId == bar.catalogId && localViewModel.currentCellName.value.toString() == item.TE) {
+                isAdded1 = true
+                newItems1 += IncomeItem(
+                    name = item.name,
+                    TE = item.TE,
+                    catalogId = item.catalogId,
+                    goodsId = item.goodsId,
+                    haveCount = item.haveCount + 1,
+                    allCount = item.allCount,
+                    teCount = teCount,
+                    isSelected = item.isSelected,
+                    isExpanded = item.isExpanded,
+                    isShown = item.isShown,
+                    isExpandable = item.isExpandable
+                )
+            } else {
+                newItems1 += item
+            }
+
+        }
+        return Pair(isAdded1, newItems1)
+    }
 
     private fun appendRemainigItemWithSameTE(
         TE: String?,
