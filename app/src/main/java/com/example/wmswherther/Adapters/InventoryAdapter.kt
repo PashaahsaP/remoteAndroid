@@ -48,7 +48,10 @@ class InventoryAdapter (
                 addToBackStack(null)
 
             }
-            viewModel.setActiveUi(UiState.InventorySessionMenu(prevState = viewModel.uiState.value, supplierId = item.id, isSupplierModeActive = true))
+            viewModel.setActiveUi(UiState.InventorySessionMenu(
+                prevState = viewModel.uiState.value,
+                supplierId = item.id,
+                isSupplierModeActive = true))
         }
     }
 

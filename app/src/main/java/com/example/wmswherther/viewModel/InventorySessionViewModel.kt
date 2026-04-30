@@ -117,7 +117,8 @@ class InventorySessionViewModel : ViewModel(){
             var session = createNewSessionAndSaveInDB(
                 supplierId = supplierId,
                 baseCell = baseCell,
-                inventoryRepo = inventoryRepo
+                inventoryRepo = inventoryRepo,
+                status = StatusType.Finished
             )
             createDiffsAndAppendToDb(
                 baseCell = baseCell,
@@ -160,7 +161,8 @@ class InventorySessionViewModel : ViewModel(){
     private suspend fun createNewSessionAndSaveInDB(
         supplierId: String?,
         baseCell: Cell,
-        inventoryRepo: InventoryRepository
+        inventoryRepo: InventoryRepository,
+        status: StatusType
     ): SessionInventory {
         // создание сессии
         var session = InventorySessionFactory.createNotInventoryTask(

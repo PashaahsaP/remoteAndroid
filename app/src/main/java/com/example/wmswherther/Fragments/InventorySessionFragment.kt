@@ -155,7 +155,10 @@ class InventorySessionFragment: Fragment() {
         viewModel.IsSelectedInventoryList.observe(viewLifecycleOwner, {flag->
             localViewModel.setSelection(flag)
         })
-
+        viewModel.uiState.observe(viewLifecycleOwner, { state ->
+            if(state is UiState.InventorySessionMenu)
+                viewModel.setCurrentSupplierId(state.supplierId)
+        })
 
 
 
