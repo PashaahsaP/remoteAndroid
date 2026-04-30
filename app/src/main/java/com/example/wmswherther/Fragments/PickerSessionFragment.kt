@@ -26,6 +26,7 @@ import com.example.wmsRemote.databinding.ActivityAssemblyBinding
 import com.example.wmsRemote.viewModel.AssemblySessionViewModel
 import com.example.wmswherther.Classes.AssemblyItem
 import com.example.wmswherther.Classes.UiState
+import com.example.wmswherther.data.db.Repositories.AssemblyRepository
 import com.example.wmswherther.viewModel.MainViewModel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -61,6 +62,7 @@ class PickerSessionFragment: Fragment() {
         recyclerViewMain.adapter = mainAdapter
         var sessionId = (viewModel.uiState.value as UiState.AssemblySessionMenu).sessionId
 
+        val assemblyRepo = AssemblyRepository(db.getDao())
 
         viewModel.IsFinishedAssemblySession.observe(viewLifecycleOwner, { status ->
             if(status){
@@ -74,7 +76,7 @@ class PickerSessionFragment: Fragment() {
                         .setView(editText)
                         .setPositiveButton("Да") { _, _ ->
                             val text = editText.text.toString()
-                            localViewModel.finishSession(db, db.getDao(), text, sessionId, viewModel)
+                            localViewModel.finishSession(assemblyRepo, text, sessionId, viewModel)
 
                         }
                         .setNegativeButton("Нет", null)
@@ -92,8 +94,7 @@ class PickerSessionFragment: Fragment() {
                         .setPositiveButton("Да") { _, _ ->
                             val text = editText.text.toString()
                             localViewModel.finishSession(
-                                db,
-                                db.getDao(),
+                                assemblyRepo,
                                 text,
                                 sessionId,
                                 viewModel
@@ -161,8 +162,7 @@ class PickerSessionFragment: Fragment() {
                             .setPositiveButton("Да") { _, _ ->
                                 val text = editText.text.toString()
                                 localViewModel.finishSession(
-                                    db,
-                                    db.getDao(),
+                                    assemblyRepo,
                                     text,
                                     sessionId,
                                     viewModel
@@ -185,7 +185,7 @@ class PickerSessionFragment: Fragment() {
                 }
             }
         })
-        localViewModel.loadCollection(db,sessionId)
+        localViewModel.loadCollection(assemblyRepo,sessionId)
         binding.etCount.setOnEditorActionListener { v, actionId, event ->
             if (actionId == EditorInfo.IME_ACTION_DONE || actionId == EditorInfo.IME_ACTION_UNSPECIFIED && event.action == ACTION_DOWN) {
                 val text = binding.etCount.text.toString()

@@ -1,15 +1,10 @@
 
 package com.example.wmsRemote.viewModel
 
-import android.util.Log
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import androidx.room.Transaction
-import androidx.room.withTransaction
-import com.example.wmsRemote.data.db.Dao
-import com.example.wmsRemote.data.db.MainDB
 import com.example.wmsRemote.data.enums.OperationType
 import com.example.wmsRemote.data.enums.StatusType
 import com.example.wmswherther.Classes.AssemblyItem
@@ -18,6 +13,10 @@ import com.example.wmswherther.data.db.Entityes.Cell
 import com.example.wmswherther.data.db.Entityes.Change
 import com.example.wmswherther.data.db.Entityes.Movement
 import com.example.wmswherther.data.db.Entityes.SessionPicker
+import com.example.wmswherther.data.db.Repositories.AssemblyRepository
+import com.example.wmswherther.data.factory.CellFactory
+import com.example.wmswherther.data.factory.ChangeFactory
+import com.example.wmswherther.data.factory.MovementFactory
 import com.example.wmswherther.viewModel.MainViewModel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -25,7 +24,6 @@ import kotlinx.coroutines.withContext
 import java.util.UUID
 
 class AssemblySessionViewModel : ViewModel() {
-
     private val _count = MutableLiveData<Int>()
     val menuStatus: LiveData<Int> get() = _menuStatus
     val assemblyStatus: LiveData<Int> get() = _assemblyStatus
@@ -41,38 +39,14 @@ class AssemblySessionViewModel : ViewModel() {
     var _items = MutableLiveData<List<AssemblyItem>>()
     var _resultCollection = MutableLiveData<List<AssemblyItem>>()
 
-    fun loadCollection(db: MainDB, sessionId: String): Unit
-    {
-        var dao = db.getDao()
-        viewModelScope.launch {
-            var data : List<AssemblyItem> = listOf()
-            withContext(Dispatchers.IO) {
-                data = dao.getPickerItems()
-                    .filter { item -> item.sessionId == sessionId && item.status == StatusType.Created.ordinal }
-                    .map { item ->
-                        var goodsItem = dao.getGoodsById(item.goodsId)
-                        var catalog = dao.getCatalogById(goodsItem.catalogId)
-                        var cell = dao.getCellById(item.cellId.toString())
-                        var barcodes = dao.getBarcodes().filter { item -> item.catalogId == catalog.id }.map { item -> item.name }
-                        var pickerList : MutableList<PickerItem> = mutableListOf(PickerItem(catalog.name, barcodes, false))
-                        //set selection of last element
-                        pickerList += getPickerCell(dao, cell)
-                        var lastElement = pickerList[pickerList.lastIndex]
-                        lastElement.isSelected = true
-                        pickerList[pickerList.lastIndex] = lastElement
 
-                        AssemblyItem(
-                    sessionId = sessionId,
-                    catalogId = goodsItem.catalogId,
-                    assemblyItemId = item.id,
-                    goodsId = item.goodsId,
-                    amount = goodsItem.amount,
-                    cell = cell.name,
-                    name = catalog.name,
-                    status = StatusType.Created.ordinal,
-                    pickerList = pickerList.reversed()
-                )
-                    }
+    fun loadCollection(assemblyRepo: AssemblyRepository,
+                       sessionId: String)
+    {
+        viewModelScope.launch {
+            var data : MutableList<AssemblyItem> = mutableListOf()
+            withContext(Dispatchers.IO) {
+                data = getPickerItemsAndMappingToAssemblyItems(assemblyRepo, sessionId)
             }
             withContext(Dispatchers.Main){
                 _resultCollection.value = data
@@ -85,37 +59,19 @@ class AssemblySessionViewModel : ViewModel() {
     }
 
 
-
-
-    fun changeMenuStatus(status: Int){
-        _menuStatus.value = status
-    }
-    fun setActiveElement(element: AssemblyItem){
-        _activeElement.value = element
-    }
-
-    fun removeElementFromCollection(elem: AssemblyItem?){
-        if(elem != null)
-            _items.value =  _items.value?.minusElement(elem)
-    }
-
-    fun changeAssemblyStatus(enterCell: Int) {
-        _assemblyStatus.value = enterCell
-    }
     fun finishSession(
-        db: MainDB,
-        dao: Dao,
+        assemblyRepo: AssemblyRepository,
         outGate: String,
         sesssionId: String,
         viewModel: MainViewModel
     ) {
         viewModelScope.launch {
             withContext(Dispatchers.IO) {
-                if (isOutCellType(dao, outGate)) {
-                    var session = dao.getPickerSessionById(sesssionId)
-                    var outCell = getOutCell(dao, outGate, session)
-                    moveItemsToOutGate(dao, outCell, session)
-                    changeSessionStatus(session, dao)
+                if (isOutCellType(assemblyRepo, outGate)) {
+                    var session = assemblyRepo.getPickerSessionById(sesssionId)
+                    var outCell = getOutCell(assemblyRepo, outGate, session)
+                    moveItemsToOutGate(assemblyRepo, outCell, session)
+                    changeSessionStatus(session, StatusType.Finished, assemblyRepo)
                 }
                 }
             withContext(Dispatchers.Main){
@@ -125,84 +81,101 @@ class AssemblySessionViewModel : ViewModel() {
         }
     }
 
-    private suspend fun moveItemsToOutGate(dao: Dao,outCell: Cell, session: SessionPicker) {
+    private suspend fun moveItemsToOutGate(assemblyRepo: AssemblyRepository,outCell: Cell, session: SessionPicker) {
         _resultCollection.value?.forEach { item ->
             //Надо создать перемещения для goods
-            var cellFrom = dao.getCellByName(item.cell)
-            var movement = Movement(
-                id = UUID.randomUUID().toString(),
+            var cellFrom = assemblyRepo.getCellByName(item.cell)
+            var movement = MovementFactory.create(
                 cellFromId = cellFrom.id,
                 cellToId = outCell.id,
                 catalogId = item.catalogId,
                 goodsId = item.goodsId,
                 qty = item.amount.toString(),
-                userId = 1,
-                executedAt = dao.getPickerItemById(item.assemblyItemId).finishedAt!!.toLong(),
-                operationType = OperationType.AssemblyMovement.ordinal,
+                operationType = OperationType.AssemblyMovement,
                 entityId = session.id
             )
-            val change = Change(
-                id = UUID.randomUUID().toString(),
+            val change = ChangeFactory.create(
                 entityId = movement.id,
-                operationType = OperationType.InsertMovement.ordinal,
-                status = StatusType.Created.ordinal,
-                supplierId = session.supplierId,
-                other = null
+                supplierId = session.supplierId.toString(),
+                operationType = OperationType.InsertMovement
             )
 
-            dao.insertMovementSync(movement, change)
+            assemblyRepo.insertMovementSync(movement, change)
             //Переместить goods
-            var goods = dao.getGoodsById(item.goodsId)
-            var goodsChange = Change(
-                id = UUID.randomUUID().toString(),
+            var goods = assemblyRepo.getGoodsById(item.goodsId)
+            var goodsChange = ChangeFactory.create(
                 entityId = goods.id,
-                operationType = OperationType.UpdateGoods.ordinal,
-                status = StatusType.Finished.ordinal,
-                supplierId = session.supplierId,
-                other = null
+                supplierId = session.supplierId.toString(),
+                operationType = OperationType.UpdateGoods
             )
-            dao.updateGoodsAsync(goods.copy(cellId = outCell.id), goodsChange)
+            assemblyRepo.updateGoodsAsync(goods.copy(cellId = outCell.id), goodsChange)
 
         }
     }
-    private suspend fun changeSessionStatus(session: SessionPicker, dao: Dao) {
-        var sessionChange = Change(
-            id = UUID.randomUUID().toString(),
+    private suspend fun changeSessionStatus(session: SessionPicker, status: StatusType, assemblyRepo: AssemblyRepository) {
+        var sessionChange = ChangeFactory.create(
             entityId = session.id,
-            operationType = OperationType.UpdatePickerSession.ordinal,
-            status = StatusType.Finished.ordinal,
-            supplierId = session.supplierId,
-            other = null
+            supplierId = session.supplierId.toString(),
+            operationType = OperationType.UpdatePickerSession
         )
-        dao.updatePickerSessionSync(
-            session.copy(status = StatusType.Finished.ordinal.toString()),
+        assemblyRepo.updatePickerSessionSync(
+            session.copy(status = status.ordinal.toString()),
             sessionChange
         )
     }
-    private suspend fun getOutCell(dao: Dao, outGate: String, session: SessionPicker): Cell {
-        var outCell = dao.getCellsByName(outGate).firstOrNull()
+    private suspend fun getPickerItemsAndMappingToAssemblyItems(
+        assemblyRepo: AssemblyRepository,
+        sessionId: String
+    ) : MutableList<AssemblyItem> {
+        return assemblyRepo.getPickerItems()
+            .filter { item -> item.sessionId == sessionId && item.status == StatusType.Created.ordinal }
+            .map { item ->
+                var goodsItem = assemblyRepo.getGoodsById(item.goodsId)
+                var catalog = assemblyRepo.getCatalogById(goodsItem.catalogId)
+                var cell = assemblyRepo.getCellById(item.cellId.toString())
+                var barcodes = assemblyRepo.getBarcodes()
+                    .filter { item -> item.catalogId == catalog.id }
+                    .map { item -> item.name }
+                var pickerList: MutableList<PickerItem> =
+                    mutableListOf(PickerItem(catalog.name, barcodes, false))
+                //set selection of last element
+                pickerList += getPickerCell(assemblyRepo, cell)
+                var lastElement = pickerList[pickerList.lastIndex]
+                lastElement.isSelected = true
+                pickerList[pickerList.lastIndex] = lastElement
+
+                AssemblyItem(
+                    sessionId = sessionId,
+                    catalogId = goodsItem.catalogId,
+                    assemblyItemId = item.id,
+                    goodsId = item.goodsId,
+                    amount = goodsItem.amount,
+                    cell = cell.name,
+                    name = catalog.name,
+                    status = StatusType.Created.ordinal,
+                    pickerList = pickerList.reversed()
+                )
+            }.toMutableList()
+    }
+    private suspend fun getOutCell(assemblyRepo: AssemblyRepository, outGate: String, session: SessionPicker): Cell {
+        var outCell = assemblyRepo.getCellsByName(outGate).firstOrNull()
         if (outCell == null) {
-            var cell = Cell(
-                id = UUID.randomUUID().toString(),
-                typeCellId = dao.getCellTypes().filter { item -> item.type == "Outcome" }
-                    .firstOrNull()!!.id,
+            var cell = CellFactory.create(
+                typeCellId = assemblyRepo.getCellTypes().filter { item -> item.type == "Outcome" }.firstOrNull()!!.id,
                 parentCellId = null,
                 name = outGate
             )
-            val change = Change(
-                id = UUID.randomUUID().toString(),
+            val change = ChangeFactory.create(
                 entityId = cell.id,
-                operationType = OperationType.InsertMovement.ordinal,
-                status = StatusType.Created.ordinal,
-                supplierId = session.supplierId,
-                other = null
+                supplierId = session.supplierId.toString(),
+                operationType = OperationType.InsertMovement
             )
-            outCell = dao.insertCellSync(cell, change)
+            outCell = assemblyRepo.insertCellSync(cell, change)
         }
-        return dao.getCellById(outCell.id)
+        return assemblyRepo.getCellById(outCell.id)
     }
-    suspend fun isOutCellType(dao: Dao, outGate: String): Boolean {
-        val types = dao.getCellTypes().filter { cellType -> cellType.type == "Outcome" }
+    suspend fun isOutCellType(assemblyRepo: AssemblyRepository, outGate: String): Boolean {
+        val types = assemblyRepo.getCellTypes().filter { cellType -> cellType.type == "Outcome" }
         return types.any {
             cellType -> val mask = cellType.mask ?: return@any false
             mask.length == outGate.length &&
@@ -212,22 +185,22 @@ class AssemblySessionViewModel : ViewModel() {
                         else -> mask[i] == outGate[i] }
                     }
         } }
-    private suspend fun getPickerCell(dao: Dao, cell: Cell): List<PickerItem> {
+    private suspend fun getPickerCell(assemblyRepo: AssemblyRepository, cell: Cell): List<PickerItem> {
         var result :List<PickerItem> = listOf()
-        if(isPickerCell(cell.name,dao)){
+        if(isPickerCell(cell.name,assemblyRepo)){
             result += PickerItem(cell.name, listOf(cell.name), false)
         }else{
             result += PickerItem(cell.name, listOf(cell.name), false)
-            var innerCell = dao.getCellById(cell.parentCellId.toString())
-            result += getPickerCell(dao,innerCell)
+            var innerCell = assemblyRepo.getCellById(cell.parentCellId.toString())
+            result += getPickerCell(assemblyRepo,innerCell)
 
         }
         return result
     }
     }
 
-suspend fun isPickerCell(cell: String, dao: Dao): Boolean {
-    val cells = dao.getCellTypes().filter { cellType -> cellType.type == "Picker" }
+suspend fun isPickerCell(cell: String, assemblyRepo: AssemblyRepository): Boolean {
+    val cells = assemblyRepo.getCellTypes().filter { cellType -> cellType.type == "Picker" }
 
     return cells.any { cellType ->
         val mask = cellType.mask ?: return@any false
@@ -241,4 +214,5 @@ suspend fun isPickerCell(cell: String, dao: Dao): Boolean {
                     }
                 }
     }
+
 }
