@@ -21,4 +21,5 @@ enum class OperationType {
     IncomeMovement,
     MoreMovement,
     LessMovement,
+    Movement
 }

@@ -7,6 +7,7 @@ import com.example.wmswherther.data.db.Entityes.Cell
 import com.example.wmswherther.data.db.Entityes.CellType
 import com.example.wmswherther.data.db.Entityes.Change
 import com.example.wmswherther.data.db.Entityes.Goods
+import com.example.wmswherther.data.db.Entityes.Movement
 
 class MoveeRepository(private val dao: Dao) {
     suspend fun getCellTypes() : List<CellType>{
@@ -50,5 +51,8 @@ class MoveeRepository(private val dao: Dao) {
     }
     suspend fun getBarcodeByName(name: String) : Barcode{
         return  dao.getBarcodeByName(name)
+    }
+    suspend fun insertMovementAsync(movement: Movement, change: Change) {
+        dao.insertMovementSync(movement, change)
     }
 }

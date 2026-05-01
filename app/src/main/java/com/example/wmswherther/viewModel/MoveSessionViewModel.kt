@@ -19,6 +19,7 @@ import com.example.wmswherther.data.db.Repositories.MoveeRepository
 import com.example.wmswherther.data.factory.CellFactory
 import com.example.wmswherther.data.factory.ChangeFactory
 import com.example.wmswherther.data.factory.GoodsFactory
+import com.example.wmswherther.data.factory.MovementFactory
 import com.example.wmswherther.viewModel.MainViewModel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -125,7 +126,7 @@ class MoveSessionViewModel : ViewModel() {
                     var allGoods: List<Goods> = moveRepo.getGoods()
                                     .filter { goods -> goods.cellId == cellTo.id }
                     myData.value?.forEach { item ->
-                        movingOfItems(item, viewModel, moveRepo, cellTo, allGoods)
+                        movingOfItem(item, viewModel, moveRepo, cellTo, allGoods)
                         updateUiList(item, listItems)
                         localCounter -= item.haveCount// for know that need show dialog window when switch to other cell
                     }
@@ -271,7 +272,7 @@ class MoveSessionViewModel : ViewModel() {
         viewModel: MainViewModel
     ): Cell {
         var cellTo = moveRepo.getCellByName(barcode)
-        if (cell == null) {
+        if (cellTo == null) {
             var curCell = moveRepo.getCellByName(_cell.value.toString()) // откуда идет перемещение
             var newCell = CellFactory.create(
                 typeCellId = curCell.typeCellId,
@@ -344,7 +345,7 @@ class MoveSessionViewModel : ViewModel() {
         )
         moveRepo.updateGoodsAsync(destinationGoods.copy(amount = item.haveCount + destinationGoods.amount), destinationChange)
     }
-    private suspend fun MoveSessionViewModel.movingOfItems(
+    private suspend fun movingOfItem(
         item: MoveSessionItem,
         viewModel: MainViewModel,
         moveRepo: MoveeRepository,
@@ -352,16 +353,22 @@ class MoveSessionViewModel : ViewModel() {
         allGoods: List<Goods>
     ) {
         if (item.isCell) {
+            if(item.haveCount != 0){
+                insertMovement(moveRepo, item, cellTo, "", viewModel)
+            }
             moveCellsToCell(item, viewModel, moveRepo, cellTo)
         } else {
             var catalog = moveRepo.getCatalogById(item.catalogId)
-            var listOfGoodsInCellTo: List<Goods> = allGoods
+            var listOfGoodsInDestinationCell: List<Goods> = allGoods
                 .filter { goodsItem -> goodsItem.cellId == cellTo.id && goodsItem.catalogId == catalog.id }
             // update db
-            if (listOfGoodsInCellTo.isEmpty() && item.haveCount != 0) {
+            if(item.haveCount != 0){
+                insertMovement(moveRepo, item, cellTo, catalog.id, viewModel)
+            }
+            if (listOfGoodsInDestinationCell.isEmpty() && item.haveCount != 0) {
                 createGoodsInDestinationCell(item, cellTo, viewModel, moveRepo)
                 updateOrRemoveGoodsInSource(item, viewModel, moveRepo)
-            } else if (listOfGoodsInCellTo.isNotEmpty() && item.haveCount != 0) {
+            } else if (listOfGoodsInDestinationCell.isNotEmpty() && item.haveCount != 0) {
                 updateGoodsInDestinationCell(
                     allGoods = allGoods,
                     item = item,
@@ -370,8 +377,36 @@ class MoveSessionViewModel : ViewModel() {
                 )
                 updateOrRemoveGoodsInSource(item, viewModel, moveRepo)
             }
+
         }
     }
+
+    private suspend fun insertMovement(
+        moveRepo: MoveeRepository,
+        item: MoveSessionItem,
+        cellTo: Cell,
+        catalogId: String,
+        viewModel: MainViewModel
+    ) {
+        var movement = MovementFactory.create(
+            cellFromId =
+                if(item.goodsId!= "") moveRepo.getGoodsById(item.goodsId).cellId
+                else moveRepo.getCellById(item.catalogId).parentCellId.toString(),
+            cellToId = cellTo.id,
+            catalogId = catalogId,
+            goodsId = item.goodsId,
+            qty = item.haveCount.toString(),
+            operationType = OperationType.Movement,
+            entityId = if(item.goodsId != "") item.goodsId else item.catalogId// catalog id is id of te if item is as te
+        )
+        var change = ChangeFactory.create(
+            entityId = movement.id,
+            supplierId = (viewModel.uiState.value as UiState.MoveSessionMenu).supplierId,
+            operationType = OperationType.InsertMovement
+        )
+        moveRepo.insertMovementAsync(movement, change)
+    }
+
     fun setSelection(checked: Boolean) {
         var list: MutableList<MoveSessionItem> = mutableListOf()
         if (checked){
