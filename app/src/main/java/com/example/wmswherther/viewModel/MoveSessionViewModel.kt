@@ -10,9 +10,15 @@ import com.example.wmsRemote.data.enums.OperationType
 import com.example.wmsRemote.data.enums.StatusType
 import com.example.wmswherther.Classes.MoveSessionItem
 import com.example.wmswherther.Classes.UiState
+import com.example.wmswherther.data.db.Entityes.Barcode
+import com.example.wmswherther.data.db.Entityes.Catalog
 import com.example.wmswherther.data.db.Entityes.Change
 import com.example.wmswherther.data.db.Entityes.Goods
 import com.example.wmswherther.data.db.Repositories.MoveRepository
+import com.example.wmswherther.data.db.Repositories.MoveeRepository
+import com.example.wmswherther.data.factory.CellFactory
+import com.example.wmswherther.data.factory.ChangeFactory
+import com.example.wmswherther.data.factory.GoodsFactory
 import com.example.wmswherther.viewModel.MainViewModel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -53,29 +59,7 @@ class MoveSessionViewModel : ViewModel() {
         fun updateMyData(collection: MutableList<MoveSessionItem>){
             _myData.value = collection
         }
-        fun changeList(barcode: String, dao: Dao){
-            viewModelScope.launch {
-                var list: MutableList<MoveSessionItem> = mutableListOf()
-                var localCounter = 0
-                withContext(Dispatchers.IO) {
-                    var dbBarcode = dao.getBarcodeByName(barcode)
-                    var catalog = dao.getCatalogById(dbBarcode.catalogId)
-                    myData.value?.forEach { item ->
-                        if(item.catalogId == catalog.id && item.haveCount < item.allCount){
-                            list.add(item.copy(haveCount = item.haveCount + 1))
-                            localCounter += 1
-                        }else {
-                            list.add((item))
-                        }
-                    }
-                }
-                withContext(Dispatchers.Main){
-                    updateMyData(list)
-                    setCounter(getCounter() + localCounter)
 
-                }
-            }
-        }
         fun setSelectedItem(selectedItemCount: Int){
             _selectedItem.value = selectedItemCount
         }
@@ -107,7 +91,7 @@ class MoveSessionViewModel : ViewModel() {
     // </editor-fold>
     // <editor-fold desc="UI  actions">
         fun loadData(
-            dao: Dao,
+            moveRepo: MoveeRepository,
             barcode: String,
             viewModel: MainViewModel
         ) {
@@ -115,43 +99,10 @@ class MoveSessionViewModel : ViewModel() {
                 var list: MutableList<MoveSessionItem> = mutableListOf()
                 var totalCount = 0
                 withContext(Dispatchers.IO) {
-                    var cell = dao.getCellByName(barcode)
+                    var cell = moveRepo.getCellByName(barcode)
                     if (cell != null) {
-                        dao.getGoodsByCellId(cell.id).forEach { goods: Goods ->
-                            var catalog = dao.getCatalogById(goods.catalogId)
-                            if (catalog.supplierId == (viewModel.uiState.value as UiState.MoveSessionMenu).supplierId && goods.isAvailable) {
-                                totalCount +=  goods.amount
-
-                                list.add(
-                                    MoveSessionItem(
-                                        isSelected = false,
-                                        haveCount = 0,
-                                        allCount = goods.amount,
-                                        name = catalog.name,
-                                        catalogId = catalog.id,
-                                        goodsId = goods.id,
-                                        isCell = false
-
-                                    )
-                                )
-                            }
-                        }
-                        dao.getAllCells()
-                            .filter { innerCell-> innerCell.parentCellId == cell.id }
-                            .forEach { inner ->
-                                totalCount +=  1
-                                list.add(
-                                    MoveSessionItem(
-                                        name = inner.name,
-                                        haveCount = 0,
-                                        catalogId = inner.id,//TODO создать новый класс в котором будет свойство cellID
-                                        goodsId = "",
-                                        allCount = 1,
-                                        isSelected = false,
-                                        isCell = true
-                                    )
-                                )
-                            }
+                        totalCount = loadGoods(moveRepo, cell, viewModel, list)
+                        totalCount += loadTe(moveRepo, cell, list)
                     }
                 }
                 withContext(Dispatchers.Main) {
@@ -161,57 +112,266 @@ class MoveSessionViewModel : ViewModel() {
             }
         }
 
-        fun moveItems(barcode: String,
-                      dao: Dao,
-                      viewModel: MainViewModel) {
-            var listItems : List<MoveSessionItem> = listOf()
-            var moveRepo = MoveRepository(dao)
-            viewModelScope.launch {
-                var localCounter : Int = counter.value ?: 0
-                withContext(Dispatchers.IO) {
-                var cellTo = moveRepo.getCell(barcode, viewModel, _cell.value.toString())
-                    var allGoods: List<Goods> = dao.getGoods().filter { goods -> goods.cellId == cellTo.id }
-                    myData.value?.forEach { item ->
-                        if (item.isCell){
-                            moveRepo.moveCellToCell(item, cellTo, dao, viewModel)//TODO make validation is Cell
-                        }else {
-                            moveRepo.moveGoodsToCell(item, allGoods, cellTo, viewModel)
-                        }
-                        // update ui
-                        if(item.allCount == item.haveCount){
 
-                        }
-                        else if (item.haveCount != item.allCount && item.haveCount != 0) {
-                            listItems += item.copy(
-                                haveCount = 0,
-                                allCount = item.allCount - item.haveCount
-                            )
-                        } else if (item.haveCount == 0) {
-                            listItems += item
-                        }
+
+    fun moveItems(barcode: String,
+                      moveRepo: MoveeRepository,
+                      viewModel: MainViewModel) {
+            var listItems : MutableList<MoveSessionItem> = mutableListOf()
+            var localCounter : Int = counter.value ?: 0
+            viewModelScope.launch {
+                withContext(Dispatchers.IO) {
+                    var cellTo = getCellDestination(moveRepo, barcode, viewModel)
+                    var allGoods: List<Goods> = moveRepo.getGoods()
+                                    .filter { goods -> goods.cellId == cellTo.id }
+                    myData.value?.forEach { item ->
+                        movingOfItems(item, viewModel, moveRepo, cellTo, allGoods)
+                        updateUiList(item, listItems)
                         localCounter -= item.haveCount// for know that need show dialog window when switch to other cell
                     }
                 }
                 withContext(Dispatchers.Main){
-                    updateMyData(listItems.toMutableList())
+                    updateMyData(listItems)
                     setCounter(localCounter)// for know that need show dialog window when switch to other cell
                 }
                 updateIsMoving(false)
             }
         }
 
+    fun changeList(barcode: String, moveRepo: MoveeRepository){
+        viewModelScope.launch {
+            var list: MutableList<MoveSessionItem> = mutableListOf()
+            var localCounter = 0
+            var dbBarcode: Barcode
+            var catalog: Catalog
+            dbBarcode = withContext(Dispatchers.IO) {
+                moveRepo.getBarcodeByName(barcode)
+            } ?: return@launch
+
+            catalog = withContext(Dispatchers.IO) {
+                moveRepo.getCatalogById(dbBarcode.catalogId)
+            } ?: return@launch
+
+            withContext(Dispatchers.IO){
+                myData.value?.forEach { item ->
+                    if(item.catalogId == catalog.id && item.haveCount < item.allCount){
+                        list.add(item.copy(haveCount = item.haveCount + 1))
+                        localCounter += 1
+                    }else {
+                        list.add((item))
+                    }
+                }
+            }
+            withContext(Dispatchers.Main){
+                updateMyData(list)
+                setCounter(getCounter() + localCounter)
+
+            }
+        }
+    }
 
     // </editor-fold>
     // <editor-fold desc="helper function">
 
+    private fun loadTe(
+        moveRepo: MoveeRepository,
+        cell: Cell,
+        list: MutableList<MoveSessionItem>
+    ) : Int {
+        var totalCount : Int = 0
+        moveRepo.getAllCells()
+            .filter { innerCell -> innerCell.parentCellId == cell.id }
+            .forEach { inner ->
+                totalCount += 1
+                list.add(
+                    MoveSessionItem(
+                        name = inner.name,
+                        haveCount = 0,
+                        catalogId = inner.id,//TODO создать новый класс в котором будет свойство cellID
+                        goodsId = "",
+                        allCount = 1,
+                        isSelected = false,
+                        isCell = true
+                    )
+                )
+            }
+        return totalCount
+    }
 
+    private suspend fun loadGoods(
+        moveRepo: MoveeRepository,
+        cell: Cell,
+        viewModel: MainViewModel,
+        list: MutableList<MoveSessionItem>
+    ): Int {
+        var totalCount = 0
+        moveRepo.getGoodsByCellId(cell.id).forEach { goods: Goods ->
+            var catalog = moveRepo.getCatalogById(goods.catalogId)
+            if (catalog.supplierId == (viewModel.uiState.value as UiState.MoveSessionMenu).supplierId && goods.isAvailable) {
+                totalCount += goods.amount
+
+                list.add(
+                    MoveSessionItem(
+                        isSelected = false,
+                        haveCount = 0,
+                        allCount = goods.amount,
+                        name = catalog.name,
+                        catalogId = catalog.id,
+                        goodsId = goods.id,
+                        isCell = false
+
+                    )
+                )
+            }
+        }
+        return totalCount
+    }
     fun isCell(cell: String): Boolean {
         if (cell.length == 4 && cell[0] in 'A' .. 'Z' && cell[1].isDigit() && cell[2].isDigit() && cell[3].isDigit()){
             return true
         }
         return false
     }
+    private fun updateUiList(
+        item: MoveSessionItem,
+        listItems: MutableList<MoveSessionItem>
+    ) {
+        if (item.allCount == item.haveCount) {
 
+        } else if (item.haveCount != item.allCount && item.haveCount != 0) {
+            listItems += item.copy(
+                haveCount = 0,
+                allCount = item.allCount - item.haveCount
+            )
+        } else if (item.haveCount == 0) {
+            listItems += item
+        }
+    }
+
+    private suspend fun moveCellsToCell(
+        item: MoveSessionItem,
+        viewModel: MainViewModel,
+        moveRepo: MoveeRepository,
+        cellTo: Cell
+    ) {
+        if (item.haveCount == 1) { // ячейка выбрана поэтому 1, больше 1 быть не может
+            var changes = ChangeFactory.create(
+                entityId = item.catalogId,
+                supplierId = (viewModel.uiState.value as UiState.MoveSessionMenu).supplierId,
+                operationType = OperationType.UpdateCell
+            )
+            var cell = moveRepo.getCellById(item.catalogId)
+            moveRepo.updateCellAsync(cell.copy(parentCellId = cellTo.id), changes)
+        }
+    }
+
+    private suspend fun getCellDestination(
+        moveRepo: MoveeRepository,
+        barcode: String,
+        viewModel: MainViewModel
+    ): Cell {
+        var cellTo = moveRepo.getCellByName(barcode)
+        if (cell == null) {
+            var curCell = moveRepo.getCellByName(_cell.value.toString()) // откуда идет перемещение
+            var newCell = CellFactory.create(
+                typeCellId = curCell.typeCellId,
+                parentCellId = curCell.parentCellId,
+                name = barcode
+            )
+            var changes = ChangeFactory.create(
+                entityId = newCell.id,
+                supplierId = (viewModel.uiState.value as UiState.MoveSessionMenu).supplierId,
+                operationType = OperationType.InsertCell
+            )
+            moveRepo.insertCellSync(newCell, changes)
+            cellTo = newCell
+        }
+        return cellTo
+    }
+    suspend  fun createGoodsInDestinationCell(
+        item: MoveSessionItem,
+        cellTo: Cell,
+        viewModel: MainViewModel,
+        moveRepo: MoveeRepository) {
+        var goods = GoodsFactory.create(
+            amount = item.haveCount,
+            cellId = cellTo.id,
+            catalogId = item.catalogId,
+            isAvailable = true
+        )
+        var changes = ChangeFactory.create(
+            entityId = goods.id,
+            supplierId = (viewModel.uiState.value as UiState.MoveSessionMenu).supplierId,
+            operationType = OperationType.InsertGoods
+        )
+        moveRepo.insertGoodsAsync(goods,changes)
+    }
+
+    suspend fun updateOrRemoveGoodsInSource(
+        item: MoveSessionItem,
+        viewModel: MainViewModel,
+        moveRepo: MoveeRepository
+    ) {
+        if (item.haveCount == item.allCount) {
+            var deleteChanges = ChangeFactory.create(
+                entityId = item.goodsId,
+                supplierId = (viewModel.uiState.value as UiState.MoveSessionMenu).supplierId,
+                operationType = OperationType.DeleteGoods
+            )
+            moveRepo.deleteGoodsAsync(moveRepo.getGoodsById(item.goodsId), deleteChanges)
+        } else {
+            var updateChange =ChangeFactory.create(
+                entityId = item.goodsId,
+                supplierId = (viewModel.uiState.value as UiState.MoveSessionMenu).supplierId,
+                operationType = OperationType.UpdateGoods
+            )
+            var updatedGoods = moveRepo.getGoodsById(item.goodsId)
+                .copy(amount = item.allCount - item.haveCount)
+            moveRepo.updateGoodsAsync(updatedGoods, updateChange)
+        }
+    }
+    suspend fun updateGoodsInDestinationCell(
+        allGoods: List<Goods>,
+        item: MoveSessionItem,
+        viewModel: MainViewModel,
+        moveRepo: MoveeRepository
+    ) {
+        var destinationGoods = allGoods.first { goods -> goods.catalogId == item.catalogId }
+        var destinationChange: Change = ChangeFactory.create(
+            entityId = destinationGoods.id,
+            supplierId = (viewModel.uiState.value as UiState.MoveSessionMenu).supplierId,
+            operationType = OperationType.UpdateGoods
+        )
+        moveRepo.updateGoodsAsync(destinationGoods.copy(amount = item.haveCount + destinationGoods.amount), destinationChange)
+    }
+    private suspend fun MoveSessionViewModel.movingOfItems(
+        item: MoveSessionItem,
+        viewModel: MainViewModel,
+        moveRepo: MoveeRepository,
+        cellTo: Cell,
+        allGoods: List<Goods>
+    ) {
+        if (item.isCell) {
+            moveCellsToCell(item, viewModel, moveRepo, cellTo)
+        } else {
+            var catalog = moveRepo.getCatalogById(item.catalogId)
+            var listOfGoodsInCellTo: List<Goods> = allGoods
+                .filter { goodsItem -> goodsItem.cellId == cellTo.id && goodsItem.catalogId == catalog.id }
+            // update db
+            if (listOfGoodsInCellTo.isEmpty() && item.haveCount != 0) {
+                createGoodsInDestinationCell(item, cellTo, viewModel, moveRepo)
+                updateOrRemoveGoodsInSource(item, viewModel, moveRepo)
+            } else if (listOfGoodsInCellTo.isNotEmpty() && item.haveCount != 0) {
+                updateGoodsInDestinationCell(
+                    allGoods = allGoods,
+                    item = item,
+                    viewModel = viewModel,
+                    moveRepo = moveRepo
+                )
+                updateOrRemoveGoodsInSource(item, viewModel, moveRepo)
+            }
+        }
+    }
     fun setSelection(checked: Boolean) {
         var list: MutableList<MoveSessionItem> = mutableListOf()
         if (checked){

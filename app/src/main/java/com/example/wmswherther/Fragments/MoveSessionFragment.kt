@@ -17,6 +17,7 @@ import com.example.wmsRemote.databinding.FragmentMoveSessionBinding
 import com.example.wmsRemote.viewModel.MoveSessionViewModel
 import com.example.wmswherther.Classes.UiState
 import com.example.wmswherther.data.db.Entityes.CellType
+import com.example.wmswherther.data.db.Repositories.MoveeRepository
 import com.example.wmswherther.viewModel.MainViewModel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -39,6 +40,7 @@ class MoveSessionFragment: Fragment() {
         _binding = FragmentMoveSessionBinding.inflate(inflater)
         var dao = MainDB.getDB(requireActivity()).getDao()
         var listTypes : List<CellType> = listOf()
+        var moveRepo: MoveeRepository = MoveeRepository(dao)
 
         var recyclerView: RecyclerView = binding.rwContainer
         var adapter = MoveSessionAdapter(listOf(), requireActivity(), localViewModel, recyclerView)
@@ -48,7 +50,7 @@ class MoveSessionFragment: Fragment() {
 
         localViewModel.viewModelScope.launch {
             withContext(Dispatchers.IO) {
-                listTypes = dao.getCellTypes()
+                listTypes = moveRepo.getCellTypes()
             }
         }
         localViewModel.counter.observe(requireActivity(), { count ->
@@ -67,7 +69,7 @@ class MoveSessionFragment: Fragment() {
             if(barcode != "" && viewModel.uiState.value is UiState.MoveSessionMenu) {
                 if (isCell(barcode, listTypes)) {
                     if (localViewModel.isMoving.value != null && localViewModel.isMoving.value!!) {
-                        localViewModel.moveItems(barcode, dao, viewModel)
+                        localViewModel.moveItems(barcode, moveRepo, viewModel)
                         // если числа равны то смена ячейки
                         // иначе создается новый goods
                         //TODO перемещение элементов если нажата клавиша
@@ -80,7 +82,7 @@ class MoveSessionFragment: Fragment() {
                                     .setMessage("Есть остканированный товар, при переходе в другую ячейку прогресс сбросится!")
                                     .setPositiveButton("Да") { _, _ ->
                                         localViewModel.updateCell(barcode)
-                                        localViewModel.loadData(dao, barcode, viewModel)
+                                        localViewModel.loadData(moveRepo, barcode, viewModel)
                                         localViewModel.setCounter(0)
                                     }
                                     .setNegativeButton("Нет", null)
@@ -88,13 +90,13 @@ class MoveSessionFragment: Fragment() {
                                 dialog.show()
                             }else {
                                 localViewModel.updateCell(barcode)
-                                localViewModel.loadData(dao, barcode, viewModel)
+                                localViewModel.loadData(moveRepo, barcode, viewModel)
                             }
                         }
                     }
                 } else {
                     if(barcode != null)
-                        localViewModel.changeList(barcode, dao)
+                        localViewModel.changeList(barcode, moveRepo)
                     //TODO шк тут надо, НАЙТИ в бд и ...
                 }
             }
@@ -124,28 +126,6 @@ class MoveSessionFragment: Fragment() {
         })
 
         with(binding){
-            /*etCell.setOnEditorActionListener { textView, actionId, event ->
-                if (actionId == EditorInfo.IME_ACTION_DONE || actionId == EditorInfo.IME_ACTION_UNSPECIFIED) {
-                    // Выполнить действие
-                    val text = etCell.text.toString()
-                    if(text != "") {
-                        handleTextChange(
-                            text,
-                            etCell.text.toString().trim(),
-                            this@MoveActivity,
-                            db,
-                            adapter
-                        )
-                    }
-                    return@setOnEditorActionListener true
-                }
-                return@setOnEditorActionListener false
-            }
-            btnSearch.setOnClickListener {
-
-                handleTextChange(tvCellName.text.toString(), etCell.text.toString().trim(), this@MoveActivity, db, adapter)
-
-            }*/
             //TODO make that cell displayed in top, move btn collapsed, cancel btn appear, changing flag moving
             btnMove.setOnClickListener{
                 localViewModel.updateIsMoving(true)
@@ -153,27 +133,6 @@ class MoveSessionFragment: Fragment() {
             btnCancel.setOnClickListener {
                 localViewModel.updateIsMoving(false)
             }
-            /*etCell.addTextChangedListener(object : TextWatcher {
-                override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {
-                }
-
-                override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {
-                }
-
-                override fun afterTextChanged(editable: Editable?) {
-                    textChangesChannel.trySend(editable.toString())
-                }
-            })
-            btnBork.setOnClickListener {
-                llMenu.visibility = View.GONE
-                CLContainer.visibility = View.VISIBLE
-                viewModel.supplier = SupplierType.Bork.ordinal
-            }
-            btnAtomy.setOnClickListener {
-                llMenu.visibility = View.GONE
-                CLContainer.visibility = View.VISIBLE
-                viewModel.supplier = SupplierType.Atomy.ordinal
-            }*/
         }
 
         return binding.root
@@ -189,9 +148,6 @@ fun isCell(cell: String, list: List<CellType>): Boolean {
         }
     }
     return false
-    /*if (cell.length == 4 && cell[0] in 'A' .. 'Z' && cell[1].isDigit() && cell[2].isDigit() && cell[3].isDigit()){
-        return true
-    }*/
 }
 fun convertToInt(nullableInt: Int?): Int {
     return nullableInt ?: 0  // If nullableInt is null, use 0 as default
