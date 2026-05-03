@@ -101,28 +101,30 @@ class IncomeSessionAdapter(
                     dialog.setButton(android.app.AlertDialog.BUTTON_POSITIVE, "Да") { _, _ ->
                         var newData: MutableList<IncomeItem> = mutableListOf()
                         var allData: MutableList<IncomeItem> = mutableListOf()
-                        var catalogIdOfItem : String = getCatalogIdOfItem(item)
 
                         if(localViewModel.stack.size == 0) {
                             localViewModel.items.value?.forEach { innerItem ->
-                                var catalogIdOfInnerItem : String = getCatalogIdOfItem(innerItem)
 
-                                if (catalogIdOfInnerItem != catalogIdOfItem || (catalogIdOfInnerItem == catalogIdOfItem && localViewModel.currentCellName.value != item.parentCellName)) {
+                                if (innerItem.getCatalogIdOfItem() != item.getCatalogIdOfItem()
+                                    || (innerItem.getCatalogIdOfItem() == item.getCatalogIdOfItem()
+                                    && localViewModel.currentCellName.value != item.parentCellName)) {
                                     newData += innerItem
                                 }
                             }
                         }else{
                             localViewModel.items.value?.forEach { innerItem ->
-                                var catalogIdOfInnerItem : String = getCatalogIdOfItem(innerItem)
-                                if (catalogIdOfInnerItem != catalogIdOfItem || (catalogIdOfInnerItem == catalogIdOfItem && localViewModel.currentCellName.value != innerItem.parentCellName)) {
+                                if (innerItem.getCatalogIdOfItem() != item.getCatalogIdOfItem()
+                                    || (innerItem.getCatalogIdOfItem() == item.getCatalogIdOfItem()
+                                    && localViewModel.currentCellName.value != innerItem.parentCellName)) {
                                     newData += innerItem
                                 }
                             }
 
                             var value = localViewModel.stack.removeLast().toList()
                             value.forEach { innerItem->
-                                var catalogIdOfInnerItem : String = getCatalogIdOfItem(innerItem)
-                                if (catalogIdOfInnerItem != catalogIdOfItem || (catalogIdOfInnerItem == catalogIdOfItem && localViewModel.currentCellName.value != innerItem.parentCellName)) {
+                                if (innerItem.getCatalogIdOfItem() != item.getCatalogIdOfItem()
+                                    || (innerItem.getCatalogIdOfItem() == item.getCatalogIdOfItem()
+                                    && localViewModel.currentCellName.value != innerItem.parentCellName)) {
                                     allData += innerItem
                                 }
                             }
@@ -201,8 +203,7 @@ class IncomeSessionAdapter(
                 holder.bind(item)
             }
             is IncomeSessionExpandedViewHolder ->{
-                var teNameOfItem : String = getNameOfTe(item)
-                holder.tvLeft.text = teNameOfItem
+                holder.tvLeft.text = item.getName()
                 holder.container.setOnClickListener {
                     var value = localViewModel.stack.removeLast().toList()
                     localViewModel.cellStack.removeLast()
@@ -210,11 +211,11 @@ class IncomeSessionAdapter(
                     for (elem in value){
                         localViewModel.items.value?.forEach { item ->
 
-                            if( teNameOfItem == elem.parentCellName){
+                            if( item.getName() == elem.parentCellName){
                                 elem.isExpanded = false
                             }
                             if( (elem is IncomeItem.GoodsItem || elem is IncomeItem.NewGoodsItem) //меняем количество только у товара а не у те
-                                    && getCatalogIdOfItem(elem) == getCatalogIdOfItem(item)
+                                    && elem.getCatalogIdOfItem() == item.getCatalogIdOfItem()
                                     && item.parentCellName == elem.parentCellName){
                                 elem.haveCount = item.haveCount
                             }
@@ -225,16 +226,15 @@ class IncomeSessionAdapter(
 
             }
             is IncomeSessionCollapsedViewHolder ->{
-                val teName : String = getNameOfTe(item)
-                holder.tvLeft.text = teName
+                holder.tvLeft.text = item.getName()
                 holder.container.setOnClickListener {
                     var value = localViewModel.items.value!!.toList()
                     localViewModel.stack.addLast(value)
                     var list: MutableList<IncomeItem> = mutableListOf()
-                    localViewModel.setCellName(teName)
+                    localViewModel.setCellName(item.getName())
                     localViewModel.cellStack.addLast(localViewModel.currentCellName.value.toString())
                     localViewModel.items.value?.forEach { elem ->
-                        if(elem.parentCellName == teName){
+                        if(elem.parentCellName == item.getName()){
                             elem.isExpanded = true
                             elem.isShown = true
                             list.add(elem)
@@ -259,7 +259,7 @@ class IncomeSessionAdapter(
                     dialog.setButton(android.app.AlertDialog.BUTTON_POSITIVE, "Да") { _, _ ->
                         var newCollection : MutableList<IncomeItem> = mutableListOf()
                         localViewModel.items.value?.forEach { localItem->
-                            if (teName != localItem.parentCellName){
+                            if (item.getName() != localItem.parentCellName){
                                 newCollection += localItem
                             }
                         }
@@ -270,7 +270,7 @@ class IncomeSessionAdapter(
                         //удаление те
                         localViewModel.items.value?.forEach { localItem->
 
-                            if (teName != localItem.getName()){
+                            if (item.getName() != localItem.getName()){
                                 if(item.getName() == localItem.parentCellName){
                                     localItem.parentCellName = localViewModel.currentCellName.value.toString()
                                     localItem.isShown = true
@@ -281,6 +281,8 @@ class IncomeSessionAdapter(
                             }
                         }
                         // сложение дубликатов
+
+
 
                         var goodsItems : List<IncomeItem.GoodsItem> = newCollection.filterIsInstance<IncomeItem.GoodsItem>()
                         var newGoodsItems : List<IncomeItem.NewGoodsItem> = newCollection.filterIsInstance<IncomeItem.NewGoodsItem>()
@@ -309,23 +311,7 @@ class IncomeSessionAdapter(
 
                             }.forEach { item -> result += item }
 
-                        /*var result = newCollection
-                            .groupBy {it.catalogId}
-                            .map { (id, group) ->
-                               IncomeItem(
-                                   name = group.first().name,
-                                   TE = group.first().TE,
-                                   catalogId = id,
-                                   goodsId = group.first().goodsId,
-                                   haveCount = group.sumOf { it.haveCount },
-                                   allCount = group.sumOf { it.allCount },
-                                   teCount = group.sumOf { it.teCount },
-                                   isSelected = group.first().isSelected,
-                                   isExpandable = group.first().isExpandable,
-                                   isExpanded = group.first().isExpanded,
-                                   isShown = group.first().isShown,
-                               )
-                            }*/
+
                         localViewModel.updateItems(result)
                         //TODO Удалить те, а для элементов назначить те, как и у остальных
                         dialogInterface.dismiss()
@@ -349,32 +335,8 @@ class IncomeSessionAdapter(
 
 
 
-    private fun getNameOfTe(item: IncomeItem): String {
-        var teName = ""
-        if(item is IncomeItem.TEItem){
-            teName = item.teName
-        }
-        if(item is IncomeItem.NewTEItem){
-            teName = item.teName
-        }
-        return teName
-    }
 
-    private fun getCatalogIdOfItem(
-        item: IncomeItem,
-    ) : String {
-        var catalogIdOfItem = ""
-        if (item is IncomeItem.GoodsItem) {
-            catalogIdOfItem = item.catalogId
-        }
-        if (item is IncomeItem.NewGoodsItem) {
-            catalogIdOfItem = item.catalogId
-        }
-        return catalogIdOfItem
-    }
-
-
-    //TODO не получается корректно добавлять те внутри других те, но вроде работает сканирование добавление элементов
+//TODO не получается корректно добавлять те внутри других те, но вроде работает сканирование добавление элементов
 //TODO если отсканировал и вышел из те, то почему то пропадают элементы. При добавлении новой те внутри те неправильный порядок те
     override fun getItemCount(): Int {
         return data.count()

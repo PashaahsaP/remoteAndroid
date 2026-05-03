@@ -44,37 +44,28 @@ sealed class IncomeItem {
         val teName: String,
         ) : IncomeItem()
     fun getName() : String{
-        var name : String = "Unknow"
-        if(this is GoodsItem){
-            name = this.goodsName
+        return when{
+            this is GoodsItem -> goodsName
+            this is NewGoodsItem -> goodsName
+            this is TEItem -> teName
+            this is NewTEItem -> teName
+            this is UnknowItem -> name
+            else -> "Unknow"
         }
-        if(this is NewGoodsItem){
-            name = this.goodsName
-        }
-        if(this is TEItem){
-            name = this.teName
-        }
-        if(this is NewTEItem){
-            name = this.teName
-        }
-
-        return  name
     }
 
+    /**
+     * Get catalogId Of goods item, if other is "nothing"
+     */
+    fun getCatalogIdOfItem(): String{
+        return when{
+            this is GoodsItem -> catalogId
+            this is NewGoodsItem -> catalogId
+            else -> "Unknow"
+        }
+    }
 }
-data class IncomeeItem(
-     var name: String,
-     var TE: String,
-     var catalogId: String,
-     var goodsId: String,
-     var haveCount: Int,
-     var allCount: Int,
-     var teCount:Int = 0,
-    var isSelected: Boolean = false,
-    var isExpanded: Boolean = false,
-    var isExpandable: Boolean = false,
-    var isShown: Boolean = true
-)
+
 data class InventorySessionItem(
     var name: String,
     var TE: String,

@@ -220,8 +220,7 @@ class IncomeSessionFragment : Fragment() {
         innerIncomeItems: MutableList<IncomeItem>
     ) {
         localViewModel.items.value?.forEach { item ->//TODO какая то хуета тут
-            var itemName = getItemName(item)
-            if (item.parentCellName == TE && itemName != item.parentCellName)//чтобы повторно не добавлять те, которая была в начале обработана. Добивание коллекции
+            if (item.parentCellName == TE && item.getName() != item.parentCellName)//чтобы повторно не добавлять те, которая была в начале обработана. Добивание коллекции
             {
                 innerIncomeItems.add(item)
             }
@@ -233,18 +232,7 @@ class IncomeSessionFragment : Fragment() {
         }
     }
 
-    private fun getItemName(
-        item: IncomeItem,
-    ): String {
-        var itemName = ""
-        if (item is IncomeItem.GoodsItem) {
-            itemName = item.goodsName
-        }
-        if (item is IncomeItem.NewGoodsItem) {
-            itemName = item.goodsName
-        }
-        return itemName
-    }
+
 
     private fun removeDuplication(innerIncomeItems: MutableList<IncomeItem>): MutableList<IncomeItem> {
         var result: MutableList<IncomeItem> = mutableListOf()
