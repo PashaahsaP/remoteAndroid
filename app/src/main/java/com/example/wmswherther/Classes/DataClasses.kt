@@ -8,14 +8,68 @@ data class TaskMenuItem(
     var number: String,
     var date: String,
 )
-data class IncomeItem(
-    var name: String,
-    var TE: String,
-    var catalogId: String,
-    var goodsId: String,
-    var haveCount: Int,
-    var allCount: Int,
-    var teCount:Int = 0,
+sealed class IncomeItem {
+    var isSelected: Boolean = false
+    var isExpanded: Boolean = false
+    var isExpandable: Boolean = false
+    var isShown: Boolean = true
+    var haveCount: Int = 0
+    var allCount: Int = 0
+    var teCount: Int = 0
+    var parentCellId: String = ""
+    var parentCellName: String = ""
+
+    data class UnknowItem(
+        val name: String,
+    ) : IncomeItem()
+    data class NewGoodsItem(
+        var goodsName: String,
+        var catalogId: String,
+        var supplierId: String,
+    ) : IncomeItem()
+    data class GoodsItem(
+        val goodsName: String,
+        val id: String,
+        val catalogId: String,
+        val supplierId: String,
+    ) : IncomeItem()
+
+    data class TEItem(
+        val teName: String,
+        val id: String,
+        val typeCellId: String,
+
+    ) : IncomeItem()
+    data class NewTEItem(
+        val teName: String,
+        ) : IncomeItem()
+    fun getName() : String{
+        var name : String = "Unknow"
+        if(this is GoodsItem){
+            name = this.goodsName
+        }
+        if(this is NewGoodsItem){
+            name = this.goodsName
+        }
+        if(this is TEItem){
+            name = this.teName
+        }
+        if(this is NewTEItem){
+            name = this.teName
+        }
+
+        return  name
+    }
+
+}
+data class IncomeeItem(
+     var name: String,
+     var TE: String,
+     var catalogId: String,
+     var goodsId: String,
+     var haveCount: Int,
+     var allCount: Int,
+     var teCount:Int = 0,
     var isSelected: Boolean = false,
     var isExpanded: Boolean = false,
     var isExpandable: Boolean = false,

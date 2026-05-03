@@ -21,7 +21,9 @@ import com.example.wmswherther.Adapters.IncomeSessionAdapter
 import com.example.wmswherther.Classes.IncomeItem
 import com.example.wmswherther.Classes.UiState
 import com.example.wmswherther.data.db.Entityes.Barcode
+import com.example.wmswherther.data.db.Entityes.Cell
 import com.example.wmswherther.data.db.Repositories.IncomeRepository
+import com.example.wmswherther.data.factory.IncomeItemFactory
 import com.example.wmswherther.viewModel.IncomeSessionViewModel
 import com.example.wmswherther.viewModel.MainViewModel
 import kotlinx.coroutines.Dispatchers
@@ -136,14 +138,12 @@ class IncomeSessionFragment : Fragment() {
     ) {
         if (barcode != "" && viewModel.uiState.value is UiState.IncomeSessionMenu) {
             lifecycleScope.launch {
-                var newItems: List<IncomeItem> = listOf()
+                var newItems: MutableList<IncomeItem> = mutableListOf()
                 var bar = incomeRepo.getBarcodeByName(barcode)
                 if (bar != null && bar is Barcode) {
                     var isAdded = false
                     withContext(Dispatchers.IO) {
-                        val pair = increaseCounterInMainListForBarcode(bar, isAdded, newItems)
-                        isAdded = pair.first
-                        newItems = pair.second
+                        isAdded = increaseCounterInMainListForBarcode(bar, isAdded, newItems)
                         createNewItemIfNotFoundInMainList(isAdded, incomeRepo, bar, newItems)
                     }
                     withContext(Dispatchers.Main) {
@@ -169,24 +169,19 @@ class IncomeSessionFragment : Fragment() {
         isAdded: Boolean,
         incomeRepo: IncomeRepository,
         bar: Barcode,
-        newItems: List<IncomeItem>
+        newItems: MutableList<IncomeItem>
     ) {
-        var newItems1 = newItems
         if (!isAdded) {
             var catalog = incomeRepo.getCatalogById(bar.catalogId)
             if (catalog != null) {
-                newItems1 += IncomeItem(
+                newItems += IncomeItemFactory.createNewGoods(
                     name = catalog.name,
-                    TE = localViewModel.currentCellName.value.toString(),
                     catalogId = catalog.id,
-                    goodsId = "",
-                    haveCount = 1,
+                    parentCellId = incomeRepo.getCellByName(localViewModel.currentCellName.value.toString()).id,
+                    parentCellName = localViewModel.currentCellName.value.toString(),
+                    supplierId = catalog.supplierId,
                     allCount = 0,
-                    teCount = if (viewModel.IsIncomeSessionTEModeActive.value == true) 1 else 0,
-                    isSelected = false,
-                    isExpanded = false,
-                    isShown = true,
-                    isExpandable = false
+                    teCount = if (viewModel.IsIncomeSessionTEModeActive.value == true) 1 else 0
                 )
             }
         }
@@ -195,36 +190,29 @@ class IncomeSessionFragment : Fragment() {
     private fun increaseCounterInMainListForBarcode(
         bar: Barcode,
         isAdded: Boolean,
-        newItems: List<IncomeItem>
-    ): Pair<Boolean, List<IncomeItem>> {
+        newItems: MutableList<IncomeItem>
+    ): Boolean {
         var isAdded1 = isAdded
-        var newItems1 = newItems
         localViewModel.items.value?.forEach { item ->
             var teCount = item.teCount
             if ((viewModel.uiState.value as UiState.IncomeSessionMenu).isTEModeActive) {
                 teCount = teCount + 1
             }
-            if (item.catalogId == bar.catalogId && localViewModel.currentCellName.value.toString() == item.TE) {
+            if (item is IncomeItem.GoodsItem &&
+                item.catalogId == bar.catalogId && localViewModel.currentCellName.value.toString() == item.parentCellName) {
                 isAdded1 = true
-                newItems1 += IncomeItem(
-                    name = item.name,
-                    TE = item.TE,
-                    catalogId = item.catalogId,
-                    goodsId = item.goodsId,
-                    haveCount = item.haveCount + 1,
-                    allCount = item.allCount,
-                    teCount = teCount,
-                    isSelected = item.isSelected,
-                    isExpanded = item.isExpanded,
-                    isShown = item.isShown,
-                    isExpandable = item.isExpandable
-                )
-            } else {
-                newItems1 += item
+                newItems += IncomeItemFactory.copyGoodsPlusOne(item)
+            }else if (item is IncomeItem.NewGoodsItem &&
+                item.catalogId == bar.catalogId && localViewModel.currentCellName.value.toString() == item.parentCellName){
+                isAdded1 = true
+                newItems += IncomeItemFactory.copyNewGoodsPlusOne(item)
+            }
+            else {
+                newItems += item
             }
 
         }
-        return Pair(isAdded1, newItems1)
+        return isAdded1
     }
 
     private fun appendRemainigItemWithSameTE(
@@ -232,7 +220,8 @@ class IncomeSessionFragment : Fragment() {
         innerIncomeItems: MutableList<IncomeItem>
     ) {
         localViewModel.items.value?.forEach { item ->//TODO какая то хуета тут
-            if (item.TE == TE && item.name != item.TE)//чтобы повторно не добавлять те, которая была в начале обработана. Добивание коллекции
+            var itemName = getItemName(item)
+            if (item.parentCellName == TE && itemName != item.parentCellName)//чтобы повторно не добавлять те, которая была в начале обработана. Добивание коллекции
             {
                 innerIncomeItems.add(item)
             }
@@ -244,27 +233,48 @@ class IncomeSessionFragment : Fragment() {
         }
     }
 
+    private fun getItemName(
+        item: IncomeItem,
+    ): String {
+        var itemName = ""
+        if (item is IncomeItem.GoodsItem) {
+            itemName = item.goodsName
+        }
+        if (item is IncomeItem.NewGoodsItem) {
+            itemName = item.goodsName
+        }
+        return itemName
+    }
+
     private fun removeDuplication(innerIncomeItems: MutableList<IncomeItem>): MutableList<IncomeItem> {
         var result: MutableList<IncomeItem> = mutableListOf()
 
         result += innerIncomeItems.first()//группировка по catalogId чтобы в последующем сложить дубликаты
         innerIncomeItems.removeFirst()
-        innerIncomeItems
+        var goodsItems : List<IncomeItem.GoodsItem> = innerIncomeItems.filterIsInstance<IncomeItem.GoodsItem>()
+        var newGoodsItems : List<IncomeItem.NewGoodsItem> = innerIncomeItems.filterIsInstance<IncomeItem.NewGoodsItem>()
+        goodsItems
             .groupBy { it.catalogId }
             .map { (id, group) ->
-                IncomeItem(
-                    name = group.first().name,
-                    TE = group.first().TE,
-                    catalogId = id,
-                    goodsId = group.first().goodsId,
+                IncomeItemFactory.createGroupingGoods(
+                    goods = group.first(),
                     haveCount = group.sumOf { it.haveCount },
                     allCount = group.sumOf { it.allCount },
-                    teCount = group.sumOf { it.teCount },
-                    isSelected = group.first().isSelected,
-                    isExpandable = group.first().isExpandable,
-                    isExpanded = group.first().isExpanded,
-                    isShown = group.first().isShown,
+                    teCount = group.sumOf { it.teCount }
                 )
+
+            }.forEach { item -> result += item }
+
+        newGoodsItems
+            .groupBy { it.catalogId }
+            .map { (id, group) ->
+                IncomeItemFactory.createGroupingNewGoods(
+                    goods = group.first(),
+                    haveCount = group.sumOf { it.haveCount },
+                    allCount = group.sumOf { it.allCount },
+                    teCount = group.sumOf { it.teCount }
+                )
+
             }.forEach { item -> result += item }
         return result
     }
@@ -274,7 +284,7 @@ class IncomeSessionFragment : Fragment() {
         result: MutableList<IncomeItem>
     ) {
         localViewModel.items.value?.forEach { item ->
-            if (item.TE != TE && !(item.haveCount == 0 && item.allCount == 0)) {
+            if (item.parentCellName != TE && !(item.haveCount == 0 && item.allCount == 0)) {
                 item.teCount = 0
                 result.add(item)
             }
@@ -290,10 +300,9 @@ class IncomeSessionFragment : Fragment() {
             if (item.teCount != 0) {
                 if (item.haveCount < item.allCount) {
                     //То создать новый элемент, в старом уменьшить have и te
-                    var newItem = item.copy(
-                        TE = TE,
-                        teCount = 0,
-                        isShown = false,
+                    var newItem = IncomeItemFactory.copyGoodsOrNewGoods(
+                        goods = item,
+                        parentCellName = TE,
                         haveCount = item.teCount,
                         allCount = item.teCount
                     )
@@ -303,14 +312,13 @@ class IncomeSessionFragment : Fragment() {
 
                 } else if (item.haveCount == item.allCount) {
                     if ((item.haveCount - item.teCount) == 0) {
-                        item.TE = TE
+                        item.parentCellName = TE
                         item.isShown = false
                         item.teCount = 0
                     } else {
-                        var newItem = item.copy(
-                            TE = TE,
-                            teCount = 0,
-                            isShown = false,
+                        var newItem = IncomeItemFactory.copyGoodsOrNewGoods(
+                            goods = item,
+                            parentCellName = TE,
                             haveCount = item.teCount,
                             allCount = item.teCount
                         )
@@ -324,17 +332,18 @@ class IncomeSessionFragment : Fragment() {
 
                 } else {
                     if ((item.haveCount - item.teCount) == 0) {
-                        item.TE = TE
+                        item.parentCellName = TE
                         item.isShown = false
                         item.teCount = 0
                     } else {
-                        var newItem = item.copy(
-                            TE = TE,
-                            teCount = 0,
-                            isShown = false,
+
+                        var newItem = IncomeItemFactory.copyGoodsOrNewGoods(
+                            goods = item,
+                            parentCellName = TE,
                             haveCount = item.teCount,
                             allCount = item.allCount
                         )
+
                         innerIncomeItems.add(newItem)
                         var newCount = item.allCount - item.teCount
                         item.allCount = if (newCount < 0) 0 else newCount
@@ -352,21 +361,14 @@ class IncomeSessionFragment : Fragment() {
         innerIncomeItems: MutableList<IncomeItem>
     ) {
         localViewModel.items.value!!.forEach { item ->
-            if (item.name == TE) {
+            if (item is IncomeItem.TEItem &&  item.teName == TE) {
                 innerIncomeItems.add(item)
             }
         }
         if (innerIncomeItems.size == 0) {
-            var newTe = IncomeItem(
+            var newTe = IncomeItemFactory.createNewTE(
                 name = TE,
-                TE = TE,
-                catalogId = "",
-                goodsId = "",
-                haveCount = 0,
-                allCount = 0,
-                teCount = 0,
-                isExpanded = false,
-                isExpandable = true
+                parentCellName = localViewModel.currentCellName.value.toString(),
             )
             innerIncomeItems.add(newTe)
         }
@@ -378,7 +380,8 @@ class IncomeSessionFragment : Fragment() {
             if (isClosed == false) {
                 withContext(Dispatchers.IO) {
                     localViewModel.items.value?.forEach { item ->
-                        clearedCollection.add(item.copy(teCount = 0))
+                        item.teCount = 0
+                        clearedCollection.add(item)
                     }
                 }
                 withContext(Dispatchers.Main) {
@@ -422,17 +425,18 @@ class IncomeSessionFragment : Fragment() {
     ) {
         lifecycleScope.launch {
             var data: List<IncomeItem> = listOf()
-
+            var cell: Cell
             withContext(Dispatchers.Main) {
                 var session = incomeRepo.getIncomeSessionById(sessionId.toString())
-                var cellName = incomeRepo.getCellById(session.toCellId.toString()).name
-                localViewModel.cellStack.addLast(cellName)
-                localViewModel.setCellName(cellName)
+                cell = incomeRepo.getCellById(session.toCellId.toString())
+                localViewModel.cellStack.addLast(cell.name)
+                localViewModel.setCellName(cell.name)
             }
             withContext(Dispatchers.IO) {
                 data = localViewModel.loadItems(
                     incomeRepo = incomeRepo,
-                    sessionId = sessionId.toString()
+                    sessionId = sessionId.toString(),
+                    cell = cell
                 )
             }
             withContext(Dispatchers.Main) {

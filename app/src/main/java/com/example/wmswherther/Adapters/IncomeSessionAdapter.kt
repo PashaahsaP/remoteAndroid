@@ -18,6 +18,7 @@ import com.example.wmsRemote.R
 import com.example.wmsRemote.isBoxTE
 import com.example.wmswherther.Classes.IncomeItem
 import com.example.wmswherther.Classes.UiState
+import com.example.wmswherther.data.factory.IncomeItemFactory
 import com.example.wmswherther.viewModel.IncomeSessionViewModel
 import com.example.wmswherther.viewModel.MainViewModel
 
@@ -100,22 +101,28 @@ class IncomeSessionAdapter(
                     dialog.setButton(android.app.AlertDialog.BUTTON_POSITIVE, "Да") { _, _ ->
                         var newData: MutableList<IncomeItem> = mutableListOf()
                         var allData: MutableList<IncomeItem> = mutableListOf()
+                        var catalogIdOfItem : String = getCatalogIdOfItem(item)
+
                         if(localViewModel.stack.size == 0) {
                             localViewModel.items.value?.forEach { innerItem ->
-                                if (innerItem.catalogId != item.catalogId || (innerItem.catalogId == item.catalogId && localViewModel.currentCellName.value != item.TE)) {
+                                var catalogIdOfInnerItem : String = getCatalogIdOfItem(innerItem)
+
+                                if (catalogIdOfInnerItem != catalogIdOfItem || (catalogIdOfInnerItem == catalogIdOfItem && localViewModel.currentCellName.value != item.parentCellName)) {
                                     newData += innerItem
                                 }
                             }
                         }else{
                             localViewModel.items.value?.forEach { innerItem ->
-                                if (innerItem.catalogId != item.catalogId || (innerItem.catalogId == item.catalogId && localViewModel.currentCellName.value != innerItem.TE)) {
+                                var catalogIdOfInnerItem : String = getCatalogIdOfItem(innerItem)
+                                if (catalogIdOfInnerItem != catalogIdOfItem || (catalogIdOfInnerItem == catalogIdOfItem && localViewModel.currentCellName.value != innerItem.parentCellName)) {
                                     newData += innerItem
                                 }
                             }
 
                             var value = localViewModel.stack.removeLast().toList()
                             value.forEach { innerItem->
-                                if (innerItem.catalogId != item.catalogId || (innerItem.catalogId == item.catalogId && localViewModel.currentCellName.value != innerItem.TE)) {
+                                var catalogIdOfInnerItem : String = getCatalogIdOfItem(innerItem)
+                                if (catalogIdOfInnerItem != catalogIdOfItem || (catalogIdOfInnerItem == catalogIdOfItem && localViewModel.currentCellName.value != innerItem.parentCellName)) {
                                     allData += innerItem
                                 }
                             }
@@ -194,17 +201,21 @@ class IncomeSessionAdapter(
                 holder.bind(item)
             }
             is IncomeSessionExpandedViewHolder ->{
-                holder.tvLeft.text = item.name
+                var teNameOfItem : String = getNameOfTe(item)
+                holder.tvLeft.text = teNameOfItem
                 holder.container.setOnClickListener {
                     var value = localViewModel.stack.removeLast().toList()
                     localViewModel.cellStack.removeLast()
                     localViewModel.setCellName(localViewModel.cellStack.last())
                     for (elem in value){
                         localViewModel.items.value?.forEach { item ->
-                            if(item.name == elem.TE){
+
+                            if( teNameOfItem == elem.parentCellName){
                                 elem.isExpanded = false
                             }
-                            if(elem.catalogId == item.catalogId && item.TE == elem.TE){
+                            if( (elem is IncomeItem.GoodsItem || elem is IncomeItem.NewGoodsItem) //меняем количество только у товара а не у те
+                                    && getCatalogIdOfItem(elem) == getCatalogIdOfItem(item)
+                                    && item.parentCellName == elem.parentCellName){
                                 elem.haveCount = item.haveCount
                             }
                         }
@@ -214,18 +225,19 @@ class IncomeSessionAdapter(
 
             }
             is IncomeSessionCollapsedViewHolder ->{
-                holder.tvLeft.text = item.name
+                val teName : String = getNameOfTe(item)
+                holder.tvLeft.text = teName
                 holder.container.setOnClickListener {
                     var value = localViewModel.items.value!!.toList()
                     localViewModel.stack.addLast(value)
                     var list: MutableList<IncomeItem> = mutableListOf()
-                    localViewModel.setCellName(item.TE)
+                    localViewModel.setCellName(teName)
                     localViewModel.cellStack.addLast(localViewModel.currentCellName.value.toString())
                     localViewModel.items.value?.forEach { elem ->
-                        if(elem.name == item.name){
-                            list.add(elem.copy(isExpanded = true))
-                        }else if(elem.TE == item.name){
-                            list.add(elem.copy(isShown = true))
+                        if(elem.parentCellName == teName){
+                            elem.isExpanded = true
+                            elem.isShown = true
+                            list.add(elem)
                         }
                     }
                     localViewModel.updateItems(list.toList())
@@ -247,7 +259,7 @@ class IncomeSessionAdapter(
                     dialog.setButton(android.app.AlertDialog.BUTTON_POSITIVE, "Да") { _, _ ->
                         var newCollection : MutableList<IncomeItem> = mutableListOf()
                         localViewModel.items.value?.forEach { localItem->
-                            if (item.name != localItem.TE){
+                            if (teName != localItem.parentCellName){
                                 newCollection += localItem
                             }
                         }
@@ -257,16 +269,47 @@ class IncomeSessionAdapter(
                         var newCollection : MutableList<IncomeItem> = mutableListOf()
                         //удаление те
                         localViewModel.items.value?.forEach { localItem->
-                            if (item.name != localItem.name){
-                                if(item.name == localItem.TE){
-                                    newCollection += localItem.copy(TE = localViewModel.currentCellName.value.toString(), isShown = true)
+
+                            if (teName != localItem.getName()){
+                                if(item.getName() == localItem.parentCellName){
+                                    localItem.parentCellName = localViewModel.currentCellName.value.toString()
+                                    localItem.isShown = true
+                                    newCollection += localItem
                                 }else{
                                     newCollection += localItem
                                 }
                             }
                         }
                         // сложение дубликатов
-                        var result = newCollection
+
+                        var goodsItems : List<IncomeItem.GoodsItem> = newCollection.filterIsInstance<IncomeItem.GoodsItem>()
+                        var newGoodsItems : List<IncomeItem.NewGoodsItem> = newCollection.filterIsInstance<IncomeItem.NewGoodsItem>()
+                        var result: MutableList<IncomeItem> = mutableListOf()
+                        goodsItems
+                            .groupBy { it.catalogId }
+                            .map { (id, group) ->
+                                IncomeItemFactory.createGroupingGoods(
+                                    goods = group.first(),
+                                    haveCount = group.sumOf { it.haveCount },
+                                    allCount = group.sumOf { it.allCount },
+                                    teCount = group.sumOf { it.teCount }
+                                )
+
+                            }.forEach { item -> result += item }
+
+                        newGoodsItems
+                            .groupBy { it.catalogId }
+                            .map { (id, group) ->
+                                IncomeItemFactory.createGroupingNewGoods(
+                                    goods = group.first(),
+                                    haveCount = group.sumOf { it.haveCount },
+                                    allCount = group.sumOf { it.allCount },
+                                    teCount = group.sumOf { it.teCount }
+                                )
+
+                            }.forEach { item -> result += item }
+
+                        /*var result = newCollection
                             .groupBy {it.catalogId}
                             .map { (id, group) ->
                                IncomeItem(
@@ -282,7 +325,7 @@ class IncomeSessionAdapter(
                                    isExpanded = group.first().isExpanded,
                                    isShown = group.first().isShown,
                                )
-                            }
+                            }*/
                         localViewModel.updateItems(result)
                         //TODO Удалить те, а для элементов назначить те, как и у остальных
                         dialogInterface.dismiss()
@@ -303,7 +346,35 @@ class IncomeSessionAdapter(
         }
 
     }
-//TODO не получается корректно добавлять те внутри других те, но вроде работает сканирование добавление элементов
+
+
+
+    private fun getNameOfTe(item: IncomeItem): String {
+        var teName = ""
+        if(item is IncomeItem.TEItem){
+            teName = item.teName
+        }
+        if(item is IncomeItem.NewTEItem){
+            teName = item.teName
+        }
+        return teName
+    }
+
+    private fun getCatalogIdOfItem(
+        item: IncomeItem,
+    ) : String {
+        var catalogIdOfItem = ""
+        if (item is IncomeItem.GoodsItem) {
+            catalogIdOfItem = item.catalogId
+        }
+        if (item is IncomeItem.NewGoodsItem) {
+            catalogIdOfItem = item.catalogId
+        }
+        return catalogIdOfItem
+    }
+
+
+    //TODO не получается корректно добавлять те внутри других те, но вроде работает сканирование добавление элементов
 //TODO если отсканировал и вышел из те, то почему то пропадают элементы. При добавлении новой те внутри те неправильный порядок те
     override fun getItemCount(): Int {
         return data.count()

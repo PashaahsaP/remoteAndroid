@@ -16,6 +16,7 @@ import com.example.wmswherther.data.db.Entityes.Movement
 import com.example.wmswherther.data.db.Entityes.SessionIncome
 import com.example.wmswherther.data.db.Repositories.IncomeRepository
 import com.example.wmswherther.data.factory.ChangeFactory
+import com.example.wmswherther.data.factory.IncomeItemFactory
 import com.example.wmswherther.data.factory.MovementFactory
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -122,7 +123,7 @@ class IncomeSessionViewModel : ViewModel() {
                     var counter = 0
                     _items.value?.forEach { item ->
                         item.isSelected = false//чтобы не было несколько edit text
-                        if (item.catalogId == barcoded.catalogId) {
+                        if (item is IncomeItem.GoodsItem &&  item.catalogId == barcoded.catalogId) {
                             item.haveCount = item.haveCount + 1
                             //item.isSelected = true
                             //setSelectedItem(counter)
@@ -135,14 +136,15 @@ class IncomeSessionViewModel : ViewModel() {
             }
         }
     }
-    suspend fun loadItems (incomeRepo: IncomeRepository, sessionId: String) : List<IncomeItem>{
+    suspend fun loadItems (incomeRepo: IncomeRepository,
+                           sessionId: String,
+                            cell: Cell) : List<IncomeItem>{
         var listOfGoods: List<Pair<Goods, Cell>> = listOf()
         listOfGoods = incomeRepo.getGoodsAndTheirCells(sessionId)
 
 
         var result : List<IncomeItem> = listOf()
         var previousCellId: String = ""
-        var counter: Int = 0
         for (item in listOfGoods){
             var catalog = incomeRepo.getCatalogById(item.first.catalogId)
             if (isTE(item.second.name, incomeRepo)){
@@ -150,45 +152,43 @@ class IncomeSessionViewModel : ViewModel() {
                 var isShown = if(parentCell.name.contains("IN")) true else false
                 if(item.second.id != previousCellId){
                     previousCellId = item.second.id
-                    result += IncomeItem(
-                        name =  item.second.name,
-                        TE = if(isShown) item.second.name else "",
-                        catalogId = "",
-                        goodsId = "",
-                        allCount = item.first.amount,
-                        haveCount = 0,
-                        isExpandable = true,
-                        isShown = isShown)
-                    result += IncomeItem(
-                        name =  catalog.name,
-                        TE = if(isShown) item.second.name else "",
-                        catalogId = catalog.id,
-                        goodsId = item.first.id,
-                        allCount = item.first.amount,
-                        haveCount = 0,
-                        isExpandable = false,
-                        isShown = !isShown)
-                }else{
-                    result += IncomeItem(
-                        name =  catalog.name,
-                        TE = if(isShown) item.second.name else "",
-                        catalogId = catalog.id,
-                        goodsId = item.first.id,
-                        allCount = item.first.amount,
-                        haveCount = 0,
-                        isExpandable = false,
-                        isShown = !isShown)
+
+                    result += if(isShown)
+                        IncomeItemFactory.createVisibleTE(
+                        name = item.second.name,
+                        id = item.second.id,
+                        parentCellId = item.second.parentCellId.toString(),
+                        parentCellName = item.second.name,
+                        typeCellId = item.second.typeCellId
+                    )
+                    else
+                        IncomeItemFactory.createInvisibleTE(
+                            name = item.second.name,
+                            id = item.second.id,
+                            parentCellId = item.second.parentCellId.toString(),
+                            parentCellName = item.second.name,
+                            typeCellId = item.second.typeCellId
+                        )
                 }
-            }else{
-                result += IncomeItem(
-                    name =  catalog.name,
-                    TE = currentCellName.value.toString(),
+                result += IncomeItemFactory.createInvisibleGoods(
+                    name = catalog.name,
+                    id = item.first.id,
                     catalogId = catalog.id,
-                    goodsId = item.first.id,
-                    allCount = item.first.amount,
-                    haveCount = 0,
-                    isExpandable = false,
-                    isShown = true)
+                    parentCellId = item.second.id,
+                    parentCellName = item.second.name,
+                    supplierId = catalog.supplierId,
+                    allCount = item.first.amount
+                )
+            }else{
+                result += IncomeItemFactory.createVisibleGoods(
+                    name = catalog.name,
+                    id = item.first.id,
+                    catalogId = catalog.id,
+                    parentCellId = cell.id,
+                    parentCellName = cell.name,
+                    supplierId = catalog.supplierId,
+                    allCount = item.first.amount
+                )
             }
         }
 
@@ -208,13 +208,13 @@ class IncomeSessionViewModel : ViewModel() {
     ) {
         items.value?.forEach { item ->
 
-            if (item.haveCount == item.allCount && item.catalogId != "") {
+            if (item.haveCount == item.allCount && item is IncomeItem.GoodsItem) {
                 prepareEqualItem(incomeRepo, item, session, sessionId)
             }
-            if (item.haveCount > item.allCount && item.catalogId != "") {
+            if (item.haveCount > item.allCount && item is IncomeItem.GoodsItem) {
                 prepareMoreItem(incomeRepo, item, session, sessionId)
             }
-            if (item.haveCount < item.allCount && item.catalogId != "") {
+            if (item.haveCount < item.allCount && item is IncomeItem.GoodsItem) {
                 prepareLessItem(incomeRepo, item, session, sessionId)
             }
         }
@@ -238,22 +238,22 @@ class IncomeSessionViewModel : ViewModel() {
 
     private suspend fun prepareLessItem(
         incomeRepo: IncomeRepository,
-        item: IncomeItem,
+        goodsId: IncomeItem.GoodsItem,
         session: SessionIncome,
         sessionId: String
     ) {
-        var goods = incomeRepo.getGoodsById(item.goodsId)
+        var goods = incomeRepo.getGoodsById(goodsId.id)
         // если больше то
         // создать перемещение в Less
         var cellLess = incomeRepo.getCellByName("less")
         var diffMove = MovementFactory.create(
             cellFromId = goods.cellId,
             cellToId = cellLess.id,
-            catalogId = item.catalogId,
+            catalogId = goodsId.catalogId,
             goodsId = goods.id,
-            qty = (item.allCount - item.haveCount).toString(),
+            qty = (goodsId.allCount - goodsId.haveCount).toString(),
             operationType = OperationType.LessMovement,
-            entityId = item.goodsId
+            entityId = goodsId.id
         )
         var moreChange = ChangeFactory.create(
             entityId = diffMove.id,
@@ -265,18 +265,18 @@ class IncomeSessionViewModel : ViewModel() {
         // увеличить количество товара в основном goods
         // обновить статус goods
         var updateGoodsChange = ChangeFactory.create(
-            entityId = item.goodsId,
+            entityId = goodsId.id,
             supplierId = session.supplierId.toString(),
             operationType = OperationType.UpdateGoods
         )
         incomeRepo.updateGoodsAsync(
-            goods.copy(amount = item.haveCount, isAvailable = true),
+            goods.copy(amount = goodsId.haveCount, isAvailable = true),
             updateGoodsChange
         )
 
         // создать перемещение
         // если количество равно 0 то удалить goods
-        if (item.haveCount == 0) {
+        if (goodsId.haveCount == 0) {
             var removeChange = ChangeFactory.create(
                 entityId = goods.id,
                 supplierId = session.id,
@@ -288,9 +288,9 @@ class IncomeSessionViewModel : ViewModel() {
             var innerMovement = MovementFactory.create(
                 cellFromId = incomeCell.id,
                 cellToId = session.toCellId.toString(),
-                catalogId = item.catalogId,
-                goodsId = item.goodsId,
-                qty = item.haveCount.toString(),
+                catalogId = goodsId.catalogId,
+                goodsId = goodsId.id,
+                qty = goodsId.haveCount.toString(),
                 operationType = OperationType.IncomeMovement,
                 entityId = sessionId
             )
@@ -305,22 +305,22 @@ class IncomeSessionViewModel : ViewModel() {
 
     private suspend fun prepareMoreItem(
         incomeRepo: IncomeRepository,
-        item: IncomeItem,
+        goodsItem: IncomeItem.GoodsItem,
         session: SessionIncome,
         sessionId: String
     ) {
-        var goods = incomeRepo.getGoodsById(item.goodsId)
+        var goods = incomeRepo.getGoodsById(goodsItem.id)
         // если больше то
         // создать перемещение в More
         var cellMore = incomeRepo.getCellByName("more")
         var diffMove = MovementFactory.create(
             cellFromId = cellMore.id,
             cellToId = goods.cellId,
-            catalogId = item.catalogId,
+            catalogId = goodsItem.catalogId,
             goodsId = goods.id,
-            qty = (item.haveCount - item.allCount).toString(),
+            qty = (goodsItem.haveCount - goodsItem.allCount).toString(),
             operationType = OperationType.MoreMovement,
-            entityId = item.goodsId
+            entityId = goodsItem.id
         )
 
         var moreChange = ChangeFactory.create(
@@ -333,12 +333,12 @@ class IncomeSessionViewModel : ViewModel() {
         // увеличить количество товара в основном goods
         // обновить статус goods
         var updateGoodsChange = ChangeFactory.create(
-            entityId = item.goodsId,
+            entityId = goodsItem.id,
             supplierId = session.supplierId.toString(),
             operationType = OperationType.UpdateGoods
         )
         incomeRepo.updateGoodsAsync(
-            goods.copy(amount = item.haveCount, isAvailable = true),
+            goods.copy(amount = goodsItem.haveCount, isAvailable = true),
             updateGoodsChange
         )
 
@@ -347,9 +347,9 @@ class IncomeSessionViewModel : ViewModel() {
         var innerMovement = MovementFactory.create(
             cellFromId = incomeCell.id,
             cellToId = session.toCellId.toString(),
-            catalogId = item.catalogId,
-            goodsId = item.goodsId,
-            qty = item.haveCount.toString(),
+            catalogId = goodsItem.catalogId,
+            goodsId = goodsItem.id,
+            qty = goodsItem.haveCount.toString(),
             operationType = OperationType.IncomeMovement,
             entityId = sessionId
         )
@@ -364,11 +364,11 @@ class IncomeSessionViewModel : ViewModel() {
 
     private suspend fun prepareEqualItem(
         incomeRepo: IncomeRepository,
-        item: IncomeItem,
+        goodsItem: IncomeItem.GoodsItem,
         session: SessionIncome,
         sessionId: String
     ) {
-        var innerGoods = incomeRepo.getGoodsById(item.goodsId)
+        var innerGoods = incomeRepo.getGoodsById(goodsItem.id)
         var goodsChange = ChangeFactory.create(
             innerGoods.id,
             session.supplierId.toString(),
@@ -399,11 +399,17 @@ class IncomeSessionViewModel : ViewModel() {
         var list: MutableList<IncomeItem> = mutableListOf()
         if (checked){
             setCurCountOfCount(_countOfCount.value ?: 0)
-            items.value?.forEach { item -> list.add(item.copy(haveCount = if(item.allCount != 0) item.allCount else item.haveCount ))}
+            items.value?.forEach { item ->
+                item.haveCount = if(item.allCount != 0) item.allCount else item.haveCount
+                list.add(item)
+            }
             updateItems(list)
         }else{
             setCurCountOfCount(0)
-            items.value?.forEach { item -> list.add(item.copy(haveCount = 0))}
+            items.value?.forEach { item ->
+                item.haveCount = 0
+                list.add(item)
+            }
             updateItems(list)
         }
     }
