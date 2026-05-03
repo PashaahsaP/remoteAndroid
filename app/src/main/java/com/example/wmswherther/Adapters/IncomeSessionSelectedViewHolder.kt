@@ -14,7 +14,7 @@ class IncomeSessionSelectedViewHolder(itemView: View): RecyclerView.ViewHolder(i
     val tvRight: TextView = itemView.findViewById(R.id.tvCount)
 
     fun bind(item: IncomeItem){
-        tvLeft.text = item.name
+        tvLeft.text = item.getName()
         etSelectedCount.setText(item.haveCount.toString())
         tvRight.text = "/${item.allCount.toString()}"
         etSelectedCount.requestFocus()

@@ -11,7 +11,7 @@ class IncomeSessionInvisibleViewHolder(itemView: View): RecyclerView.ViewHolder(
     val tvLeft: TextView = itemView.findViewById(R.id.tvName)
     val tvRight: TextView = itemView.findViewById(R.id.tvCount)
     fun bind(item: IncomeItem){
-        tvLeft.text = item.name
+        tvLeft.text = item.getName()
         tvRight.text = "${item.haveCount}/${item.allCount}"
     }
 }

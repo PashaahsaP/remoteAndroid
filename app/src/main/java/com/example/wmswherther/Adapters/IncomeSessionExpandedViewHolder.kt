@@ -11,6 +11,6 @@ class IncomeSessionExpandedViewHolder(itemView: View): RecyclerView.ViewHolder(i
         itemView as androidx.constraintlayout.widget.ConstraintLayout
     val tvLeft: TextView = itemView.findViewById(R.id.tvName)
     fun bind(item: IncomeItem) {
-        tvLeft.text = item.name
+        tvLeft.text = item.getName()
     }
 }

@@ -158,7 +158,7 @@ class IncomeSessionViewModel : ViewModel() {
                         name = item.second.name,
                         id = item.second.id,
                         parentCellId = item.second.parentCellId.toString(),
-                        parentCellName = item.second.name,
+                        parentCellName = cell.name,
                         typeCellId = item.second.typeCellId
                     )
                     else
@@ -166,7 +166,7 @@ class IncomeSessionViewModel : ViewModel() {
                             name = item.second.name,
                             id = item.second.id,
                             parentCellId = item.second.parentCellId.toString(),
-                            parentCellName = item.second.name,
+                            parentCellName = cell.name,
                             typeCellId = item.second.typeCellId
                         )
                 }

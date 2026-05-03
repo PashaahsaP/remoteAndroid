@@ -12,7 +12,7 @@ class IncomeSessionCollapsedViewHolder (itemView: View): RecyclerView.ViewHolder
     val tvLeft: TextView = itemView.findViewById(R.id.tvName)
 
     fun bind(item: IncomeItem){
-        tvLeft.text = item.name
+        tvLeft.text = item.getName()
     }
 
 }

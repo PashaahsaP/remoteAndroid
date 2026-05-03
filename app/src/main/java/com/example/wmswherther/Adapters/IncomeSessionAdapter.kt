@@ -210,9 +210,12 @@ class IncomeSessionAdapter(
                     localViewModel.setCellName(localViewModel.cellStack.last())
                     for (elem in value){
                         localViewModel.items.value?.forEach { item ->
-
+                            if(item.getName() == elem.getName()){
+                                elem.isExpanded = false
+                            }
                             if( item.getName() == elem.parentCellName){
                                 elem.isExpanded = false
+                                elem.isShown = false
                             }
                             if( (elem is IncomeItem.GoodsItem || elem is IncomeItem.NewGoodsItem) //меняем количество только у товара а не у те
                                     && elem.getCatalogIdOfItem() == item.getCatalogIdOfItem()
@@ -233,6 +236,8 @@ class IncomeSessionAdapter(
                     var list: MutableList<IncomeItem> = mutableListOf()
                     localViewModel.setCellName(item.getName())
                     localViewModel.cellStack.addLast(localViewModel.currentCellName.value.toString())
+                    item.isExpanded = true
+                    list.add(item) // add te
                     localViewModel.items.value?.forEach { elem ->
                         if(elem.parentCellName == item.getName()){
                             elem.isExpanded = true

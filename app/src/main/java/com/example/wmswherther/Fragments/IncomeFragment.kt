@@ -59,8 +59,8 @@ class IncomeFragment : Fragment() {
                 //appendDummyData(MainDB.getDB(requireActivity()))
                 //appendMoveDummyData(MainDB.getDB(requireActivity()))
                 //appendPickerDummyData(MainDB.getDB(requireActivity()))
-                appendUser(MainDB.getDB(requireActivity()))
-                appendFunctionality(MainDB.getDB(requireActivity()))
+                //appendUser(MainDB.getDB(requireActivity()))
+                //appendFunctionality(MainDB.getDB(requireActivity()))
             }
         }
         //viewModel.setCurrFragment(this)

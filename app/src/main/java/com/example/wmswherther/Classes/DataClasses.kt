@@ -20,7 +20,7 @@ sealed class IncomeItem {
     var parentCellName: String = ""
 
     data class UnknowItem(
-        val name: String,
+        val unknowName: String
     ) : IncomeItem()
     data class NewGoodsItem(
         var goodsName: String,
@@ -49,7 +49,7 @@ sealed class IncomeItem {
             this is NewGoodsItem -> goodsName
             this is TEItem -> teName
             this is NewTEItem -> teName
-            this is UnknowItem -> name
+            this is UnknowItem -> unknowName
             else -> "Unknow"
         }
     }
