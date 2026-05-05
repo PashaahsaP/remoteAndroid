@@ -17,7 +17,10 @@ import java.time.LocalDate
 import java.util.UUID
 
 class IncomeRepository (private val dao: Dao) {
-    fun getAllActiveIncomeSession() : List<TaskMenuItem> {
+    suspend fun getAllIncomeSession() : List<SessionIncome>{
+        return dao.getAllIncomeSession()
+    }
+    suspend fun getAllActiveIncomeSession() : List<TaskMenuItem> {
         var suppliers = dao.getAllSuppliers()
 
         var result = dao.getAllIncomeSession()
@@ -37,6 +40,12 @@ class IncomeRepository (private val dao: Dao) {
     }
     suspend fun getIncomeSessionById(sessionId : String) : SessionIncome{
         return dao.getIncomeSessionById(sessionId)
+    }
+    suspend fun getAllGoods(): List<Goods>{
+        return dao.getGoods()
+    }
+    suspend fun getAllMovement(): List<Movement>{
+        return dao.getAllMovement()
     }
     suspend fun getGoodsAndTheirCells(sessionId : String) : List<Pair<Goods, Cell>>{
        return dao.getAllIncomeItem()

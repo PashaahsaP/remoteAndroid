@@ -5,6 +5,7 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.Button
 import android.widget.EditText
 import androidx.activity.addCallback
 import androidx.appcompat.app.AlertDialog
@@ -29,7 +30,9 @@ import com.example.wmswherther.viewModel.MainViewModel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
-
+object ServiceLocator {
+    var incomeRepository: IncomeRepository? = null
+}
 class IncomeSessionFragment : Fragment() {
 
         private var _binding: FragmentIncomeSessionBinding? = null
@@ -53,7 +56,8 @@ class IncomeSessionFragment : Fragment() {
             recyclerView.layoutManager = LinearLayoutManager(requireActivity())
             recyclerView.adapter = adapter
             val sessionId = arguments?.getString("id")
-            var incomeRepo = IncomeRepository(MainDB.getDB(requireActivity()).getDao())
+            val incomeRepo = ServiceLocator.incomeRepository
+                ?: IncomeRepository(MainDB.getDB(requireActivity()).getDao())
 
             viewModel.Barcode.observe(viewLifecycleOwner, { barcode ->
                 prepareBarcodeAndUpdateUI(barcode, incomeRepo)
@@ -79,20 +83,28 @@ class IncomeSessionFragment : Fragment() {
                 if(status) {
                     if(localViewModel.CurrentCountOfCount.value != localViewModel.CountOfCount.value 
                         || localViewModel.IsOverCounter.value == true){
-                        val dialogNotification = AlertDialog.Builder(requireActivity())
-                            .setTitle("Предупреждение")
-                            .setMessage("Есть неотсканированный товар. Уверены что хотите завершить приёмку")
-                            .setPositiveButton("Да") { _, _ ->
-                                finishSessionAndReturnToPreviousFragment(incomeRepo, sessionId)
-                            }
-                            .setNegativeButton("Нет", null)
+                        val view = LayoutInflater.from(activity)
+                            .inflate(R.layout.dialog, null)
+                        val btnYes = view.findViewById<Button>(R.id.btnYes)
+                        val btnNo = view.findViewById<Button>(R.id.btnNo)
+
+                        var dialog = AlertDialog.Builder(requireActivity())
+                            .setView(view)
                             .create()
 
-                        dialogNotification.show()
+                        btnYes.setOnClickListener {
+                            finishSessionAndReturnToPreviousFragment(incomeRepo, sessionId)
+                        }
+                        btnNo.setOnClickListener {
+                            dialog.dismiss()
+                        }
+                        }
+
+
                     }else{
                         finishSessionAndReturnToPreviousFragment(incomeRepo, sessionId)
                     }
-                }
+
             })
             localViewModel.CurrentCountOfCount.observe(viewLifecycleOwner, {counter ->
                 binding.tvLineCounter.text = "${counter.toString()}  /"
@@ -115,7 +127,7 @@ class IncomeSessionFragment : Fragment() {
             })
             localViewModel.items.observe(viewLifecycleOwner,{ items ->
                 adapter.updateCollection(items, localViewModel.getSelectedItem())
-                recyclerView.smoothScrollToPosition(localViewModel.getSelectedItem())
+                //recyclerView.smoothScrollToPosition(localViewModel.getSelectedItem())
             })
             localViewModel.currentCellName.observe(viewLifecycleOwner, { cellName ->
                 binding.tvCellName.text = cellName
@@ -416,6 +428,8 @@ class IncomeSessionFragment : Fragment() {
             var cell: Cell
             withContext(Dispatchers.Main) {
                 var session = incomeRepo.getIncomeSessionById(sessionId.toString())
+                println("########")
+                println(incomeRepo.getAllIncomeSession())
                 cell = incomeRepo.getCellById(session.toCellId.toString())
                 localViewModel.cellStack.addLast(cell.name)
                 localViewModel.setCellName(cell.name)

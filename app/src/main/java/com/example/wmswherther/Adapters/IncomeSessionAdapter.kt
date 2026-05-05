@@ -3,12 +3,15 @@ package com.example.wmswherther.Adapters
 import android.content.Context
 import android.view.KeyEvent
 import android.view.LayoutInflater
+import android.view.View
 import android.view.ViewGroup
 import android.view.inputmethod.InputMethodManager
+import android.widget.Button
 import android.widget.EditText
 import android.widget.LinearLayout
 import android.widget.TextView
 import android.widget.Toast
+import androidx.appcompat.app.AlertDialog
 import androidx.core.content.ContextCompat
 import androidx.core.text.isDigitsOnly
 import androidx.core.view.setPadding
@@ -91,14 +94,16 @@ class IncomeSessionAdapter(
 
                 }
                 holder.container.setOnLongClickListener {
+                    val view = LayoutInflater.from(activity)
+                        .inflate(R.layout.dialog, null)
+                    val btnYes = view.findViewById<Button>(R.id.btnYes)
+                    val btnNo = view.findViewById<Button>(R.id.btnNo)
 
-                    var dialog = android.app.AlertDialog.Builder(activity)
-                        .create()
-                    var text = TextView(activity)
-                    text.width = 100
-                    text.setPadding(30)
-                    text.setText("Вы точно хотите удалить строку?")
-                    dialog.setButton(android.app.AlertDialog.BUTTON_POSITIVE, "Да") { _, _ ->
+                    var dialog = AlertDialog.Builder(activity)
+                            .setView(view)
+                            .create()
+
+                    btnYes.setOnClickListener {
                         var newData: MutableList<IncomeItem> = mutableListOf()
                         var allData: MutableList<IncomeItem> = mutableListOf()
 
@@ -107,7 +112,7 @@ class IncomeSessionAdapter(
 
                                 if (innerItem.getCatalogIdOfItem() != item.getCatalogIdOfItem()
                                     || (innerItem.getCatalogIdOfItem() == item.getCatalogIdOfItem()
-                                    && localViewModel.currentCellName.value != item.parentCellName)) {
+                                            && localViewModel.currentCellName.value != item.parentCellName)) {
                                     newData += innerItem
                                 }
                             }
@@ -115,7 +120,7 @@ class IncomeSessionAdapter(
                             localViewModel.items.value?.forEach { innerItem ->
                                 if (innerItem.getCatalogIdOfItem() != item.getCatalogIdOfItem()
                                     || (innerItem.getCatalogIdOfItem() == item.getCatalogIdOfItem()
-                                    && localViewModel.currentCellName.value != innerItem.parentCellName)) {
+                                            && localViewModel.currentCellName.value != innerItem.parentCellName)) {
                                     newData += innerItem
                                 }
                             }
@@ -124,7 +129,7 @@ class IncomeSessionAdapter(
                             value.forEach { innerItem->
                                 if (innerItem.getCatalogIdOfItem() != item.getCatalogIdOfItem()
                                     || (innerItem.getCatalogIdOfItem() == item.getCatalogIdOfItem()
-                                    && localViewModel.currentCellName.value != innerItem.parentCellName)) {
+                                            && localViewModel.currentCellName.value != innerItem.parentCellName)) {
                                     allData += innerItem
                                 }
                             }
@@ -133,13 +138,15 @@ class IncomeSessionAdapter(
                         localViewModel.updateItems(newData.toList())
                         //TODO удалить запись из коллекции. Надо искать элемент который в текущей те и по id
                     }
-                    dialog.setButton(android.app.AlertDialog.BUTTON_NEGATIVE, "Нет") { dialogInterface, _ ->
-                        dialogInterface.dismiss()
+                    btnNo.setOnClickListener {
+                        dialog.dismiss()
                     }
 
 
-                    dialog.setView(text)
                     dialog.show()
+
+
+
                     true
                 }
                 holder.tvLeft.setTextColor(ContextCompat.getColor(activity, R.color.black))

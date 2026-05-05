@@ -73,7 +73,7 @@ interface Dao {
         return from to to
     }
     @Query("SELECT * FROM sessions_income")
-    fun getAllIncomeSession(): List<SessionIncome>
+    suspend fun getAllIncomeSession(): List<SessionIncome>
     @Query("SELECT * FROM sessions_income WHERE id =:sessionId")
     suspend fun getIncomeSessionById(sessionId: String): SessionIncome
     @Update

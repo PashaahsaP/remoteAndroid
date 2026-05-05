@@ -5,6 +5,7 @@ import android.os.Build
 import android.os.Bundle
 import android.view.Gravity
 import android.view.KeyEvent
+import android.view.LayoutInflater
 import android.view.View
 import android.view.WindowManager
 import android.view.inputmethod.EditorInfo
@@ -26,6 +27,7 @@ import androidx.fragment.app.commit
 import androidx.lifecycle.lifecycleScope
 import com.example.wmsRemote.databinding.ActivityMainBinding
 import com.example.wmsRemote.data.db.MainDB
+import com.example.wmswherther.Classes.IncomeItem
 import com.example.wmswherther.Classes.UiState
 import com.example.wmswherther.Classes.UiState.*
 import com.example.wmswherther.Fragments.MainFragment
@@ -410,33 +412,33 @@ class MainActivity : AppCompatActivity() {
             }
             btnBarcode.setOnClickListener {
                 if ((viewModel.uiState.value as UiState.IncomeSessionMenu).isTEModeActive) {
-                    var dialog = Builder(this@MainActivity)
+
+                    val view = LayoutInflater.from(this@MainActivity)
+                        .inflate(R.layout.dialog_with_et, null)
+                    val et = view.findViewById<EditText>(R.id.etDialog)
+                    val btnYes = view.findViewById<Button>(R.id.btnYes)
+                    val btnCancel = view.findViewById<Button>(R.id.btnCancel)
+
+                    var dialog = AlertDialog.Builder(this@MainActivity)
+                        .setView(view)
                         .create()
-                    var text = EditText(this@MainActivity)
-                    text.width = 100
-                    text.setPadding(30)
-                    text.isSingleLine = true
-                    text.requestFocus()
-                    dialog.setButton(BUTTON_POSITIVE, "Сохранить") { _, _ ->
-                        if(isBoxTE(text.text.toString())){
+
+                    btnYes.setOnClickListener {
+                        if(isBoxTE(et.text.toString())){
                             viewModel.setActiveUi((viewModel.uiState.value as IncomeSessionMenu).copy(isTEModeActive = false))
-                            viewModel.setTE(text.text.toString())
+                            viewModel.setTE(et.text.toString())
                         }else{
                             Toast.makeText(this@MainActivity, "invalid te barcode", Toast.LENGTH_SHORT).show()
                         }
+                        dialog.dismiss()
                     }
-                    dialog.setButton(BUTTON_NEGATIVE, "Закрыть") { dialogInterface, _ ->
-                        dialogInterface.dismiss()
-                    }
-                    dialog.setButton(BUTTON_NEUTRAL, "Отмена") { dialogInterface, _ ->
-                        dialogInterface.dismiss()
-                    }
-                    /*dialog.setOnCancelListener {
-                        viewModel.turnOnTeMode()
-                        viewModel.workTe()
-                    }*/
 
-                    dialog.setView(text)
+                    btnCancel.setOnClickListener {
+                        dialog.dismiss()
+                    }
+
+
+
                     dialog.show()
                 }
                 else {
