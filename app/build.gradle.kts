@@ -62,4 +62,10 @@ dependencies {
     implementation("com.google.mlkit:barcode-scanning:17.3.0")
     implementation("com.opencsv:opencsv:5.9")
     implementation("androidx.fragment:fragment-ktx:1.6.2")
+    debugImplementation("androidx.fragment:fragment-testing:1.6.2")
+    debugImplementation("androidx.test.ext:junit:1.2.1")
+    debugImplementation("androidx.test:runner:1.6.2")
+    debugImplementation("androidx.test:rules:1.6.1")
+    debugImplementation("androidx.test.espresso:espresso-core:3.6.1")
+    debugImplementation("androidx.test.espresso:espresso-contrib:3.6.1")
 }
