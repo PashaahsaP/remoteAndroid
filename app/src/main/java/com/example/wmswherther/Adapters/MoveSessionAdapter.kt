@@ -120,10 +120,10 @@ class MoveSessionAdapter(
                                     if (count > item.allCount){
                                         item.haveCount = item.allCount
                                     }else{
-                                        val diff = count - item.haveCount
                                         item.haveCount = count
-                                        viewModel.setCounter(viewModel.getCounter() + diff)
                                     }
+                                    /*val diff =   item.haveCount - count
+                                    viewModel.setCounter(viewModel.getCounter() + diff)*/
 
 
                                     /*if((viewModel.uiState.value as UiState.IncomeSessionMenu).isTEModeActive){

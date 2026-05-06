@@ -10,11 +10,13 @@ import androidx.fragment.app.activityViewModels
 import androidx.lifecycle.ViewModelProvider
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
+import com.example.wmsRemote.data.db.MainDB
 import com.example.wmsRemote.databinding.FragmentInventoryBinding
 import com.example.wmswherther.Adapters.IncomeMenuAdapter
 import com.example.wmswherther.Adapters.InventoryAdapter
 import com.example.wmswherther.Adapters.InventoryOrderMenuAdapter
 import com.example.wmswherther.Classes.UiState
+import com.example.wmswherther.data.db.Repositories.InventoryRepository
 import com.example.wmswherther.viewModel.InventoryViewModel
 import com.example.wmswherther.viewModel.MainViewModel
 
@@ -43,6 +45,9 @@ class InventoryFragment: Fragment() {
         orderRecyclerView.adapter = orderAdapter
         // </editor-fold>
 
+        val inventoryRepo = ServiceLocator.inventoryRepository
+            ?: InventoryRepository(MainDB.getDB(requireActivity()).getDao())
+
         viewModel.uiState.observe(viewLifecycleOwner, {state ->
             if(state is UiState.InventoryMenu) {
                 var st = state as UiState.InventoryMenu
@@ -61,8 +66,8 @@ class InventoryFragment: Fragment() {
         localViewModel.Orders.observe(requireActivity(), { items ->
             orderAdapter.updateMenuItems(items)
         })
-        localViewModel.LoadSuppliers(requireActivity())
-        localViewModel.LoadOrder(requireActivity())
+        localViewModel.LoadSuppliers(requireActivity(), inventoryRepo)
+        localViewModel.LoadOrder(requireActivity(), inventoryRepo)
 
         return  binding.root
     }

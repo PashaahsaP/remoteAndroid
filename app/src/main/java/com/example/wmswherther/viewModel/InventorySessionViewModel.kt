@@ -168,7 +168,7 @@ class InventorySessionViewModel : ViewModel(){
         var session = InventorySessionFactory.createNotInventoryTask(
             supplierId = supplierId.toString(),
             cellId = baseCell.id,
-            status = StatusType.Created
+            status = status
         )
         // Получение данных
         var changes = ChangeFactory.create(

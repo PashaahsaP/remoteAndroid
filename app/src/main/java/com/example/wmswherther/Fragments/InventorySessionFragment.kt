@@ -53,8 +53,8 @@ class InventorySessionFragment: Fragment() {
         val adapter = InventorySessionAdapter(adapterCollection, recyclerView, localViewModel, requireActivity(), viewModel)
         recyclerView.layoutManager = LinearLayoutManager(requireActivity())
         recyclerView.adapter = adapter
-        val inventoryRepo = InventoryRepository(MainDB.getDB(requireActivity()).getDao())
-
+        val inventoryRepo = ServiceLocator.inventoryRepository
+            ?: InventoryRepository(MainDB.getDB(requireActivity()).getDao())
         initOrder(localViewModel, inventoryRepo)
 
         binding.btnFinish.setOnClickListener {

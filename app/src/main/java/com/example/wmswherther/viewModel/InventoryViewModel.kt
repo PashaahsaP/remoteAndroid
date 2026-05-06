@@ -9,6 +9,7 @@ import com.example.wmsRemote.data.db.MainDB
 import com.example.wmsRemote.data.enums.StatusType
 import com.example.wmswherther.Classes.InventoryItem
 import com.example.wmswherther.Classes.TaskMenuItem
+import com.example.wmswherther.data.db.Repositories.InventoryRepository
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
@@ -22,12 +23,12 @@ class InventoryViewModel : ViewModel() {
     val Orders: LiveData<MutableList<TaskMenuItem>> get() = _orders
 
 
-    fun LoadSuppliers(activity: FragmentActivity) {
+    fun LoadSuppliers(activity: FragmentActivity, inventoryRepo: InventoryRepository) {
         var supplierList: List<InventoryItem> = listOf()
         viewModelScope.launch {
             withContext(Dispatchers.IO)  {
-                var dao = MainDB.getDB(activity).getDao()
-                supplierList = dao.getAllSuppliers().map { item ->
+
+                supplierList = inventoryRepo.getAllSuppliers().map { item ->
                     InventoryItem(item.name, item.id)
                 }
             }
@@ -36,14 +37,13 @@ class InventoryViewModel : ViewModel() {
             }
         }
     }
-    fun LoadOrder(activity: FragmentActivity) {
+    fun LoadOrder(activity: FragmentActivity, inventoryRepo: InventoryRepository) {
         var ordersList: List<TaskMenuItem> = listOf()
         viewModelScope.launch {
             withContext(Dispatchers.IO)  {
-                var dao = MainDB.getDB(activity).getDao()
-                ordersList = dao.getInventorySessions().map { item ->
-                    var supplier =  dao.getSupplierById(item.supplierId ?: "")
-                    var cellName =  dao.getCellById(    item.cellId ?: "").name
+                ordersList = inventoryRepo.getInventorySessions().map { item ->
+                    var supplier =  inventoryRepo.getSupplierById(item.supplierId ?: "")
+                    var cellName =  inventoryRepo.getCellById(    item.cellId ?: "").name
                     TaskMenuItem(supplier.id, item.id, supplier.name, StatusType.Created.name, "", cellName)
                 }
             }

@@ -10,6 +10,7 @@ import com.example.wmswherther.data.db.Entityes.Goods
 import com.example.wmswherther.data.db.Entityes.Movement
 
 class MoveeRepository(private val dao: Dao) {
+
     suspend fun getCellTypes() : List<CellType>{
         return dao.getCellTypes()
     }
@@ -54,5 +55,8 @@ class MoveeRepository(private val dao: Dao) {
     }
     suspend fun insertMovementAsync(movement: Movement, change: Change) {
         dao.insertMovementSync(movement, change)
+    }
+    suspend fun getAllMovement() : List<Movement>{
+        return dao.getAllMovement()
     }
 }

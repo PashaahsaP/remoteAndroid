@@ -38,9 +38,9 @@ class MoveSessionFragment: Fragment() {
     ): View? {
         val localViewModel = ViewModelProvider(requireActivity()).get(MoveSessionViewModel::class)
         _binding = FragmentMoveSessionBinding.inflate(inflater)
-        var dao = MainDB.getDB(requireActivity()).getDao()
         var listTypes : List<CellType> = listOf()
-        var moveRepo: MoveeRepository = MoveeRepository(dao)
+        var moveRepo: MoveeRepository = ServiceLocator.moveRepository
+            ?: MoveeRepository(MainDB.getDB(requireActivity()).getDao())
 
         var recyclerView: RecyclerView = binding.rwContainer
         var adapter = MoveSessionAdapter(listOf(), requireActivity(), localViewModel, recyclerView)
@@ -53,7 +53,7 @@ class MoveSessionFragment: Fragment() {
                 listTypes = moveRepo.getCellTypes()
             }
         }
-        localViewModel.counter.observe(requireActivity(), { count ->
+       /* localViewModel.counter.observe(requireActivity(), { count ->
             if(viewModel.uiState.value is UiState.MoveSessionMenu) {
                 val ui = viewModel.uiState.value as UiState.MoveSessionMenu
                 if (count == 0) {
@@ -62,7 +62,7 @@ class MoveSessionFragment: Fragment() {
                     viewModel.setActiveUi(ui.copy(isEmptyList = false))
                 }
             }
-        })
+        })*/
         viewModel.Barcode.observe(viewLifecycleOwner, { barcode ->
             //TODO сделать чтобы была сортировка по те, количеству и прочему перед добавлением
             //TODO  Если нажал ТЕ надо сделать чтобы можно было отменить добавление товара в те.
@@ -75,8 +75,8 @@ class MoveSessionFragment: Fragment() {
                         //TODO перемещение элементов если нажата клавиша
                     } else {
                         if(viewModel.uiState.value is UiState.MoveSessionMenu) {
-                            val uiState = viewModel.uiState.value as UiState.MoveSessionMenu
-                            if (!uiState.isEmptyList){
+                            val totalCount = localViewModel.myData.value!!.toList().sumOf { it.haveCount }
+                            if (totalCount != 0){
                                 val dialog = AlertDialog.Builder(requireActivity())
                                     .setTitle("Выход")
                                     .setMessage("Есть остканированный товар, при переходе в другую ячейку прогресс сбросится!")

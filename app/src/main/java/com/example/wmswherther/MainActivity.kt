@@ -14,6 +14,7 @@ import android.widget.Button
 import android.widget.EditText
 import android.widget.PopupWindow
 import android.widget.Spinner
+import android.widget.TextView
 import android.widget.Toast
 import androidx.activity.enableEdgeToEdge
 import androidx.activity.result.ActivityResultLauncher
@@ -707,17 +708,27 @@ class MainActivity : AppCompatActivity() {
                             popupWindow.dismiss()
                         }
                         finishBtn.setOnClickListener { view ->
-                            val dialog = AlertDialog.Builder(this@MainActivity)
-                                .setTitle("Выход")
-                                .setMessage("Точно хотите завершить инвентаризацию?")
-                                .setPositiveButton("Да") { _, _ ->
-                                    viewModel.switchActivityOfInventorySession()
-                                    popupWindow.dismiss()
-                                    super.onBackPressed()
-                                }
-                                .setNegativeButton("Нет", null)
+                            val vieww = LayoutInflater.from(this@MainActivity)
+                                .inflate(R.layout.dialog, null)
+                            val btnYes = vieww.findViewById<Button>(R.id.btnYes)
+                            val btnNo = vieww.findViewById<Button>(R.id.btnNo)
+                            val et = vieww.findViewById<TextView>(R.id.etDialog)
+                            et.text = "Точно хотите завершить инвентаризацию?"
+                            var dialog = AlertDialog.Builder(this@MainActivity)
+                                .setView(vieww)
                                 .create()
                             dialog.show()
+
+                            btnYes.setOnClickListener {
+                                viewModel.switchActivityOfInventorySession()
+                                popupWindow.dismiss()
+                                super.onBackPressed()
+                                dialog.dismiss()
+                            }
+                            btnNo.setOnClickListener {
+                                dialog.dismiss()
+                            }
+
 
                         }
                         val location = IntArray(2)

@@ -24,6 +24,8 @@ import com.example.wmswherther.Classes.UiState
 import com.example.wmswherther.data.db.Entityes.Barcode
 import com.example.wmswherther.data.db.Entityes.Cell
 import com.example.wmswherther.data.db.Repositories.IncomeRepository
+import com.example.wmswherther.data.db.Repositories.InventoryRepository
+import com.example.wmswherther.data.db.Repositories.MoveeRepository
 import com.example.wmswherther.data.factory.IncomeItemFactory
 import com.example.wmswherther.viewModel.IncomeSessionViewModel
 import com.example.wmswherther.viewModel.MainViewModel
@@ -32,6 +34,9 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 object ServiceLocator {
     var incomeRepository: IncomeRepository? = null
+    var moveRepository: MoveeRepository? = null
+    var inventoryRepository: InventoryRepository? = null
+    var vm: MainViewModel? = null
 }
 class IncomeSessionFragment : Fragment() {
 

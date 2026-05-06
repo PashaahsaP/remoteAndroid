@@ -8,9 +8,26 @@ import com.example.wmswherther.data.db.Entityes.CellType
 import com.example.wmswherther.data.db.Entityes.Change
 import com.example.wmswherther.data.db.Entityes.Goods
 import com.example.wmswherther.data.db.Entityes.InventoryDiffItem
+import com.example.wmswherther.data.db.Entityes.Movement
 import com.example.wmswherther.data.db.Entityes.SessionInventory
+import com.example.wmswherther.data.db.Entityes.Supplier
 
 class InventoryRepository(private val dao: Dao)  {
+    suspend fun getDiffs(): List<InventoryDiffItem>{
+        return dao.getInventoryDiffItems()
+    }
+    suspend fun getAllSuppliers() : List<Supplier> {
+        return dao.getAllSuppliers()
+    }
+    suspend fun getAllGoods() : List<Goods>{
+        return dao.getGoods()
+    }
+    suspend fun getInventorySessions() : List<SessionInventory>{
+        return dao.getInventorySessions()
+    }
+    suspend fun getSupplierById(id: String) : Supplier{
+        return dao.getSupplierById(id)
+    }
     suspend fun getCellTypes() : List<CellType>{
         return dao.getCellTypes()
     }
@@ -49,5 +66,8 @@ class InventoryRepository(private val dao: Dao)  {
     }
     suspend fun getChildrenCells(id: String) : List<Cell>{
        return dao.getChildrenCells(id)
+    }
+    suspend fun getAllMovement() : List<Movement>{
+        return dao.getAllMovement()
     }
 }
