@@ -12,6 +12,24 @@ import com.example.wmswherther.data.db.Entityes.PickerItem
 import com.example.wmswherther.data.db.Entityes.SessionPicker
 
 class AssemblyRepository (private val dao : Dao){
+    suspend fun getPickerItemBySessionId(sessionId: String) : List<PickerItem>{
+        return dao.getPickerItemsBySessionId(sessionId)
+    }
+    suspend fun insertPickerItem(item: PickerItem){
+        dao.insertPickerItem(item)
+    }
+    suspend fun getAllGoods() : List<Goods>{
+        return dao.getGoods()
+    }
+    suspend fun getAllMovements() : List<Movement>{
+        return dao.getAllMovement()
+    }
+    suspend fun deleteGoods(goods: Goods){
+        dao.deleteGoods(goods)
+    }
+    suspend fun updatePickerItem(item: PickerItem){
+        dao.updatePickerItem(item)
+    }
     suspend fun getPickerItems() : List<PickerItem>{
         return dao.getPickerItems()
     }

@@ -8,10 +8,10 @@ import androidx.lifecycle.viewModelScope
 import com.example.wmsRemote.data.enums.OperationType
 import com.example.wmsRemote.data.enums.StatusType
 import com.example.wmswherther.Classes.AssemblyItem
-import com.example.wmswherther.Classes.PickerItem
 import com.example.wmswherther.data.db.Entityes.Cell
 import com.example.wmswherther.data.db.Entityes.Change
 import com.example.wmswherther.data.db.Entityes.Movement
+import com.example.wmswherther.data.db.Entityes.PickerItem
 import com.example.wmswherther.data.db.Entityes.SessionPicker
 import com.example.wmswherther.data.db.Repositories.AssemblyRepository
 import com.example.wmswherther.data.factory.CellFactory
@@ -21,6 +21,7 @@ import com.example.wmswherther.viewModel.MainViewModel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import org.junit.internal.Classes
 import java.util.UUID
 
 class AssemblySessionViewModel : ViewModel() {
@@ -37,8 +38,10 @@ class AssemblySessionViewModel : ViewModel() {
     var _assemblyStatus = MutableLiveData<Int> ()
     var _activeElement = MutableLiveData<AssemblyItem>()
     var _items = MutableLiveData<List<AssemblyItem>>()
-    var _resultCollection = MutableLiveData<List<AssemblyItem>>()
-
+    var _resultCollection = MutableLiveData<List<AssemblyItem>>(listOf())
+    fun appendResultItem(item : AssemblyItem){
+        _resultCollection.value = _resultCollection.value?.plus(item)
+    }
 
     fun loadCollection(assemblyRepo: AssemblyRepository,
                        sessionId: String)
@@ -49,7 +52,6 @@ class AssemblySessionViewModel : ViewModel() {
                 data = getPickerItemsAndMappingToAssemblyItems(assemblyRepo, sessionId)
             }
             withContext(Dispatchers.Main){
-                _resultCollection.value = data
                 _items.value = data
                 if (data.isNotEmpty()) {
                     _activeElement.value = data.first()
@@ -70,7 +72,8 @@ class AssemblySessionViewModel : ViewModel() {
                 if (isOutCellType(assemblyRepo, outGate)) {
                     var session = assemblyRepo.getPickerSessionById(sesssionId)
                     var outCell = getOutCell(assemblyRepo, outGate, session)
-                    moveItemsToOutGate(assemblyRepo, outCell, session)
+                    var items = assemblyRepo.getPickerItems().filter { it.sessionId == session.id }
+                    moveItemsToOutGate(items, assemblyRepo, outCell, session)
                     changeSessionStatus(session, StatusType.Finished, assemblyRepo)
                 }
                 }
@@ -81,7 +84,169 @@ class AssemblySessionViewModel : ViewModel() {
         }
     }
 
-    private suspend fun moveItemsToOutGate(assemblyRepo: AssemblyRepository,outCell: Cell, session: SessionPicker) {
+    private suspend fun moveItemsToOutGate(
+        items: List<PickerItem>,
+        assemblyRepo: AssemblyRepository,
+        outCell: Cell,
+        session: SessionPicker
+    ) {
+        for (item in items) {
+            if (!_resultCollection.value!!.any { it.goodsId == item.goodsId }) {
+                prepareNotExistingItem(item, assemblyRepo, session)
+            }
+            if (_resultCollection.value!!.any { it.goodsId == item.goodsId && it.amount == assemblyRepo.getGoodsById(item.goodsId).amount }) {
+                prepareOkItem(assemblyRepo, outCell, session)
+            }
+            if (_resultCollection.value!!.any { it.goodsId == item.goodsId && it.amount != assemblyRepo.getGoodsById(item.goodsId).amount }) {
+                prepareDiffCountItem(item, _resultCollection.value!!.first { it.goodsId == item.goodsId }, assemblyRepo, outCell, session
+                )
+            }
+        }
+    }
+
+    suspend fun prepareDiffCountItem(
+        dbItem: PickerItem,
+        resultItem: AssemblyItem,
+        assemblyRepo: AssemblyRepository,
+        outCell: Cell,
+        session: SessionPicker
+    ) {
+        var cellFrom = assemblyRepo.getCellById(dbItem.cellId.toString())
+        var cellLess = assemblyRepo.getCellByName("less")
+        var cellMore = assemblyRepo.getCellByName("more")
+        var goods = assemblyRepo.getGoodsById(dbItem.goodsId)
+        if(resultItem.amount < goods.amount){
+            // in less
+            var movement = MovementFactory.create(
+                cellFromId = cellFrom.id,
+                cellToId = outCell.id,
+                catalogId = assemblyRepo.getCatalogById(goods.catalogId).id,
+                goodsId = goods.id,
+                qty = resultItem.amount.toString(),
+                operationType = OperationType.AssemblyMovement,
+                entityId = session.id
+            )
+            val change = ChangeFactory.create(
+                entityId = movement.id,
+                supplierId = session.supplierId.toString(),
+                operationType = OperationType.InsertMovement
+            )
+            assemblyRepo.insertMovementSync(movement, change)
+
+            var goodsChange = ChangeFactory.create(
+                entityId = goods.id,
+                supplierId = session.supplierId.toString(),
+                operationType = OperationType.UpdateGoods
+            )
+            assemblyRepo.updateGoodsAsync(goods.copy(cellId = outCell.id, amount = resultItem.amount), goodsChange)
+
+            var lessMovement = MovementFactory.create(
+                cellFromId = cellFrom.id,
+                cellToId = cellLess.id,
+                catalogId = assemblyRepo.getCatalogById(goods.catalogId).id,
+                goodsId = goods.id,
+                qty = (goods.amount -  resultItem.amount).toString(),
+                operationType = OperationType.AssemblyMovement,
+                entityId = session.id
+            )
+            val lessChange = ChangeFactory.create(
+                entityId = movement.id,
+                supplierId = session.supplierId.toString(),
+                operationType = OperationType.InsertMovement
+            )
+            assemblyRepo.insertMovementSync(lessMovement, lessChange)
+
+        }
+        if(resultItem.amount > goods.amount){
+            var movement = MovementFactory.create(
+                cellFromId = cellFrom.id,
+                cellToId = outCell.id,
+                catalogId = assemblyRepo.getCatalogById(goods.catalogId).id,
+                goodsId = goods.id,
+                qty = resultItem.amount.toString(),
+                operationType = OperationType.AssemblyMovement,
+                entityId = session.id
+            )
+            val change = ChangeFactory.create(
+                entityId = movement.id,
+                supplierId = session.supplierId.toString(),
+                operationType = OperationType.InsertMovement
+            )
+            assemblyRepo.insertMovementSync(movement, change)
+
+            var goodsChange = ChangeFactory.create(
+                entityId = goods.id,
+                supplierId = session.supplierId.toString(),
+                operationType = OperationType.UpdateGoods
+            )
+            assemblyRepo.updateGoodsAsync(goods.copy(cellId = outCell.id, amount = resultItem.amount), goodsChange)
+
+            var moreMovement = MovementFactory.create(
+                cellFromId = cellMore.id,
+                cellToId = outCell.id,
+                catalogId = assemblyRepo.getCatalogById(goods.catalogId).id,
+                goodsId = goods.id,
+                qty = (resultItem.amount - goods.amount ).toString(),
+                operationType = OperationType.AssemblyMovement,
+                entityId = session.id
+            )
+            val moreChange = ChangeFactory.create(
+                entityId = movement.id,
+                supplierId = session.supplierId.toString(),
+                operationType = OperationType.InsertMovement
+            )
+            assemblyRepo.insertMovementSync(moreMovement, moreChange)
+        }
+        var movement = MovementFactory.create(
+            cellFromId = cellFrom.id,
+            cellToId = outCell.id,
+            catalogId = assemblyRepo.getCatalogById(goods.catalogId).id,
+            goodsId = goods.id,
+            qty = goods.amount.toString(),
+            operationType = OperationType.AssemblyMovement,
+            entityId = session.id
+        )
+        val change = ChangeFactory.create(
+            entityId = movement.id,
+            supplierId = session.supplierId.toString(),
+            operationType = OperationType.InsertMovement
+        )
+
+        assemblyRepo.insertMovementSync(movement, change)
+        assemblyRepo.deleteGoods(goods)
+        //Переместить goods
+    }
+
+    suspend fun prepareNotExistingItem(
+        dbItem: PickerItem,
+        assemblyRepo: AssemblyRepository,
+        session: SessionPicker){
+        var cellFrom = assemblyRepo.getCellById(dbItem.cellId.toString())
+        var cellTo = assemblyRepo.getCellByName("less")
+        var goods = assemblyRepo.getGoodsById(dbItem.goodsId)
+        var movement = MovementFactory.create(
+            cellFromId = cellFrom.id,
+            cellToId = cellTo.id,
+            catalogId = assemblyRepo.getCatalogById(goods.catalogId).id,
+            goodsId = goods.id,
+            qty = goods.amount.toString(),
+            operationType = OperationType.AssemblyMovement,
+            entityId = session.id
+        )
+        val change = ChangeFactory.create(
+            entityId = movement.id,
+            supplierId = session.supplierId.toString(),
+            operationType = OperationType.InsertMovement
+        )
+
+        assemblyRepo.insertMovementSync(movement, change)
+        assemblyRepo.deleteGoods(goods)
+        //Переместить goods
+    }
+    suspend fun prepareOkItem(
+        assemblyRepo: AssemblyRepository,
+        outCell: Cell,
+        session: SessionPicker){
         _resultCollection.value?.forEach { item ->
             //Надо создать перемещения для goods
             var cellFrom = assemblyRepo.getCellByName(item.cell)
@@ -112,6 +277,7 @@ class AssemblySessionViewModel : ViewModel() {
 
         }
     }
+
     private suspend fun changeSessionStatus(session: SessionPicker, status: StatusType, assemblyRepo: AssemblyRepository) {
         var sessionChange = ChangeFactory.create(
             entityId = session.id,
@@ -136,8 +302,8 @@ class AssemblySessionViewModel : ViewModel() {
                 var barcodes = assemblyRepo.getBarcodes()
                     .filter { item -> item.catalogId == catalog.id }
                     .map { item -> item.name }
-                var pickerList: MutableList<PickerItem> =
-                    mutableListOf(PickerItem(catalog.name, barcodes, false))
+                var pickerList: MutableList<com.example.wmswherther.Classes.PickerItem> =
+                    mutableListOf(com.example.wmswherther.Classes.PickerItem(catalog.name, barcodes, false))
                 //set selection of last element
                 pickerList += getPickerCell(assemblyRepo, cell)
                 var lastElement = pickerList[pickerList.lastIndex]
@@ -185,12 +351,12 @@ class AssemblySessionViewModel : ViewModel() {
                         else -> mask[i] == outGate[i] }
                     }
         } }
-    private suspend fun getPickerCell(assemblyRepo: AssemblyRepository, cell: Cell): List<PickerItem> {
-        var result :List<PickerItem> = listOf()
+    private suspend fun getPickerCell(assemblyRepo: AssemblyRepository, cell: Cell): List<com.example.wmswherther.Classes.PickerItem> {
+        var result :List<com.example.wmswherther.Classes.PickerItem> = listOf()
         if(isPickerCell(cell.name,assemblyRepo)){
-            result += PickerItem(cell.name, listOf(cell.name), false)
+            result += com.example.wmswherther.Classes.PickerItem(cell.name, listOf(cell.name), false)
         }else{
-            result += PickerItem(cell.name, listOf(cell.name), false)
+            result += com.example.wmswherther.Classes.PickerItem(cell.name, listOf(cell.name), false)
             var innerCell = assemblyRepo.getCellById(cell.parentCellId.toString())
             result += getPickerCell(assemblyRepo,innerCell)
 

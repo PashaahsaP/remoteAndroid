@@ -23,6 +23,7 @@ import com.example.wmswherther.Classes.IncomeItem
 import com.example.wmswherther.Classes.UiState
 import com.example.wmswherther.data.db.Entityes.Barcode
 import com.example.wmswherther.data.db.Entityes.Cell
+import com.example.wmswherther.data.db.Repositories.AssemblyRepository
 import com.example.wmswherther.data.db.Repositories.IncomeRepository
 import com.example.wmswherther.data.db.Repositories.InventoryRepository
 import com.example.wmswherther.data.db.Repositories.MoveeRepository
@@ -36,7 +37,7 @@ object ServiceLocator {
     var incomeRepository: IncomeRepository? = null
     var moveRepository: MoveeRepository? = null
     var inventoryRepository: InventoryRepository? = null
-    var vm: MainViewModel? = null
+    var assemblyRepository: AssemblyRepository?= null
 }
 class IncomeSessionFragment : Fragment() {
 

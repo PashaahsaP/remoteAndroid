@@ -1,41 +1,29 @@
 package com.example.wmswherther
 
-import android.content.Context
-import android.graphics.Color
 import android.os.Bundle
 import android.view.View
 import android.widget.TextView
-import androidx.core.os.bundleOf
-import androidx.fragment.app.testing.FragmentScenario
-import androidx.fragment.app.testing.launchFragmentInContainer
 import androidx.lifecycle.ViewModelProvider
 import androidx.recyclerview.widget.RecyclerView
 import androidx.room.Room
 import androidx.test.core.app.ActivityScenario
 import androidx.test.core.app.ApplicationProvider
 import androidx.test.espresso.Espresso.onView
-import androidx.test.espresso.Espresso.openActionBarOverflowOrOptionsMenu
 import androidx.test.espresso.action.ViewActions.clearText
 import androidx.test.espresso.action.ViewActions.click
 import androidx.test.espresso.action.ViewActions.pressImeActionButton
-import androidx.test.espresso.action.ViewActions.scrollTo
 import androidx.test.espresso.action.ViewActions.typeText
 import androidx.test.espresso.assertion.ViewAssertions.matches
 import androidx.test.espresso.contrib.RecyclerViewActions
 import androidx.test.espresso.matcher.BoundedMatcher
-import androidx.test.espresso.matcher.RootMatchers.isDialog
 import androidx.test.espresso.matcher.RootMatchers.isPlatformPopup
 import androidx.test.espresso.matcher.ViewMatchers.hasDescendant
 import androidx.test.espresso.matcher.ViewMatchers.hasSibling
 import androidx.test.espresso.matcher.ViewMatchers.isClickable
-import androidx.test.espresso.matcher.ViewMatchers.isCompletelyDisplayed
-import androidx.test.espresso.matcher.ViewMatchers.isDescendantOfA
 import androidx.test.espresso.matcher.ViewMatchers.isDisplayed
 import androidx.test.espresso.matcher.ViewMatchers.isEnabled
-import androidx.test.espresso.matcher.ViewMatchers.isRoot
 import androidx.test.espresso.matcher.ViewMatchers.withId
 import androidx.test.espresso.matcher.ViewMatchers.withText
-import androidx.test.espresso.util.TreeIterables
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import com.example.wmsRemote.MainActivity
 import com.example.wmsRemote.R
@@ -59,15 +47,11 @@ import com.example.wmswherther.data.db.Entityes.SessionIncome
 import com.example.wmswherther.data.db.Entityes.Supplier
 import com.example.wmswherther.data.db.Entityes.User
 import com.example.wmswherther.data.db.Repositories.IncomeRepository
-import com.example.wmswherther.viewModel.IncomeSessionViewModel
 import com.example.wmswherther.viewModel.MainViewModel
-import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.runBlocking
-import org.hamcrest.CoreMatchers.containsString
 import org.hamcrest.Description
 import org.hamcrest.Matcher
 import org.hamcrest.core.AllOf.allOf
-import org.jetbrains.annotations.Blocking
 import org.junit.After
 
 import org.junit.Test
@@ -95,14 +79,14 @@ class IncomeSessionTest {
             ApplicationProvider.getApplicationContext(),
             MainDB::class.java
         ).allowMainThreadQueries().build()
-
-        repo = IncomeRepository(db.getDao())
+        var dao = db.getDao()
+        repo = IncomeRepository(dao)
         ServiceLocator.incomeRepository = repo
 
         // 👉 подготовка данных
         runBlocking {
             sessionId = "123234"
-            appendDummyData(db.getDao(), sessionId)
+            appendDummyData(dao, sessionId)
             appendFunctionality(db)
             appendUser(db)
         }

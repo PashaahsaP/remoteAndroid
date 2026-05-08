@@ -7,7 +7,10 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.view.inputmethod.EditorInfo
+import android.widget.Button
 import android.widget.EditText
+import android.widget.TextView
+import android.widget.Toast
 import androidx.appcompat.app.AlertDialog
 import androidx.core.content.ContextCompat
 import androidx.fragment.app.Fragment
@@ -18,14 +21,18 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.example.wmsRemote.Adapters.AssemblySessionAdapter
 import com.example.wmsRemote.Adapters.AssemblySessionMainAdapter
+import com.example.wmsRemote.MainActivity
 import com.example.wmsRemote.R
 import com.example.wmsRemote.data.db.MainDB
 import com.example.wmsRemote.data.enums.AssemblySessionMenuType
 import com.example.wmsRemote.data.enums.StatusType
 import com.example.wmsRemote.databinding.ActivityAssemblyBinding
+import com.example.wmsRemote.isBoxTE
 import com.example.wmsRemote.viewModel.AssemblySessionViewModel
 import com.example.wmswherther.Classes.AssemblyItem
+import com.example.wmswherther.Classes.IncomeItem
 import com.example.wmswherther.Classes.UiState
+import com.example.wmswherther.Classes.UiState.IncomeSessionMenu
 import com.example.wmswherther.data.db.Repositories.AssemblyRepository
 import com.example.wmswherther.viewModel.MainViewModel
 import kotlinx.coroutines.Dispatchers
@@ -62,60 +69,80 @@ class PickerSessionFragment: Fragment() {
         recyclerViewMain.adapter = mainAdapter
         var sessionId = (viewModel.uiState.value as UiState.AssemblySessionMenu).sessionId
 
-        val assemblyRepo = AssemblyRepository(db.getDao())
+        val assemblyRepo = ServiceLocator.assemblyRepository ?: AssemblyRepository(db.getDao())
 
         viewModel.IsFinishedAssemblySession.observe(viewLifecycleOwner, { status ->
             if(status){
                 if(localViewModel._items.value!!.size == 0) {
-                    val editText = EditText(requireContext())
-                    editText.hint = "Введите текст"
+                    val view = LayoutInflater.from(requireActivity())
+                        .inflate(R.layout.dialog_with_et, null)
 
-                    val dialog = AlertDialog.Builder(requireActivity())
-                        .setTitle("Окончание сборки")
-                        .setMessage("Введите out отгрузки.")
-                        .setView(editText)
-                        .setPositiveButton("Да") { _, _ ->
-                            val text = editText.text.toString()
-                            localViewModel.finishSession(assemblyRepo, text, sessionId, viewModel)
+                    val et = view.findViewById<EditText>(R.id.etDialog)
+                    val btnYes = view.findViewById<Button>(R.id.btnYes)
+                    val btnCancel = view.findViewById<Button>(R.id.btnCancel)
 
-                        }
-                        .setNegativeButton("Нет", null)
+                    var dialog = AlertDialog.Builder(requireActivity())
+                        .setView(view)
                         .create()
 
+                    btnYes.setOnClickListener {
+                        val text = et.text.toString()
+                        localViewModel.finishSession(assemblyRepo, text, sessionId, viewModel)
+                    }
+                    btnCancel.setOnClickListener {
+                        dialog.dismiss()
+                    }
                     dialog.show()
+
                 }else{
-                    val editText = EditText(requireContext())
-                    editText.hint = "Введите текст"
+                    val view = LayoutInflater.from(requireActivity())
+                        .inflate(R.layout.dialog_with_et, null)
 
-                    val dialog = AlertDialog.Builder(requireActivity())
-                        .setTitle("Окончание сборки")
-                        .setMessage("Введите out отгрузки.")
-                        .setView(editText)
-                        .setPositiveButton("Да") { _, _ ->
-                            val text = editText.text.toString()
-                            localViewModel.finishSession(
-                                assemblyRepo,
-                                text,
-                                sessionId,
-                                viewModel
-                            )
-                        }
-                        .setNegativeButton("Нет", null)
-                        .create()
-                    val dialogNotification = AlertDialog.Builder(requireActivity())
-                        .setTitle("Предупреждение")
-                        .setMessage("Есть еще не собранный товар. Уверены что хотите завершить сборку")
-                        .setPositiveButton("Да") { _, _ ->
-                            dialog.show()
-                        }
-                        .setNegativeButton("Нет", null)
+                    val et = view.findViewById<EditText>(R.id.etDialog)
+                    val btnYes = view.findViewById<Button>(R.id.btnYes)
+                    val btnCancel = view.findViewById<Button>(R.id.btnCancel)
+
+                    var dialog = AlertDialog.Builder(requireActivity())
+                        .setView(view)
                         .create()
 
-                    dialogNotification.show()
+                    btnYes.setOnClickListener {
+                        val text = et.text.toString()
+                        localViewModel.finishSession(
+                            assemblyRepo,
+                            text,
+                            sessionId,
+                            viewModel
+                        )
+                    }
+                    btnCancel.setOnClickListener {
+                        dialog.dismiss()
+                    }
 
 
 
-                    //dialog.show()
+                    val notificationView = LayoutInflater.from(requireActivity())
+                        .inflate(R.layout.dialog, null)
+
+                    val tv = notificationView.findViewById<TextView>(R.id.etDialog)
+                    val btnYess = notificationView.findViewById<Button>(R.id.btnYes)
+                    val btnCancell = notificationView.findViewById<Button>(R.id.btnNo)
+
+                    var notificationDialog = AlertDialog.Builder(requireActivity())
+                        .setView(notificationView)
+                        .create()
+
+                    tv.setText("Есть еще не собранный товар. Уверены что хотите завершить сборку")
+                    btnYess.setOnClickListener {
+                        dialog.show()
+                        notificationDialog.dismiss()
+                    }
+                    btnCancell.setOnClickListener {
+                        notificationDialog.dismiss()
+                    }
+
+                    notificationDialog.show()
+
                 }
             }
         })
@@ -152,26 +179,28 @@ class PickerSessionFragment: Fragment() {
                         binding.etCount.setText("")
                         binding.rwListMain.visibility = View.GONE
                         binding.etCount.visibility = View.GONE
-                        val editText = EditText(requireContext())
-                        editText.hint = "Введите текст"
 
-                        val dialog = AlertDialog.Builder(requireActivity())
-                            .setTitle("Окончание сборки")
-                            .setMessage("Введите out отгрузки.")
-                            .setView(editText)
-                            .setPositiveButton("Да") { _, _ ->
-                                val text = editText.text.toString()
-                                localViewModel.finishSession(
-                                    assemblyRepo,
-                                    text,
-                                    sessionId,
-                                    viewModel
-                                )
-                            }
-                            .setNegativeButton("Нет", null)
+                        val view = LayoutInflater.from(requireActivity())
+                            .inflate(R.layout.dialog_with_et, null)
+
+                        val et = view.findViewById<EditText>(R.id.etDialog)
+                        val btnYes = view.findViewById<Button>(R.id.btnYes)
+                        val btnCancel = view.findViewById<Button>(R.id.btnCancel)
+
+                        var dialog = AlertDialog.Builder(requireActivity())
+                            .setView(view)
                             .create()
 
+                        btnYes.setOnClickListener {
+                            val text = et.text.toString()
+                            localViewModel.finishSession(assemblyRepo, text, sessionId, viewModel)
+                        }
+                        btnCancel.setOnClickListener {
+                            dialog.dismiss()
+                        }
                         dialog.show()
+
+
                     }
                 }
             }
@@ -193,8 +222,8 @@ class PickerSessionFragment: Fragment() {
                     if (localViewModel.activeElement.value!!.amount == text.toInt()) {
                         lifecycleScope.launch {
                             withContext(Dispatchers.IO) {
-                                var curItem = db.getDao().getPickerItemById(localViewModel.activeElement.value!!.assemblyItemId)
-                                db.getDao().updatePickerItem(curItem.copy(finishedAt = System.currentTimeMillis(), status = StatusType.Finished.ordinal))
+                                var curItem = assemblyRepo.getPickerItemById(localViewModel.activeElement.value!!.assemblyItemId)
+                                assemblyRepo.updatePickerItem(curItem.copy(finishedAt = System.currentTimeMillis(), status = StatusType.Finished.ordinal))
 
                                 // Если равно
                                     //
@@ -209,6 +238,7 @@ class PickerSessionFragment: Fragment() {
 
                             // Иначе надо сменить элемент
                             withContext(Dispatchers.Main) {
+                                localViewModel.appendResultItem(localViewModel._items.value!!.last().copy(amount = text.toInt()))
                                 localViewModel._items.value = localViewModel._items.value!!.drop(1)
                                 if(localViewModel._items.value!!.count() != 0){
                                     var coll: AssemblyItem = localViewModel._items.value!!.first()
@@ -225,26 +255,41 @@ class PickerSessionFragment: Fragment() {
 
                     }else{
                         // Если количество меньше или больше заявленного то спросить уверен ли что норм все и при нажатии нет надо вернуть фокус
-                        val dialog = AlertDialog.Builder(requireActivity())
-                            .setTitle("Что-то не так")
-                            .setMessage("Количество товара не соответствует заявленом. Продолжить?")
-                            .setPositiveButton("Да") { _, _ ->
-                                localViewModel._items.value = localViewModel._items.value!!.drop(1)
-                                // Обновить текущий элемент
-                                var coll : AssemblyItem = localViewModel._items.value!!.first()
-                                localViewModel._activeElement.value = coll
-                                // Сменить фокус
-                                localViewModel._menuStatus.value = AssemblySessionMenuType.ScanningMode.ordinal
-                            }
-                            .setNegativeButton("Нет") {_, _ ->
-                                binding.etCount.requestFocus()
-                                binding.etCount.post {
-                                    binding.etCount.setTextColor(Color.WHITE)
-                                    binding.etCount.selectAll()
-                                }
-                            }
+                        val notificationView = LayoutInflater.from(requireActivity())
+                            .inflate(R.layout.dialog, null)
+
+                        val tv = notificationView.findViewById<TextView>(R.id.etDialog)
+                        val btnYess = notificationView.findViewById<Button>(R.id.btnYes)
+                        val btnCancell = notificationView.findViewById<Button>(R.id.btnNo)
+
+                        var notificationDialog = AlertDialog.Builder(requireActivity())
+                            .setView(notificationView)
                             .create()
-                        dialog.show()
+
+                        tv.setText("Количество товара не соответствует заявленому. Продолжить?")
+                        btnYess.setOnClickListener {
+
+                            localViewModel.appendResultItem(localViewModel._items.value!!.last().copy(amount = text.toInt()))
+                            localViewModel._items.value = localViewModel._items.value!!.drop(1)
+                            // Обновить текущий элемент
+                            var coll : AssemblyItem = localViewModel._items.value!!.first()
+                            localViewModel._activeElement.value = coll
+                            // Сменить фокус
+                            localViewModel._menuStatus.value = AssemblySessionMenuType.ScanningMode.ordinal
+                            notificationDialog.dismiss()
+
+                        }
+                        btnCancell.setOnClickListener {
+                            binding.etCount.requestFocus()
+                            binding.etCount.post {
+                                binding.etCount.setTextColor(Color.WHITE)
+                                binding.etCount.selectAll()
+                            }
+                        }
+
+                        notificationDialog.show()
+
+
                     }
 
                     binding.etCount.setTextColor(ContextCompat.getColor(requireActivity(), R.color.regularGrey))
@@ -260,11 +305,7 @@ class PickerSessionFragment: Fragment() {
                     var isCountMode : Boolean = false
                     var activeElementList = localViewModel.activeElement.value!!.pickerList
                     withContext(Dispatchers.IO) {
-                        var assemblySession = viewModel.uiState.value as UiState.AssemblySessionMenu
-                        var db = MainDB.getDB(requireActivity())
-                        var dao = db.getDao()
                         var curOperation = localViewModel.menuStatus.value
-
                         if(curOperation == AssemblySessionMenuType.ScanningMode.ordinal){
                             // Найти активный элемент в списке
                             for (counter in 0 .. activeElementList.count() - 1){
@@ -273,8 +314,8 @@ class PickerSessionFragment: Fragment() {
                                 if(currElement.isSelected && currElement.data.any{item -> item == barcode}){
                                     //обновить время начала сборки элемента
                                     if(counter == 0){
-                                        var pickerItem = dao.getPickerItemById(localViewModel.activeElement.value!!.assemblyItemId)
-                                        dao.updatePickerItem(pickerItem.copy(startedAt = System.currentTimeMillis(), status = StatusType.Work.ordinal))
+                                        var pickerItem = assemblyRepo.getPickerItemById(localViewModel.activeElement.value!!.assemblyItemId)
+                                        assemblyRepo.updatePickerItem(pickerItem.copy(startedAt = System.currentTimeMillis(), status = StatusType.Work.ordinal))
                                     }
                                     // Если это последний элемент то надо переключить режим на ввод количества
                                     // Обновить адаптер текущего элемента
