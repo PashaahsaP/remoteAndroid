@@ -24,7 +24,11 @@ object InventoryDiffFactory {
             status = status.ordinal,
             isTE = isTe,
             barcode = barcoder,
-            other = null
+            other = null,
+            createdAt = System.currentTimeMillis(),
+            updatedAt = System.currentTimeMillis(),
+            deletedAt = null,
+            isDeleted = false
         )
     }
 }

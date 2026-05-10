@@ -19,5 +19,9 @@ data class PackageEntity(
     val height: Double?,
     val width: Double?,
     val volume: Double?,
+    val createdAt: Long,
+    val updatedAt: Long,
+    val deletedAt: Long?,
+    val isDeleted: Boolean,
     val other: String? // JSON
 )

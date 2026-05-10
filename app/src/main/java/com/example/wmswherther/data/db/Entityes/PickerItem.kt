@@ -20,5 +20,9 @@ data class PickerItem(
     val status: Int,
     val startedAt: Long?,
     val finishedAt: Long?,
+    val createdAt: Long,
+    val updatedAt: Long,
+    val deletedAt: Long?,
+    val isDeleted: Boolean,
     val other: String? // JSON
 )

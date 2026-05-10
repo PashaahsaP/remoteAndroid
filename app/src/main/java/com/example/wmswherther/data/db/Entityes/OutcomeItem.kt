@@ -18,5 +18,9 @@ data class OutcomeItem(
     val goodsId: String,
     val cellId: String?,
     val status: Int,
+    val createdAt: Long,
+    val updatedAt: Long,
+    val deletedAt: Long?,
+    val isDeleted: Boolean,
     val other: String? // JSON
 )

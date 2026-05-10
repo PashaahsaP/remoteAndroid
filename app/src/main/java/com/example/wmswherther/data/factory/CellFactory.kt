@@ -11,7 +11,11 @@ object CellFactory {
             id = UUID.randomUUID().toString(),
             typeCellId = typeCellId,
             parentCellId = parentCellId,
-            name = name
+            name = name,
+            createdAt = System.currentTimeMillis(),
+            updatedAt = System.currentTimeMillis(),
+            deletedAt = null,
+            isDeleted = false
         )
     }
 }

@@ -17,5 +17,9 @@ data class Barcode(
     val name: String,
     val catalogId: String,
     val supplierId: String?,
+    val createdAt: Long,
+    val updatedAt: Long,
+    val deletedAt: Long?,
+    val isDeleted: Boolean,
     val other: String? // JSON
 )

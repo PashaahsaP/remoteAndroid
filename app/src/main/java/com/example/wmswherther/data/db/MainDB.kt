@@ -62,8 +62,6 @@ abstract class MainDB :RoomDatabase(){
                 context.applicationContext,
                 MainDB::class.java,
                 name="Wms.db"
-            ).addMigrations(
-                MIGRATION_1_2
             )
                 //.fallbackToDestructiveMigration()45345345  99999999999999999
                 .build()

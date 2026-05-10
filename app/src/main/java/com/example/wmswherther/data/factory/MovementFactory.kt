@@ -24,7 +24,11 @@ object MovementFactory {
             userId = 1,
             executedAt = System.currentTimeMillis(),
             operationType = operationType.ordinal,
-            entityId = entityId
+            entityId = entityId,
+            createdAt = System.currentTimeMillis(),
+            updatedAt = System.currentTimeMillis(),
+            deletedAt = null,
+            isDeleted = false
         )
     }
 }

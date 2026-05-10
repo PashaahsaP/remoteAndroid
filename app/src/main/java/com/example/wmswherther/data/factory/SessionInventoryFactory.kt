@@ -4,30 +4,21 @@ import com.example.wmsRemote.data.enums.StatusType
 import com.example.wmswherther.data.db.Entityes.SessionInventory
 import java.util.UUID
 
-object InventorySessionFactory {
-    /**
-     * Creating for supplier mode, when create new session in process inventory, not inventory task
-     */
-
-    fun createNotInventoryTask(
-        supplierId: String,
-        cellId: String,
-        status: StatusType,
-
-    ) : SessionInventory {
+object SessionInventoryFactory {
+    fun create(supplierId: String, cellId: String, prevSessionId: String?) : SessionInventory{
         return SessionInventory(
             id = UUID.randomUUID().toString(),
             supplierId = supplierId,
             cellId = cellId,
-            prevSessionId = "",
-            status = status.ordinal,
+            prevSessionId = prevSessionId,
+            status = StatusType.Created.ordinal,
             createdAt = System.currentTimeMillis(),
             startedAt = System.currentTimeMillis(),
-            finishedAt = System.currentTimeMillis(),
-            other = null,
+            finishedAt = null,
             updatedAt = System.currentTimeMillis(),
             deletedAt = null,
-            isDeleted = false
+            isDeleted = false,
+            other = null
         )
     }
 }

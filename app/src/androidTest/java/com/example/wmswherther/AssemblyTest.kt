@@ -55,7 +55,21 @@ import com.example.wmswherther.data.db.Entityes.Supplier
 import com.example.wmswherther.data.db.Entityes.User
 import com.example.wmswherther.data.db.Repositories.AssemblyRepository
 import com.example.wmswherther.data.db.Repositories.IncomeRepository
+import com.example.wmswherther.data.factory.BarcodeFactory
+import com.example.wmswherther.data.factory.CatalogFactory
+import com.example.wmswherther.data.factory.CellFactory
+import com.example.wmswherther.data.factory.CellTypeFactory
+import com.example.wmswherther.data.factory.ChangeFactory
+import com.example.wmswherther.data.factory.CredentialFactory
+import com.example.wmswherther.data.factory.GoodsFactory
+import com.example.wmswherther.data.factory.IncomeItemFactory
+import com.example.wmswherther.data.factory.PickerItemFactory
+import com.example.wmswherther.data.factory.SessionIncomeFactory
+import com.example.wmswherther.data.factory.SessionPickerFactory
+import com.example.wmswherther.data.factory.SupplierFactory
+import com.example.wmswherther.data.factory.UserFactory
 import com.example.wmswherther.viewModel.MainViewModel
+import com.google.gson.Gson
 import kotlinx.coroutines.runBlocking
 import org.hamcrest.Description
 import org.hamcrest.Matcher
@@ -320,168 +334,12 @@ class AssemblyTest {
             movements = repo.getAllMovements()
         }
         println("######")
-        assertEquals(StatusType.Finished.ordinal.toString(), session.status)
+        assertEquals(StatusType.Finished.ordinal, session.status)
         println(goods)
         assertEquals(true, goodsAndCell.all { it.second.name == cell.name })
         assertEquals(true, goodsAndCell.all { movements.filter { inner -> inner.goodsId == it.first.id }.size == 1 })
     }
-   /* @Test
-    fun checkIsLess(){
-        Thread.sleep(500)
 
-        onView(withId(R.id.btnThreeDots))
-            .check(matches(isDisplayed()))
-            .check(matches(isClickable()))
-            .check(matches(isEnabled()))
-            .perform(click())
-
-        onView(withText("Scanning mode"))
-            .inRoot(isPlatformPopup())
-            .check(matches(isDisplayed()))
-            .perform(click())
-
-
-        onView(withId(R.id.etIncomeBarcode))
-            .perform(replaceText("A110"))
-            .perform(pressImeActionButton())
-        onView(withId(R.id.etIncomeBarcode))
-            .perform(replaceText("4665453776410"))
-            .perform(pressImeActionButton())
-        onView(withId(R.id.etCount))
-            .perform(replaceText("3"))
-            .perform(pressImeActionButton())
-        Thread.sleep(500)
-        onView(withId(R.id.btnYes))
-            .perform(click())
-
-
-        onView(withId(R.id.etIncomeBarcode))
-            .perform(replaceText("A111"))
-            .perform(pressImeActionButton())
-        onView(withId(R.id.etIncomeBarcode))
-            .perform(replaceText("4665453776411"))
-            .perform(pressImeActionButton())
-        onView(withId(R.id.etCount))
-            .perform(pressImeActionButton())
-        Thread.sleep(500)
-
-        onView(withId(R.id.etDialog))
-            .perform(replaceText("OUT01"))
-            .perform(pressImeActionButton())
-
-        onView(withId(R.id.btnYes))
-            .perform(click())
-
-
-        var session: SessionPicker
-        var items: List<PickerItem>
-        var goods: List<Goods>
-        var goodsAndCellAndMovement: List<Triple<Goods, Cell, List<Movement>>>
-        var movements: List<Movement>
-        var movementsForTwo: List<Movement>
-        var movementsForOne: List<Movement>
-        var cell: Cell
-        var cellLess: Cell
-        runBlocking {
-            println("######")
-            session = repo.getPickerSessionById(sessionId)
-            items = repo.getPickerItems().filter { it.sessionId == sessionId }
-            goods = items.map { repo.getGoodsById(it.goodsId) }
-            goodsAndCellAndMovement = goods.map { Pair(it, repo.getCellById(it.cellId.toString())) }.map { Triple(it.first, it.second,repo.getAllMovements().filter { item -> item.goodsId ==  it.first.id})  }
-            cell = repo.getCellByName("OUT01")
-            cellLess = repo.getCellByName("less")
-            movements = repo.getAllMovements()
-            movementsForOne = goodsAndCellAndMovement.filter { it.third.size == 1 }.flatMap { it -> it.third }
-            movementsForTwo = goodsAndCellAndMovement.filter { it.third.size == 2 }.flatMap { it -> it.third }
-        }
-        println("######")
-        assertEquals(StatusType.Finished.ordinal.toString(), session.status)
-        println(goods)
-        assertEquals(true, goodsAndCellAndMovement.all { it.second.name == cell.name })
-        assertEquals(13, movementsForOne.sumOf { it.qty.toInt() })
-        assertEquals(14, movementsForTwo.sumOf { it.qty.toInt() })
-        assertEquals(3, movementsForTwo.size + movementsForOne.size == 3)
-        assertEquals(cell.id, movementsForTwo.sortedBy { it.executedAt }.first().cellToId)
-        assertEquals(cellLess.id, movementsForTwo.sortedBy { it.executedAt }.last().cellToId)
-        assertEquals(2, movementsForTwo.size)
-
-    }
-    @Test
-    fun checkIsMove(){
-        Thread.sleep(500)
-
-        onView(withId(R.id.btnThreeDots))
-            .check(matches(isDisplayed()))
-            .check(matches(isClickable()))
-            .check(matches(isEnabled()))
-            .perform(click())
-
-        onView(withText("Scanning mode"))
-            .inRoot(isPlatformPopup())
-            .check(matches(isDisplayed()))
-            .perform(click())
-
-
-        onView(withId(R.id.etIncomeBarcode))
-            .perform(replaceText("A110"))
-            .perform(pressImeActionButton())
-        onView(withId(R.id.etIncomeBarcode))
-            .perform(replaceText("4665453776410"))
-            .perform(pressImeActionButton())
-        onView(withId(R.id.etCount))
-            .perform(pressImeActionButton())
-
-
-        onView(withId(R.id.etIncomeBarcode))
-            .perform(replaceText("A111"))
-            .perform(pressImeActionButton())
-        onView(withId(R.id.etIncomeBarcode))
-            .perform(replaceText("4665453776411"))
-            .perform(pressImeActionButton())
-        onView(withId(R.id.etCount))
-            .perform(pressImeActionButton())
-        Thread.sleep(500)
-
-        onView(withId(R.id.etDialog))
-            .perform(replaceText("OUT01"))
-            .perform(pressImeActionButton())
-
-        onView(withId(R.id.btnYes))
-            .perform(click())
-
-
-        var session: SessionPicker
-        var items: List<PickerItem>
-        var goods: List<Goods>
-        var goodsAndCellAndMovement: List<Triple<Goods, Cell, List<Movement>>>
-        var movements: List<Movement>
-        var movementsForTwo: List<Movement>
-        var movementsForOne: List<Movement>
-        var cell: Cell
-        var cellMore: Cell
-        runBlocking {
-            println("######")
-            session = repo.getPickerSessionById(sessionId)
-            items = repo.getPickerItems()
-            goods = items.map { repo.getGoodsById(it.goodsId) }
-            goodsAndCellAndMovement = goods.map { Pair(it, repo.getCellById(it.cellId.toString())) }.map { Triple(it.first, it.second,repo.getAllMovements().filter { item -> item.goodsId ==  it.first.id})  }
-            cell = repo.getCellByName("OUT01")
-            cellMore = repo.getCellByName("more")
-            movements = repo.getAllMovements()
-            movementsForOne = goodsAndCellAndMovement.filter { it.third.size == 1 }.flatMap { it -> it.third }
-            movementsForTwo = goodsAndCellAndMovement.filter { it.third.size == 2 }.flatMap { it -> it.third }
-        }
-        println("######")
-        assertEquals(StatusType.Finished.ordinal.toString(), session.status)
-        println(goods)
-        assertEquals(true, goodsAndCellAndMovement.all { it.second.name == cell.name })
-        assertEquals(13, movementsForOne.sumOf { it.qty.toInt() })
-        assertEquals(14, movementsForTwo.sumOf { it.qty.toInt() })
-        assertEquals(cell.id, movementsForTwo.sortedBy { it.executedAt }.first().cellToId)
-        assertEquals(cellMore.id, movementsForTwo.sortedBy { it.executedAt }.last().cellFromId)
-        assertEquals(2, movementsForTwo.size)
-
-    }*/
 
 
 
@@ -503,95 +361,84 @@ class AssemblyTest {
             }
         }
     }
-    suspend fun appendPickerDummyData(dao: Dao, sessionId: String, supplierId: String) {
-        var type = CellType(
-            id = UUID.randomUUID().toString(),
+    suspend fun appendPickerDummyData(dao: Dao, sessionId: String, supplierId: String){
+        var type = CellTypeFactory.create(
             type = "Outcome",
-            mask = "OUT##",
-            other = null
+            mask = "OUT##"
         )
         dao.insertCellType(type)
 
         val vitekSupplier = Supplier(
-            supplierId,
-            "Vitek",
-            null
+            id = supplierId,
+            name = "Vitek",
+            createdAt = System.currentTimeMillis(),
+            updatedAt = System.currentTimeMillis(),
+            deletedAt = null,
+            isDeleted = false,
+            other = null
         )
-
         dao.insertSupplier(vitekSupplier)
 
-        val incomeType = CellType(
-            UUID.randomUUID().toString(),
-            "Income",
-            "IN##",
-            null
+        val incomeType = CellTypeFactory.create(
+            type = "Income",
+            mask = "IN##"
         )
         dao.insertCellType(incomeType)
 
-        val teType = CellType(
-            UUID.randomUUID().toString(),
-            "BoxTE",
-            "N########",
-            null
+        val teType = CellTypeFactory.create(
+            type = "BoxTE",
+            mask = "N########"
         )
         dao.insertCellType(teType)
-        val pickerType = CellType(
-            UUID.randomUUID().toString(),
-            "Picker",
-            "*###",
-            null
+        val pickerType = CellTypeFactory.create(
+            type = "Picker",
+            mask = "*###"
         )
         dao.insertCellType(pickerType)
-        var A100 = Cell(
-            UUID.randomUUID().toString(),
-            pickerType.id,
-            null,
-            "A100"
+        var A100 = CellFactory.create(
+            typeCellId = pickerType.id,
+            parentCellId = null,
+            name = "A100"
         )
-        var cellChange = Change(
-            UUID.randomUUID().toString(),
-            A100.id,
-            OperationType.InsertCell.ordinal,
-            StatusType.Created.ordinal,
-            null,
-            null
+        var cellChange = ChangeFactory.create(
+            payload = Gson().toJson(A100),
+            entityId = A100.id,
+            supplierId = null,
+            operationType = OperationType.InsertCell
         )
         dao.insertCellSync(A100, cellChange)
 
-        var N00000001 = Cell(
-            UUID.randomUUID().toString(),
-            teType.id,
-            A100.id,
-            "N00000001"
+        var N00000001 = CellFactory.create(
+            typeCellId = teType.id,
+            parentCellId = A100.id,
+            name = "N00000001"
         )
-        var teChange = Change(
-            UUID.randomUUID().toString(),
-            N00000001.id,
-            OperationType.InsertCell.ordinal,
-            StatusType.Created.ordinal,
-            null,
-            null
+        var teChange = ChangeFactory.create(
+            payload = Gson().toJson(N00000001),
+            entityId = N00000001.id,
+            supplierId = null,
+            operationType = OperationType.InsertCell
         )
-
         dao.insertCellSync(N00000001, teChange)
 
         var pickerSession = SessionPicker(
             id = sessionId,
-            supplierId = vitekSupplier.id,
+            supplierId = supplierId,
             outCellId = A100.id,
-            status = StatusType.Created.ordinal.toString(),
+            status = StatusType.Created.ordinal,
             createdAt = System.currentTimeMillis(),
             startedAt = System.currentTimeMillis(),
-            finishedAt = System.currentTimeMillis(),
+            finishedAt = null,
+            updatedAt = System.currentTimeMillis(),
+            deletedAt = null,
+            isDeleted = false,
             other = null
         )
-        var pickerChange = Change(
-            UUID.randomUUID().toString(),
-            pickerSession.id,
-            OperationType.InsertPickerSession.ordinal,
-            StatusType.Created.ordinal,
-            vitekSupplier.id,
-            null
+        var pickerChange = ChangeFactory.create(
+            payload = Gson().toJson(pickerSession),
+            entityId = pickerSession.id,
+            supplierId = vitekSupplier.id,
+            operationType = OperationType.InsertPickerSession
         )
         dao.insertPickerSessionAsync(pickerSession, pickerChange)
 // <editor-fold desc="te first">
@@ -671,98 +518,74 @@ class AssemblyTest {
          )
          dao.insertPickerItemAsync(pickerItem, pickerChange)*/
 // </editor-fold>
-        for (enum in 10..11) {
+        for (enum in 10 .. 11){
             // <editor-fold desc="insert cell">
-            var A111 = Cell(
-                UUID.randomUUID().toString(),
-                pickerType.id,
-                null,
-                "A1${enum}"
+            var A111 = CellFactory.create(
+                typeCellId = pickerType.id,
+                parentCellId = null,
+                name = "A1${enum}"
             )
-            var cellChange = Change(
-                UUID.randomUUID().toString(),
-                A111.id,
-                OperationType.InsertCell.ordinal,
-                StatusType.Created.ordinal,
-                null,
-                null
+            var cellChange = ChangeFactory.create(
+                payload = Gson().toJson(A111),
+                entityId = A111.id,
+                supplierId = null,
+                operationType = OperationType.InsertCell
             )
             dao.insertCellSync(A111, cellChange)
             // </editor-fold>
             // <editor-fold desc="insert catalog and barcode">
-            var catalog = Catalog(
-                UUID.randomUUID().toString(),
-                "Kettle k5${enum}",
-                "3241223",
-                vitekSupplier.id,
-                null
+            var catalog = CatalogFactory.create(
+                name = "Kettle k5${enum}",
+                sku = "3241223",
+                supplierId = vitekSupplier.id
             )
-            var catalogChange = Change(
-                UUID.randomUUID().toString(),
-                catalog.id,
-                OperationType.InsertCatalog.ordinal,
-                StatusType.Created.ordinal,
-                vitekSupplier.id,
-                null
+            var catalogChange = ChangeFactory.create(
+                payload = Gson().toJson(catalog),
+                entityId = catalog.id,
+                supplierId = vitekSupplier.id,
+                operationType = OperationType.InsertCatalog
             )
 
-
-            var barcode = Barcode(
-                UUID.randomUUID().toString(),
-                "46654537764${enum}",
-                catalog.id,
-                vitekSupplier.id,
-                null
+            var barcode = BarcodeFactory.create(
+                name = "46654537764${enum}",
+                catalogId = catalog.id,
+                supplierId = vitekSupplier.id
             )
-            var barcodeChanges = Change(
-                UUID.randomUUID().toString(),
-                barcode.id,
-                OperationType.InsertBarcode.ordinal,
-                StatusType.Created.ordinal,
-                vitekSupplier.id,
-                null
+            var barcodeChanges = ChangeFactory.create(
+                payload = Gson().toJson(barcode),
+                entityId = barcode.id,
+                supplierId = vitekSupplier.id,
+                operationType = OperationType.InsertBarcode
             )
             dao.insertCatalogSync(catalog, catalogChange)
             dao.insertBarcodeAsync(barcode, barcodeChanges)
             // </editor-fold>
             // <editor-fold desc="insert goods">
-            var goods = Goods(
-                id = UUID.randomUUID().toString(),
+            var goods = GoodsFactory.create(
                 amount = 3 + enum,
                 cellId = A111.id,
                 catalogId = catalog.id,
-                createdAt = System.currentTimeMillis(),
-                isAvailable = true,
-                other = null
+                isAvailable = true
             )
-            var goodsChange = Change(
-                UUID.randomUUID().toString(),
-                goods.id,
-                OperationType.InsertGoods.ordinal,
-                status = StatusType.Created.ordinal,
-                vitekSupplier.id,
-                null
+            var goodsChange = ChangeFactory.create(
+                payload = Gson().toJson(goods),
+                entityId = goods.id,
+                supplierId = vitekSupplier.id,
+                operationType = OperationType.InsertGoods
             )
             dao.insertGoodsAsync(goods, goodsChange)
             // </editor-fold>
             // <editor-fold desc="insert pickerItem">
-            var pickerItem = PickerItem(
-                id = UUID.randomUUID().toString(),
-                sessionId = pickerSession.id,
+            var pickerItem = PickerItemFactory.create(
+                sesionId = pickerSession.id,
                 goodsId = goods.id,
-                cellId = A111.id,
-                status = StatusType.Created.ordinal,
-                startedAt = System.currentTimeMillis(),
-                finishedAt = System.currentTimeMillis(),
-                other = null
+                cellId = A111.id
             )
-            var pickerChange = Change(
-                UUID.randomUUID().toString(),
-                pickerItem.id,
-                OperationType.InsertGoods.ordinal,
-                status = StatusType.Created.ordinal,
-                vitekSupplier.id,
-                null
+            var pickerChange = ChangeFactory.create(
+                payload = Gson().toJson(pickerItem),
+                entityId = pickerItem.id,
+                supplierId = vitekSupplier.id,
+                operationType = OperationType.InsertGoods
             )
             dao.insertPickerItemAsync(pickerItem, pickerChange)
             // </editor-fold>
@@ -845,63 +668,269 @@ class AssemblyTest {
 
 
     }
+    suspend fun appendDummyData(dao: Dao, sessionId: String, supplierId: String){
+        val borkSupplier = Supplier(
+            id = supplierId,
+            name = "Bork",
+            createdAt = System.currentTimeMillis(),
+            updatedAt = System.currentTimeMillis(),
+            deletedAt = null,
+            isDeleted = false,
+            other = null
+        )
+            SupplierFactory.create("Bork")
+        val atomySupplier = SupplierFactory.create("Atomy")
+        dao.insertSupplier(borkSupplier)
+        dao.insertSupplier(atomySupplier)
 
+        val incomeType = CellTypeFactory.create("Income", "IN##")
+        dao.insertCellType(incomeType)
+        val teType = CellTypeFactory.create("BoxTE", "N########")
+        dao.insertCellType(teType)
+
+        var IN01 = CellFactory.create(
+            typeCellId = incomeType.id,
+            parentCellId = null,
+            name = "IN-01"
+        )
+        var cellChange = ChangeFactory.create(
+            payload = Gson().toJson(IN01) ,
+            entityId = IN01.id,
+            supplierId = null,
+            operationType = OperationType.InsertCell
+        )
+        dao.insertCellSync(IN01, cellChange)
+
+        var N00000001 = CellFactory.create(
+            typeCellId = teType.id,
+            parentCellId = IN01.id,
+            name = "N00000001"
+        )
+        var teChange = ChangeFactory.create(
+            payload = Gson().toJson(N00000001),
+            entityId = N00000001.id,
+            supplierId = null,
+            operationType = OperationType.InsertCell
+        )
+        dao.insertCellSync(N00000001, teChange)
+
+        val pickerType = CellTypeFactory.create(
+            type = "Picker",
+            mask = "*###"
+        )
+        dao.insertCellType(pickerType)
+
+        var session = SessionIncome(
+            id = sessionId,
+            supplierId = supplierId,
+            incomeCellId = null,
+            toCellId = IN01.id,
+            status = StatusType.Created.ordinal,
+            createdAt = System.currentTimeMillis(),
+            startedAt = System.currentTimeMillis(),
+            finishedAt = null,
+            updatedAt = System.currentTimeMillis(),
+            deletedAt = null,
+            isDeleted = false,
+            other = null
+        )
+            SessionIncomeFactory.create(
+            supplierId = borkSupplier.id,
+            incomeCellId = null,
+            toCellId = IN01.id
+        )
+
+        var sessionChange = ChangeFactory.create(
+            payload = Gson().toJson(session),
+            entityId = session.id,
+            supplierId = borkSupplier.id,
+            operationType = OperationType.InsertIncomeSession
+        )
+        dao.insertIncomeSessionAsync(session, sessionChange)
+
+        for (enum in 10 .. 29){
+            var A111 = CellFactory.create(
+                typeCellId = pickerType.id,
+                parentCellId = null,
+                name = "A1${enum}"
+            )
+            var cellChangeSecond = ChangeFactory.create(
+                payload = Gson().toJson(A111),
+                entityId = A111.id,
+                supplierId = null,
+                operationType = OperationType.InsertCell
+            )
+            dao.insertCellSync(A111, cellChangeSecond)
+            var catalog = CatalogFactory.create(
+                name = "Kettle k5${enum}",
+                sku = "3241223",
+                supplierId = borkSupplier.id
+            )
+            var catalogChange = ChangeFactory.create(
+                payload = Gson().toJson(catalog),
+                entityId = catalog.id,
+                supplierId = borkSupplier.id,
+                operationType = OperationType.InsertCatalog
+            )
+
+            var barcode = BarcodeFactory.create(
+                name = "46654537764${enum}",
+                catalogId = catalog.id,
+                supplierId = borkSupplier.id
+            )
+            var barcodeChanges = ChangeFactory.create(
+                payload = Gson().toJson(barcode),
+                entityId = barcode.id,
+                supplierId = borkSupplier.id,
+                operationType = OperationType.InsertBarcode
+            )
+            dao.insertCatalogSync(catalog, catalogChange)
+            dao.insertBarcodeAsync(barcode, barcodeChanges)
+
+
+            var goods = GoodsFactory.create(
+                amount = 3 + enum,
+                cellId = A111.id,
+                catalogId = catalog.id,
+                isAvailable = false
+            )
+            var goodsChange = ChangeFactory.create(
+                payload = Gson().toJson(goods),
+                entityId = goods.id,
+                supplierId = borkSupplier.id,
+                operationType = OperationType.InsertGoods
+            )
+            dao.insertGoodsAsync(goods, goodsChange)
+
+            var incomeItem = IncomeItemFactory.create(
+                sessionId = session.id,
+                goodsId = goods.id
+            )
+            var incomeItemChange = ChangeFactory.create(
+                payload = Gson().toJson(incomeItem),
+                entityId = incomeItem.id,
+                supplierId = borkSupplier.id,
+                operationType = OperationType.InsertIncomeItem
+            )
+            dao.insertIncomeItemSync(incomeItem, incomeItemChange)
+
+        }
+
+        for(enum in 50..52){
+            var A111 =  CellFactory.create(
+                typeCellId = pickerType.id,
+                parentCellId = null,
+                name = "A1${enum}"
+            )
+            var cellChangeSecond = ChangeFactory.create(
+                payload = Gson().toJson(A111),
+                entityId = A111.id,
+                supplierId = null,
+                operationType = OperationType.InsertCell
+            )
+            dao.insertCellSync(A111, cellChangeSecond)
+            var catalog = CatalogFactory.create(
+                name = "Kettle k5${enum}",
+                sku = "3241223",
+                supplierId = borkSupplier.id
+            )
+            var catalogChange = ChangeFactory.create(
+                payload = Gson().toJson(catalog),
+                entityId = catalog.id,
+                supplierId = borkSupplier.id,
+                operationType = OperationType.InsertCatalog
+            )
+
+            var barcode = BarcodeFactory.create(
+                name = "46654537764${enum}",
+                catalogId = catalog.id,
+                supplierId = borkSupplier.id
+            )
+
+            var barcodeChanges = ChangeFactory.create(
+                payload = Gson().toJson(barcode),
+                entityId = barcode.id,
+                supplierId = borkSupplier.id,
+                operationType = OperationType.InsertBarcode
+            )
+            dao.insertCatalogSync(catalog, catalogChange)
+            dao.insertBarcodeAsync(barcode, barcodeChanges)
+
+
+            var goods = GoodsFactory.create(
+                amount = 3 + enum,
+                cellId = N00000001.id,
+                catalogId = catalog.id,
+                isAvailable = false
+            )
+            var goodsChange = ChangeFactory.create(
+                payload = Gson().toJson(goods),
+                entityId = goods.id,
+                supplierId = borkSupplier.id,
+                operationType = OperationType.InsertGoods
+            )
+            dao.insertGoodsAsync(goods, goodsChange)
+
+            var incomeItem = IncomeItemFactory.create(
+                sessionId = session.id,
+                goodsId = goods.id
+            )
+            var incomeItemChange = ChangeFactory.create(
+                payload = Gson().toJson(incomeItem),
+                entityId = incomeItem.id,
+                supplierId = borkSupplier.id,
+                operationType = OperationType.InsertIncomeItem
+            )
+            dao.insertIncomeItemSync(incomeItem, incomeItemChange)
+        }
+
+
+    }
     suspend fun appendFunctionality(dao: Dao) {
-        var cellType = CellType(
-            id = UUID.randomUUID().toString(),
+        var cellType  = CellTypeFactory.create(
             type = "Movement",
-            mask = "",
-            other = null
+            mask = "TODO()"
         )
-        var opTye = CellType(
-            id = UUID.randomUUID().toString(),
+        var opTye  = CellTypeFactory.create(
             type = "OperationType",
-            mask = "",
-            other = null
+            mask = "TODO()"
         )
-        var income = Cell(
-            id = UUID.randomUUID().toString(),
+        var income = CellFactory.create(
             typeCellId = opTye.id,
             parentCellId = null,
             name = "income"
         )
-        var outcome = Cell(
-            id = UUID.randomUUID().toString(),
+        var outcome = CellFactory.create(
             typeCellId = opTye.id,
             parentCellId = null,
             name = "outcome"
         )
-        var cellLess = Cell(
-            id = UUID.randomUUID().toString(),
+        var cellLess = CellFactory.create(
             typeCellId = cellType.id,
             parentCellId = null,
             name = "less"
         )
-        var cellMore = Cell(
-            id = UUID.randomUUID().toString(),
+        var cellMore = CellFactory.create(
             typeCellId = cellType.id,
             parentCellId = null,
             name = "more"
         )
-        var cellSplit = Cell(
-            id = UUID.randomUUID().toString(),
+        var cellSplit = CellFactory.create(
             typeCellId = cellType.id,
             parentCellId = null,
             name = "split"
         )
-        var cellMerge = Cell(
-            id = UUID.randomUUID().toString(),
+        var cellMerge = CellFactory.create(
             typeCellId = cellType.id,
             parentCellId = null,
             name = "merge"
         )
-        var catalogTE = Catalog(
-            id = "",
+        var catalogTE  = CatalogFactory.create(
             name = "TE",
             sku = "TE",
-            supplierId = db.getDao().getAllSuppliers().first().id,
-            other = null
+            supplierId = dao.getAllSuppliers().first().id
         )
+
         dao.insertCatalog(catalogTE)
         dao.insertCellType(cellType)
         dao.insertCellType(opTye)
@@ -912,20 +941,17 @@ class AssemblyTest {
         dao.insertCell(cellSplit)
         dao.insertCell(cellMerge)
     }
-
-    suspend fun appendUser(dao: Dao) {
-        var credential = Credential(
-            id = 0,
+    private fun appendUser(dao: Dao) {
+        var credential = CredentialFactory.create(
             type = "User",
-            other = null
+            id = 0
         )
-        var credentialId = db.getDao().insertCredential(credential)
-        var user = User(
+        var credentialId = dao.insertCredential(credential)
+        var user = UserFactory.create(
             id = 0,
-            firstName = "Pavel",
+            fistName = "Pavel",
             lastName = "Semenov",
-            credentialId = credentialId,
-            other = null
+            credentialId = credentialId
         )
         dao.insertUser(user)
     }

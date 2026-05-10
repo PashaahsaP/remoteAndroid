@@ -12,10 +12,12 @@ enum class OperationType {
     InsertPickerSession,
     InsertPickerItem,
     InsertMovement,
-    UpdateGoods,
     DeleteGoods,
+    UpdateGoods,
     UpdatePickerSession,
     UpdateIncomeSession,
+    UpdateInventorySession,
+
     UpdateCell,
     AssemblyMovement,
     IncomeMovement,

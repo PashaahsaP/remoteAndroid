@@ -15,5 +15,9 @@ data class TrueSign(
     val goodsId: String,
     val catalogId: String,
     val name: String?,
+    val createdAt: Long,
+    val updatedAt: Long,
+    val deletedAt: Long?,
+    val isDeleted: Boolean,
     val other: String? // JSON
 )

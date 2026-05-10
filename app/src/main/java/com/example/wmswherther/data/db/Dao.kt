@@ -16,11 +16,16 @@ import com.example.wmswherther.data.db.Entityes.Goods
 import com.example.wmswherther.data.db.Entityes.IncomeItem
 import com.example.wmswherther.data.db.Entityes.InventoryDiffItem
 import com.example.wmswherther.data.db.Entityes.Movement
+import com.example.wmswherther.data.db.Entityes.OutcomeItem
+import com.example.wmswherther.data.db.Entityes.PackageEntity
 import com.example.wmswherther.data.db.Entityes.PickerItem
+import com.example.wmswherther.data.db.Entityes.Service
 import com.example.wmswherther.data.db.Entityes.SessionIncome
 import com.example.wmswherther.data.db.Entityes.SessionInventory
+import com.example.wmswherther.data.db.Entityes.SessionOutcome
 import com.example.wmswherther.data.db.Entityes.SessionPicker
 import com.example.wmswherther.data.db.Entityes.Supplier
+import com.example.wmswherther.data.db.Entityes.TrueSign
 import com.example.wmswherther.data.db.Entityes.User
 
 @Dao
@@ -85,10 +90,34 @@ interface Dao {
         return from to to
     }
     // </editor-fold>
+    // <editor-fold desc="TrueSign">
+
+    @Query("SELECT * FROM true_signs")
+    fun getAllTrueSign(): List<TrueSign>
+
+    // </editor-fold>
+    // <editor-fold desc="Service">
+
+    @Query("SELECT * FROM services")
+    fun getAllService(): List<Service>
+
+    // </editor-fold>
+    // <editor-fold desc="Package entities">
+    @Insert
+    fun insertPackageItem(packageItem: PackageEntity)
+    @Transaction
+    suspend fun insertIncomeItemSync(packageItem: PackageEntity, change: Change){
+        val from = insertPackageItem(packageItem)
+        val to = insertPackageChanges(change)
+    }
+    @Query("SELECT * FROM package_entities")
+    fun getAllPackageItems(): List<PackageEntity>
+
+    // </editor-fold>
     // <editor-fold desc="IncomeItem">
     @Insert
     fun insertIncomeItem(incomeItem: IncomeItem)
-    @Insert
+    @Transaction
     suspend fun insertIncomeItemSync(incomeItem: IncomeItem, change: Change){
         val from = insertIncomeItem(incomeItem)
         val to = insertIncomeItemChanges(change)
@@ -97,6 +126,25 @@ interface Dao {
     fun getAllIncomeItem(): List<IncomeItem>
     @Query("SELECT * FROM income_items WHERE sessionId =:incomeSessionId")
     fun getAllIncomeItemBySessionId(incomeSessionId: String): List<IncomeItem>
+    // </editor-fold>
+    // <editor-fold desc="OutcomeItem">
+    @Insert
+    fun insertOutcomeItem(outcomeItem: OutcomeItem)
+    @Transaction
+    suspend fun insertOutcomeItemSync(outcomeItem: OutcomeItem, change: Change){
+        val from = insertOutcomeItem(outcomeItem)
+        val to = insertOutcomeChanges(change)
+    }
+    @Query("SELECT * FROM outcome_items")
+    fun getAllOutcomeItems(): List<OutcomeItem>
+    @Query("SELECT * FROM outcome_items WHERE sessionId =:outcomeSessionId")
+    fun getAllOutcomeItemBySessionId(outcomeSessionId: String): List<OutcomeItem>
+    // </editor-fold>
+    // <editor-fold desc="OutcomeSession">
+
+    @Query("SELECT * FROM sessions_outcome")
+    fun getAllOutcomeSession(): List<SessionOutcome>
+
     // </editor-fold>
     // <editor-fold desc="CellTypes">
     @Insert
@@ -206,6 +254,10 @@ interface Dao {
     // </editor-fold>
     // <editor-fold desc="Changes">
     @Insert
+    suspend fun insertPackageChanges(change: Change)
+    @Insert
+    suspend fun insertOutcomeChanges(change: Change)
+    @Insert
     suspend fun insertMovementChanges(change: Change)
     @Insert
     suspend fun insertCellChanges(change: Change)
@@ -241,7 +293,10 @@ interface Dao {
     suspend fun updateCellChanges(change: Change)
     @Delete
     suspend fun deleteGoodsChanges(change: Change)
-
+    @Query("SELECT * FROM changes")
+    fun getAllChanges(): List<Change>
+    @Update
+    suspend fun updateChange(change: Change)
     // </editor-fold>
     // <editor-fold desc="Movement">
     @Insert

@@ -17,7 +17,10 @@ object GoodsFactory {
             catalogId = catalogId,
             createdAt = System.currentTimeMillis(),
             isAvailable = isAvailable,
-            other = null
+            other = null,
+            updatedAt = System.currentTimeMillis(),
+            deletedAt = null,
+            isDeleted = false
         )
     }
 }

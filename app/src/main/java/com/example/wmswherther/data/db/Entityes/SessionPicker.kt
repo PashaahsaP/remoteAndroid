@@ -14,9 +14,12 @@ data class SessionPicker(
     @PrimaryKey(autoGenerate = false) val id: String,
     val supplierId: String?,
     val outCellId: String?,
-    val status: String,
+    val status: Int,
     val createdAt: Long,
     val startedAt: Long?,
     val finishedAt: Long?,
+    val updatedAt: Long,
+    val deletedAt: Long?,
+    val isDeleted: Boolean,
     val other: String? // JSON
 )

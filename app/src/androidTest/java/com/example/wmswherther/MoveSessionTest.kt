@@ -27,6 +27,7 @@ import androidx.test.espresso.matcher.ViewMatchers.withText
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import com.example.wmsRemote.MainActivity
 import com.example.wmsRemote.R
+import com.example.wmsRemote.data.db.Dao
 import com.example.wmsRemote.data.db.MainDB
 import com.example.wmsRemote.data.enums.OperationType
 import com.example.wmsRemote.data.enums.StatusType
@@ -47,7 +48,16 @@ import com.example.wmswherther.data.db.Entityes.SessionInventory
 import com.example.wmswherther.data.db.Entityes.Supplier
 import com.example.wmswherther.data.db.Entityes.User
 import com.example.wmswherther.data.db.Repositories.MoveeRepository
+import com.example.wmswherther.data.factory.BarcodeFactory
+import com.example.wmswherther.data.factory.CatalogFactory
+import com.example.wmswherther.data.factory.CellFactory
+import com.example.wmswherther.data.factory.CellTypeFactory
+import com.example.wmswherther.data.factory.ChangeFactory
+import com.example.wmswherther.data.factory.CredentialFactory
+import com.example.wmswherther.data.factory.GoodsFactory
+import com.example.wmswherther.data.factory.UserFactory
 import com.example.wmswherther.viewModel.MainViewModel
+import com.google.gson.Gson
 import kotlinx.coroutines.runBlocking
 import org.hamcrest.core.AllOf.allOf
 import org.junit.After
@@ -71,13 +81,14 @@ class MoveSessionTest {
             MainDB::class.java
         ).allowMainThreadQueries().build()
 
-        repo = MoveeRepository(db.getDao())
+        var dao = db.getDao()
+        repo = MoveeRepository(dao)
         ServiceLocator.moveRepository = repo
 
         // 👉 подготовка данных
         runBlocking {
             supplierId = "123234"
-            appendMoveDummyData(db, supplierId)
+            appendMoveDummyData(dao =dao , supplierId)
             appendFunctionality(db)
             appendUser(db)
         }
@@ -625,278 +636,49 @@ class MoveSessionTest {
     }
 
 
-    suspend fun appendMoveDummyData(db: MainDB, supplierId: String){
-        val dao = db.getDao()
-        val vitekSupplier = Supplier(
-            supplierId,
-            "Vitek",
-            null
-        )
-
-        dao.insertSupplier(vitekSupplier)
-
-        val incomeType = CellType(
-            UUID.randomUUID().toString(),
-            "Income",
-            "IN##",
-            null
-        )
-        dao.insertCellType(incomeType)
-
-        val teType = CellType(
-            UUID.randomUUID().toString(),
-            "BoxTE",
-            "N########",
-            null
-        )
-        dao.insertCellType(teType)
-        val pickerType = CellType(
-            UUID.randomUUID().toString(),
-            "Picker",
-            "*###",
-            null
-        )
-        dao.insertCellType(pickerType)
-
-        var A111 = Cell(
-            UUID.randomUUID().toString(),
-            pickerType.id,
-            null,
-            "A111"
-        )
-        var cellChange = Change(
-            UUID.randomUUID().toString(),
-            A111.id,
-            OperationType.InsertCell.ordinal,
-            StatusType.Created.ordinal,
-            null,
-            null
-        )
-        dao.insertCellSync(A111, cellChange)
-        var N00000001 = Cell(
-            UUID.randomUUID().toString(),
-            teType.id,
-            A111.id,
-            "N00000001"
-        )
-        var teChange = Change(
-            UUID.randomUUID().toString(),
-            N00000001.id,
-            OperationType.InsertCell.ordinal,
-            StatusType.Created.ordinal,
-            null,
-            null
-        )
-
-        dao.insertCellSync(N00000001, teChange)
-
-        var inventoryTask = SessionInventory(
-            UUID.randomUUID().toString(),
-            vitekSupplier.id,
-            A111.id,
-            null,
-            StatusType.Created.ordinal,
-            System.currentTimeMillis(),
-            null,
-            null,
-            null
-        )
-        var inventoryChange = Change(
-            UUID.randomUUID().toString(),
-            inventoryTask.id,
-            OperationType.InsertInventorySession.ordinal,
-            StatusType.Created.ordinal,
-            vitekSupplier.id,
-            null
-        )
-        dao.insertInventorySessionAsync(inventoryTask, inventoryChange)
-
-        for (enum in 10 .. 29){
-            var catalog = Catalog(
-                UUID.randomUUID().toString(),
-                "Kettle k5${enum}",
-                "3241223",
-                vitekSupplier.id,
-                null
-            )
-            var catalogChange = Change(
-                UUID.randomUUID().toString(),
-                catalog.id,
-                OperationType.InsertCatalog.ordinal,
-                StatusType.Created.ordinal,
-                vitekSupplier.id,
-                null
-            )
-
-            var barcode = Barcode(
-                UUID.randomUUID().toString(),
-                "46654537764${enum}",
-                catalog.id,
-                vitekSupplier.id,
-                null
-            )
-            var barcodeChanges = Change(
-                UUID.randomUUID().toString(),
-                barcode.id,
-                OperationType.InsertBarcode.ordinal,
-                StatusType.Created.ordinal,
-                vitekSupplier.id,
-                null
-            )
-            dao.insertCatalogSync(catalog, catalogChange)
-            dao.insertBarcodeAsync(barcode, barcodeChanges)
-
-
-            var goods = Goods(
-                id = UUID.randomUUID().toString(),
-                amount = 3 + enum,
-                cellId = A111.id,
-                catalogId = catalog.id,
-                createdAt = System.currentTimeMillis(),
-                isAvailable = true,
-                other = null
-            )
-            var goodsChange = Change(
-                UUID.randomUUID().toString(),
-                goods.id,
-                OperationType.InsertGoods.ordinal,
-                status = StatusType.Created.ordinal,
-                vitekSupplier.id,
-                null
-            )
-            dao.insertGoodsAsync(goods, goodsChange)
-        }
-
-        for(enum in 50..52){
-            var catalog = Catalog(
-                UUID.randomUUID().toString(),
-                "Kettle k5${enum}",
-                "3241223",
-                vitekSupplier.id,
-                null
-            )
-            var catalogChange = Change(
-                UUID.randomUUID().toString(),
-                catalog.id,
-                OperationType.InsertCatalog.ordinal,
-                StatusType.Created.ordinal,
-                vitekSupplier.id,
-                null
-            )
-
-            var barcode = Barcode(
-                UUID.randomUUID().toString(),
-                "46654537764${enum}",
-                catalog.id,
-                vitekSupplier.id,
-                null
-            )
-            var barcodeChanges = Change(
-                UUID.randomUUID().toString(),
-                barcode.id,
-                OperationType.InsertBarcode.ordinal,
-                StatusType.Created.ordinal,
-                vitekSupplier.id,
-                null
-            )
-            dao.insertCatalogSync(catalog, catalogChange)
-            dao.insertBarcodeAsync(barcode, barcodeChanges)
-
-
-            var goods = Goods(
-                id = UUID.randomUUID().toString(),
-                amount = 3 + enum,
-                cellId = N00000001.id,
-                catalogId = catalog.id,
-                createdAt = System.currentTimeMillis(),
-                isAvailable = true,
-                other = null
-            )
-            var goodsChange = Change(
-                UUID.randomUUID().toString(),
-                goods.id,
-                OperationType.InsertGoods.ordinal,
-                status = StatusType.Created.ordinal,
-                vitekSupplier.id,
-                null
-            )
-            dao.insertGoodsAsync(goods, goodsChange)
-        }
-
-
-    }
-
-    private fun appendUser(db: MainDB) {
-        var credential = Credential(
-            id = 0,
-            type = "User",
-            other = null
-        )
-        var credentialId = db.getDao().insertCredential(credential)
-        var user = User(
-            id = 0,
-            firstName = "Pavel",
-            lastName = "Semenov",
-            credentialId = credentialId,
-            other = null
-        )
-        db.getDao().insertUser(user)
-    }
     suspend fun appendFunctionality(db: MainDB) {
-        var cellType  = CellType(
-            id = UUID.randomUUID().toString(),
+        var cellType  = CellTypeFactory.create(
             type = "Movement",
-            mask = "",
-            other = null
+            mask = "TODO()"
         )
-        var opTye  = CellType(
-            id = UUID.randomUUID().toString(),
+        var opTye  = CellTypeFactory.create(
             type = "OperationType",
-            mask = "",
-            other = null
+            mask = "TODO()"
         )
-        var income = Cell(
-            id = UUID.randomUUID().toString(),
+        var income = CellFactory.create(
             typeCellId = opTye.id,
             parentCellId = null,
             name = "income"
         )
-        var outcome = Cell(
-            id = UUID.randomUUID().toString(),
+        var outcome = CellFactory.create(
             typeCellId = opTye.id,
             parentCellId = null,
             name = "outcome"
         )
-        var cellLess = Cell(
-            id = UUID.randomUUID().toString(),
+        var cellLess = CellFactory.create(
             typeCellId = cellType.id,
             parentCellId = null,
             name = "less"
         )
-        var cellMore = Cell(
-            id = UUID.randomUUID().toString(),
+        var cellMore = CellFactory.create(
             typeCellId = cellType.id,
             parentCellId = null,
             name = "more"
         )
-        var cellSplit = Cell(
-            id = UUID.randomUUID().toString(),
+        var cellSplit = CellFactory.create(
             typeCellId = cellType.id,
             parentCellId = null,
             name = "split"
         )
-        var cellMerge = Cell(
-            id = UUID.randomUUID().toString(),
+        var cellMerge = CellFactory.create(
             typeCellId = cellType.id,
             parentCellId = null,
             name = "merge"
         )
-        var catalogTE  = Catalog(
-            id = "",
+        var catalogTE  = CatalogFactory.create(
             name = "TE",
             sku = "TE",
-            supplierId = db.getDao().getAllSuppliers().first().id,
-            other = null
+            supplierId = db.getDao().getAllSuppliers().first().id
         )
         var dao = db.getDao()
         dao.insertCatalog(catalogTE)
@@ -908,5 +690,182 @@ class MoveSessionTest {
         dao.insertCell(cellMore)
         dao.insertCell(cellSplit)
         dao.insertCell(cellMerge)
+    }
+    private fun appendUser(db: MainDB) {
+        var credential = CredentialFactory.create(
+            type = "User",
+            id = 0
+        )
+        var credentialId = db.getDao().insertCredential(credential)
+        var user = UserFactory.create(
+            id = 0,
+            fistName = "Pavel",
+            lastName = "Semenov",
+            credentialId = credentialId
+        )
+        db.getDao().insertUser(user)
+    }
+    suspend fun appendMoveDummyData(dao: Dao, supplierId: String){
+        val vitekSupplier = Supplier(
+            id = supplierId,
+            name = "Vitek",
+            createdAt = System.currentTimeMillis(),
+            updatedAt = System.currentTimeMillis(),
+            deletedAt = null,
+            isDeleted = false,
+            other = null
+        )
+        dao.insertSupplier(vitekSupplier)
+
+        val incomeType = CellTypeFactory.create(
+            type = "Income",
+            mask = "IN##"
+        )
+        dao.insertCellType(incomeType)
+
+        val teType = CellTypeFactory.create(
+            type = "BoxTE",
+            mask = "N########"
+        )
+        dao.insertCellType(teType)
+        val pickerType = CellTypeFactory.create(
+            type = "Picker",
+            mask = "*###"
+        )
+        dao.insertCellType(pickerType)
+
+        var A111 = CellFactory.create(
+            typeCellId = pickerType.id,
+            parentCellId = null,
+            name = "A111"
+        )
+        var cellChange = ChangeFactory.create(
+            payload = Gson().toJson(A111),
+            entityId = A111.id,
+            supplierId = null,
+            operationType = OperationType.InsertCell
+        )
+        dao.insertCellSync(A111, cellChange)
+        var N00000001 = CellFactory.create(
+            typeCellId = teType.id,
+            parentCellId = A111.id,
+            name = "N00000001"
+        )
+        var teChange = ChangeFactory.create(
+            payload = Gson().toJson(N00000001),
+            entityId = N00000001.id,
+            supplierId = null,
+            operationType = OperationType.InsertCell
+        )
+
+        dao.insertCellSync(N00000001, teChange)
+
+        var inventoryTask = SessionInventory(
+            id = UUID.randomUUID().toString(),
+            supplierId = supplierId,
+            cellId = A111.id,
+            prevSessionId = null,
+            status = StatusType.Created.ordinal,
+            createdAt = System.currentTimeMillis(),
+            startedAt = System.currentTimeMillis(),
+            finishedAt = null,
+            updatedAt = System.currentTimeMillis(),
+            deletedAt = null,
+            isDeleted = false,
+            other = null
+        )
+        var inventoryChange = ChangeFactory.create(
+            payload = Gson().toJson(inventoryTask),
+            entityId = inventoryTask.id,
+            supplierId = vitekSupplier.id,
+            operationType = OperationType.InsertInventorySession
+        )
+        dao.insertInventorySessionAsync(inventoryTask, inventoryChange)
+
+        for (enum in 10 .. 29){
+            var catalog = CatalogFactory.create(
+                name = "Kettle k5${enum}",
+                sku = "3241223",
+                supplierId = vitekSupplier.id
+            )
+            var catalogChange = ChangeFactory.create(
+                payload = Gson().toJson(catalog),
+                entityId = catalog.id,
+                supplierId = vitekSupplier.id,
+                operationType = OperationType.InsertCatalog
+            )
+            var barcode = BarcodeFactory.create(
+                name = "46654537764${enum}",
+                catalogId = catalog.id,
+                supplierId = vitekSupplier.id
+            )
+            var barcodeChanges = ChangeFactory.create(
+                payload = Gson().toJson(barcode),
+                entityId = barcode.id,
+                supplierId = vitekSupplier.id,
+                operationType = OperationType.InsertBarcode
+            )
+            dao.insertCatalogSync(catalog, catalogChange)
+            dao.insertBarcodeAsync(barcode, barcodeChanges)
+
+
+            var goods = GoodsFactory.create(
+                amount = 3 + enum,
+                cellId = A111.id,
+                catalogId = catalog.id,
+                isAvailable = true
+            )
+            var goodsChange = ChangeFactory.create(
+                payload = Gson().toJson(goods),
+                entityId = goods.id,
+                supplierId = vitekSupplier.id,
+                operationType = OperationType.InsertGoods
+            )
+            dao.insertGoodsAsync(goods, goodsChange)
+        }
+
+        for(enum in 50..52){
+            var catalog = CatalogFactory.create(
+                name = "Kettle k5${enum}",
+                sku = "3241223",
+                supplierId = vitekSupplier.id
+            )
+            var catalogChange = ChangeFactory.create(
+                payload = Gson().toJson(catalog.id),
+                entityId = catalog.id,
+                supplierId = vitekSupplier.id,
+                operationType = OperationType.InsertCatalog
+            )
+            var barcode = BarcodeFactory.create(
+                name = "46654537764${enum}",
+                catalogId = catalog.id,
+                supplierId = vitekSupplier.id
+            )
+            var barcodeChanges = ChangeFactory.create(
+                payload = Gson().toJson(barcode),
+                entityId = barcode.id,
+                supplierId = vitekSupplier.id,
+                operationType = OperationType.InsertBarcode
+            )
+            dao.insertCatalogSync(catalog, catalogChange)
+            dao.insertBarcodeAsync(barcode, barcodeChanges)
+
+
+            var goods = GoodsFactory.create(
+                amount = 3 + enum,
+                cellId = N00000001.id,
+                catalogId = catalog.id,
+                isAvailable = true
+            )
+            var goodsChange = ChangeFactory.create(
+                payload = Gson().toJson(goods),
+                entityId = goods.id,
+                supplierId = vitekSupplier.id,
+                operationType = OperationType.InsertGoods
+            )
+            dao.insertGoodsAsync(goods, goodsChange)
+        }
+
+
     }
 }

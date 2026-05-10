@@ -25,5 +25,9 @@ data class Movement(
     val userId: Long,
     val executedAt: Long,
     val operationType: Int?,
-    val entityId: String?
+    val entityId: String?,
+    val createdAt: Long,
+    val updatedAt: Long,
+    val deletedAt: Long?,
+    val isDeleted: Boolean,
 )

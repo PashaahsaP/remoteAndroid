@@ -14,5 +14,9 @@ data class Service (
     @PrimaryKey(autoGenerate = false) val id: String,
     val supplierId: String?,
     val name: String,
+    val createdAt: Long,
+    val updatedAt: Long,
+    val deletedAt: Long?,
+    val isDeleted: Boolean,
     val other: String?
 )

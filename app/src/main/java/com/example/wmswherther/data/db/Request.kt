@@ -1,6 +1,20 @@
 package com.example.wmswherther.data.db
 
+import android.content.Context
+import androidx.room.ColumnInfo
+import androidx.room.PrimaryKey
+import androidx.work.CoroutineWorker
+import androidx.work.WorkerParameters
 import com.example.wmsRemote.models.client
+import com.example.wmswherther.data.db.Entityes.Barcode
+import com.example.wmswherther.data.db.Entityes.Catalog
+import com.example.wmswherther.data.db.Entityes.Cell
+import com.example.wmswherther.data.db.Entityes.Goods
+import com.example.wmswherther.data.db.Entityes.InventoryDiffItem
+import com.example.wmswherther.data.db.Entityes.Movement
+import com.example.wmswherther.data.db.Entityes.SessionIncome
+import com.example.wmswherther.data.db.Entityes.SessionInventory
+import com.example.wmswherther.data.db.Entityes.SessionPicker
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import okhttp3.MediaType.Companion.toMediaTypeOrNull
@@ -13,22 +27,23 @@ import java.io.IOException
 import java.net.URLEncoder
 import java.time.LocalDateTime
 
+
+
 class Request {
 
-  /*  suspend fun updateAtomyGoods(ip:String, goodsAtomy: GoodsAtomy) : String {
+    suspend fun updateGoods(ip:String, goods: Goods, client: OkHttpClient) : String {
         val json = JSONObject()
-            .put("id", goodsAtomy.Id)
-            .put("cellId", goodsAtomy.cellId)
-            .put("catalogId", goodsAtomy.catalogId)
-            .put("amount", goodsAtomy.amount)
-            .put("createdAt", goodsAtomy.createdAt)
-            .put("TE", goodsAtomy.TE)
-            .put("date", goodsAtomy.date)
+            .put("id", goods.id)
+            .put("amount", goods.amount)
+            .put("cellId", goods.cellId)
+            .put("catalogId", goods.catalogId)
+            .put("createdAt", goods.createdAt)
+            .put("isAvailable", goods.isAvailable)
             .toString()
         val requestBody = json.toRequestBody("application/json".toMediaTypeOrNull())
         val client = OkHttpClient()
         val request = Request.Builder()
-            .url("http://$ip:3000/goodsAtomy/update")
+            .url("http://$ip:3000/goods/update")
             .put(requestBody)
             .build()
 
@@ -100,20 +115,21 @@ class Request {
             }
         }
     }
-    suspend fun updateAssemblyBorkItem(ip:String, borkItem: AssemblyItem) : String {
-        var cellid = client.getCellByName(ip, borkItem.cell)
+    suspend fun updateIncomeSession(ip:String, incomeSession: SessionIncome, client: OkHttpClient) : String {
         val json = JSONObject()
-            .put("id", borkItem.assemblyItemId)
-            .put("assemblyId", borkItem.sessionId)
-            .put("cell", cellid["id"].toString())
-            .put("startedAt", LocalDateTime.now().toString())
-            .put("finishedAt", LocalDateTime.now().toString())
-            .put("status", "finished")
+            .put("id", incomeSession.id)
+            .put("supplierId", incomeSession.supplierId)
+            .put("incomeCellId", incomeSession.incomeCellId)
+            .put("toCellId", incomeSession.toCellId)
+            .put("status", incomeSession.status)
+            .put("createdAt", incomeSession.createdAt)
+            .put("startedAt", incomeSession.startedAt)
+            .put("finishedAt", incomeSession.finishedAt)
             .toString()
         val requestBody = json.toRequestBody("application/json".toMediaTypeOrNull())
         val client = OkHttpClient()
         val request = Request.Builder()
-            .url("http://$ip:3000/assemblyBorkItems/update")
+            .url("http://$ip:3000/incomeSession/update")
             .put(requestBody)
             .build()
 
@@ -125,20 +141,44 @@ class Request {
             }
         }
     }
-    suspend fun updateAssemblySession(ip:String, assSession: AssemblySession) : String {
+    suspend fun updateInventorySession(ip:String, inventorySession: SessionInventory, client: OkHttpClient) : String {
+
         val json = JSONObject()
-            .put("id", assSession.id)
-            .put("supplierId", 1)
-            .put("outCell", 1.toString())
-            .put("status", "finished")
-            .put("date", LocalDateTime.now().toString())
-            .put("createdAt", LocalDateTime.now().toString())
-            .put("finishedAt", LocalDateTime.now().toString())
-            .put("amount", assSession.amount)
-            .put("lines", assSession.lines)
+            .put("id", inventorySession.id)
+            .put("supplierId", inventorySession.supplierId)
+            .put("cellId", inventorySession.cellId)
+            .put("prevSessionId", inventorySession.prevSessionId)
+            .put("status", inventorySession.status)
+            .put("createdAt", inventorySession.createdAt)
+            .put("startedAt", inventorySession.startedAt)
+            .put("finishedAt", inventorySession.finishedAt)
             .toString()
         val requestBody = json.toRequestBody("application/json".toMediaTypeOrNull())
         val client = OkHttpClient()
+        val request = Request.Builder()
+            .url("http://$ip:3000/inventorySession/update")
+            .put(requestBody)
+            .build()
+
+        return withContext(Dispatchers.IO) {
+            client.newCall(request).execute().use { response ->
+                if (!response.isSuccessful) throw IOException("HTTP ошибка ${response.code}")
+                val body = response.body?.string().orEmpty()
+                body
+            }
+        }
+    }
+    suspend fun updateAssemblySession(ip:String, pickerSession: SessionPicker, client: OkHttpClient) : String {
+        val json = JSONObject()
+            .put("id", pickerSession.id)
+            .put("supplierId", pickerSession.supplierId)
+            .put("outCellId", pickerSession.outCellId)
+            .put("status", pickerSession.status)
+            .put("createdAt", pickerSession.createdAt)
+            .put("finishedAt", pickerSession.finishedAt)
+            .put("startedAt", pickerSession.startedAt)
+            .toString()
+        val requestBody = json.toRequestBody("application/json".toMediaTypeOrNull())
         val request = Request.Builder()
             .url("http://$ip:3000/assembly_session/update")
             .put(requestBody)
@@ -211,35 +251,31 @@ class Request {
             }
         }
     }
-    suspend fun getBorkCatalogById(ip:String, id: String) : JSONObject {
-        val client = OkHttpClient()
+    suspend fun getCatalogs(ip:String, client: OkHttpClient, time: Long)  : JSONArray {
         val request = Request.Builder()
-            .url("http://$ip:3000/catalogBork/id/$id")
+            .url("http://$ip:3000/catalogs/$time")
             .build()
 
         return withContext(Dispatchers.IO) {
             client.newCall(request).execute().use { response ->
                 if (!response.isSuccessful) throw IOException("HTTP ошибка ${response.code}")
                 val body = response.body?.string().orEmpty()
-                JSONObject(body)
+                val arr = JSONArray(body)
+                arr
             }
         }
     }
-    suspend fun getBorkBarcodeByName(ip:String, name: String) : JSONObject {
-        val client = OkHttpClient()
+    suspend fun getBarcodes(ip:String, client: OkHttpClient, time: Long) : JSONArray {
         val request = Request.Builder()
-            .url("http://$ip:3000/barcodeBork/name/$name")
+            .url("http://$ip:3000/catalogs/$time")
             .build()
 
         return withContext(Dispatchers.IO) {
             client.newCall(request).execute().use { response ->
                 if (!response.isSuccessful) throw IOException("HTTP ошибка ${response.code}")
                 val body = response.body?.string().orEmpty()
-                if(body == ""){
-                    JSONObject()
-                }else {
-                    JSONObject(body)
-                }
+                val arr = JSONArray(body)
+                arr
             }
         }
     }
@@ -294,17 +330,16 @@ class Request {
             }
         }
     }
-    suspend fun sendAtomyCatalog(ip:String, atomyItem: CatalogAtomy) : String {
-        val client = OkHttpClient()
+    suspend fun sendCatalog(ip:String, catalog: Catalog, client: OkHttpClient) : String {
         val json = JSONObject()
-            .put("id", atomyItem.id)
-            .put("name", atomyItem.name)
-            .put("firstBarcode", atomyItem.firstBarcode)
-            .put("secondBarcode", atomyItem.secondBarcode)
+            .put("id", catalog.id)
+            .put("name", catalog.name)
+            .put("sku", catalog.sku)
+            .put("supplierId", catalog.supplierId)
             .toString()
         val requestBody = json.toRequestBody("application/json".toMediaTypeOrNull())
         val request = Request.Builder()
-            .url("http://$ip:3000/catalogAtomy/")
+            .url("http://$ip:3000/catalog/")
             .post(requestBody)
             .build()
 
@@ -316,9 +351,13 @@ class Request {
             }
         }
     }
-    suspend fun sendCell(ip:String, cellName: String) : JSONObject {
-        val client = OkHttpClient()
-        val json = """{"name":"$cellName"}"""
+    suspend fun sendCell(ip:String, cell: Cell, client: OkHttpClient) : JSONObject {
+        val json = JSONObject()
+            .put("id", cell.id)
+            .put("typeCellId", cell.typeCellId)
+            .put("parentCellId", cell.parentCellId)
+            .put("name", cell.name)
+            .toString()
         val requestBody = json.toRequestBody("application/json".toMediaTypeOrNull())
         val request = Request.Builder()
             .url("http://$ip:3000/cell/")
@@ -334,41 +373,16 @@ class Request {
             }
         }
     }
-    suspend fun sendGoodsAtomy(ip:String, goods: GoodsAtomy) : JSONObject {
-        val client = OkHttpClient()
+
+    suspend fun sendGoods(ip:String, goods: Goods, client: OkHttpClient) : JSONObject {
         val json = JSONObject()
-            .put("id", goods.Id)
+            .put("id", goods.id)
+            .put("amount", goods.amount)
             .put("cellId", goods.cellId)
             .put("catalogId", goods.catalogId)
-            .put("amount", goods.amount)
             .put("createdAt", goods.createdAt)
-            .put("date", goods.date)
-            .put("TE", goods.TE)
+            .put("isAvailable", goods.isAvailable)
             .toString()
-        val requestBody = json.toRequestBody("application/json".toMediaTypeOrNull())
-        val request = Request.Builder()
-            .url("http://$ip:3000/goodsAtomy/")
-            .post(requestBody)
-            .build()
-
-        return withContext(Dispatchers.IO) {
-            client.newCall(request).execute().use { response ->
-                if (!response.isSuccessful) throw IOException("HTTP ошибка ${response.code}")
-                val body = response.body?.string().orEmpty()
-                var jsonObj = JSONObject(body)
-                jsonObj
-            }
-        }
-    }
-    suspend fun sendGoodsBork(ip:String, borkGoods: GoodsBork) : JSONObject {
-        val json = JSONObject()
-            .put("id", borkGoods.Id)
-            .put("cellId", borkGoods.cellId)
-            .put("catalogId", borkGoods.catalogId)
-            .put("amount", borkGoods.amount)
-            .put("createdAt", borkGoods.createdAt)
-            .toString()
-        val client = OkHttpClient()
         val requestBody = json.toRequestBody("application/json".toMediaTypeOrNull())
         val request = Request.Builder()
             .url("http://$ip:3000/goodsBork/")
@@ -384,39 +398,308 @@ class Request {
             }
         }
     }
-    suspend fun getCellById(ip:String, id: String) : JSONObject {
-        val client = OkHttpClient()
+    suspend fun sendInventoryDiffItem(ip:String, inventoryDiffItem: InventoryDiffItem, client: OkHttpClient) : JSONObject {
+
+        val json = JSONObject()
+            .put("id", inventoryDiffItem.id)
+            .put("inventorySessionId", inventoryDiffItem.inventorySessionId)
+            .put("catalogId", inventoryDiffItem.catalogId)
+            .put("barcode", inventoryDiffItem.barcode)
+            .put("isTE", inventoryDiffItem.isTE)
+            .put("parentCellId", inventoryDiffItem.parentCellId)
+            .put("diffCount", inventoryDiffItem.diffCount)
+            .put("status", inventoryDiffItem.status)
+            .toString()
+        val requestBody = json.toRequestBody("application/json".toMediaTypeOrNull())
         val request = Request.Builder()
-            .url("http://$ip:3000/cell/id/$id")
+            .url("http://$ip:3000/inventoryDiff/")
+            .post(requestBody)
             .build()
 
         return withContext(Dispatchers.IO) {
             client.newCall(request).execute().use { response ->
                 if (!response.isSuccessful) throw IOException("HTTP ошибка ${response.code}")
                 val body = response.body?.string().orEmpty()
-                if(body == ""){
-                    JSONObject()
-                }else{
-                    JSONObject(body)
-                }
+                var jsonObj = JSONObject(body)
+                jsonObj
             }
         }
     }
-    suspend fun getBorkGoodsById(ip:String, id: String) : JSONObject {
-        val client = OkHttpClient()
+    suspend fun sendInventorySession(ip:String, inventorySession: SessionInventory, client: OkHttpClient) : JSONObject {
+        val json = JSONObject()
+            .put("id", inventorySession.id)
+            .put("supplierId", inventorySession.supplierId)
+            .put("cellId", inventorySession.cellId)
+            .put("prevSessionId", inventorySession.prevSessionId)
+            .put("status", inventorySession.status)
+            .put("createdAt", inventorySession.createdAt)
+            .put("startedAt", inventorySession.startedAt)
+            .put("finishedAt", inventorySession.finishedAt)
+            .toString()
+        val requestBody = json.toRequestBody("application/json".toMediaTypeOrNull())
         val request = Request.Builder()
-            .url("http://$ip:3000/goods_bork/id/$id")
+            .url("http://$ip:3000/inventorySession/")
+            .post(requestBody)
             .build()
 
         return withContext(Dispatchers.IO) {
             client.newCall(request).execute().use { response ->
                 if (!response.isSuccessful) throw IOException("HTTP ошибка ${response.code}")
                 val body = response.body?.string().orEmpty()
-                if(body == ""){
-                    JSONObject()
-                }else{
-                    JSONObject(body)
-                }
+                var jsonObj = JSONObject(body)
+                jsonObj
+            }
+        }
+    }
+    suspend fun getCells(ip:String, client: OkHttpClient, time: Long)  : JSONArray {
+        val request = Request.Builder()
+            .url("http://$ip:3000/cells/$time")
+            .build()
+
+        return withContext(Dispatchers.IO) {
+            client.newCall(request).execute().use { response ->
+                if (!response.isSuccessful) throw IOException("HTTP ошибка ${response.code}")
+                val body = response.body?.string().orEmpty()
+                val arr = JSONArray(body)
+                arr
+            }
+        }
+    }
+    suspend fun getCredentials(ip:String, client: OkHttpClient, time: Long)  : JSONArray {
+        val request = Request.Builder()
+            .url("http://$ip:3000/credentials/$time")
+            .build()
+
+        return withContext(Dispatchers.IO) {
+            client.newCall(request).execute().use { response ->
+                if (!response.isSuccessful) throw IOException("HTTP ошибка ${response.code}")
+                val body = response.body?.string().orEmpty()
+                val arr = JSONArray(body)
+                arr
+            }
+        }
+    }
+    suspend fun getIncomeItem(ip:String, client: OkHttpClient, time: Long)  : JSONArray {
+        val request = Request.Builder()
+            .url("http://$ip:3000/incomeItem/$time")
+            .build()
+
+        return withContext(Dispatchers.IO) {
+            client.newCall(request).execute().use { response ->
+                if (!response.isSuccessful) throw IOException("HTTP ошибка ${response.code}")
+                val body = response.body?.string().orEmpty()
+                val arr = JSONArray(body)
+                arr
+            }
+        }
+    }
+    suspend fun getInventoryDiffItem(ip:String, client: OkHttpClient, time: Long)  : JSONArray {
+        val request = Request.Builder()
+            .url("http://$ip:3000/inventoryDiffItem/$time")
+            .build()
+
+        return withContext(Dispatchers.IO) {
+            client.newCall(request).execute().use { response ->
+                if (!response.isSuccessful) throw IOException("HTTP ошибка ${response.code}")
+                val body = response.body?.string().orEmpty()
+                val arr = JSONArray(body)
+                arr
+            }
+        }
+    }
+    suspend fun getMovement(ip:String, client: OkHttpClient, time: Long)  : JSONArray {
+        val request = Request.Builder()
+            .url("http://$ip:3000/movement/$time")
+            .build()
+
+        return withContext(Dispatchers.IO) {
+            client.newCall(request).execute().use { response ->
+                if (!response.isSuccessful) throw IOException("HTTP ошибка ${response.code}")
+                val body = response.body?.string().orEmpty()
+                val arr = JSONArray(body)
+                arr
+            }
+        }
+    }
+    suspend fun getCellTypes(ip:String, client: OkHttpClient, time: Long)  : JSONArray {
+        val request = Request.Builder()
+            .url("http://$ip:3000/cellTypes/$time")
+            .build()
+
+        return withContext(Dispatchers.IO) {
+            client.newCall(request).execute().use { response ->
+                if (!response.isSuccessful) throw IOException("HTTP ошибка ${response.code}")
+                val body = response.body?.string().orEmpty()
+                val arr = JSONArray(body)
+                arr
+            }
+        }
+    }
+    suspend fun getOutcomeItem(ip:String, client: OkHttpClient, time: Long)  : JSONArray {
+        val request = Request.Builder()
+            .url("http://$ip:3000/outcomeItem/$time")
+            .build()
+
+        return withContext(Dispatchers.IO) {
+            client.newCall(request).execute().use { response ->
+                if (!response.isSuccessful) throw IOException("HTTP ошибка ${response.code}")
+                val body = response.body?.string().orEmpty()
+                val arr = JSONArray(body)
+                arr
+            }
+        }
+    }
+    suspend fun getPackageEntity(ip:String, client: OkHttpClient, time: Long)  : JSONArray {
+        val request = Request.Builder()
+            .url("http://$ip:3000/packageEntity/$time")
+            .build()
+
+        return withContext(Dispatchers.IO) {
+            client.newCall(request).execute().use { response ->
+                if (!response.isSuccessful) throw IOException("HTTP ошибка ${response.code}")
+                val body = response.body?.string().orEmpty()
+                val arr = JSONArray(body)
+                arr
+            }
+        }
+    }
+    suspend fun getPickerItems(ip:String, client: OkHttpClient, time: Long)  : JSONArray {
+        val request = Request.Builder()
+            .url("http://$ip:3000/pickerItems/$time")
+            .build()
+
+        return withContext(Dispatchers.IO) {
+            client.newCall(request).execute().use { response ->
+                if (!response.isSuccessful) throw IOException("HTTP ошибка ${response.code}")
+                val body = response.body?.string().orEmpty()
+                val arr = JSONArray(body)
+                arr
+            }
+        }
+    }
+    suspend fun getService(ip:String, client: OkHttpClient, time: Long)  : JSONArray {
+        val request = Request.Builder()
+            .url("http://$ip:3000/service/$time")
+            .build()
+
+        return withContext(Dispatchers.IO) {
+            client.newCall(request).execute().use { response ->
+                if (!response.isSuccessful) throw IOException("HTTP ошибка ${response.code}")
+                val body = response.body?.string().orEmpty()
+                val arr = JSONArray(body)
+                arr
+            }
+        }
+    }
+    suspend fun getSessionIncome(ip:String, client: OkHttpClient, time: Long)  : JSONArray {
+        val request = Request.Builder()
+            .url("http://$ip:3000/sessionsIncome/$time")
+            .build()
+
+        return withContext(Dispatchers.IO) {
+            client.newCall(request).execute().use { response ->
+                if (!response.isSuccessful) throw IOException("HTTP ошибка ${response.code}")
+                val body = response.body?.string().orEmpty()
+                val arr = JSONArray(body)
+                arr
+            }
+        }
+    }
+    suspend fun getSessionInventory(ip:String, client: OkHttpClient, time: Long)  : JSONArray {
+        val request = Request.Builder()
+            .url("http://$ip:3000/sessionsInventory/$time")
+            .build()
+
+        return withContext(Dispatchers.IO) {
+            client.newCall(request).execute().use { response ->
+                if (!response.isSuccessful) throw IOException("HTTP ошибка ${response.code}")
+                val body = response.body?.string().orEmpty()
+                val arr = JSONArray(body)
+                arr
+            }
+        }
+    }
+    suspend fun getSessionOutcome(ip:String, client: OkHttpClient, time: Long)  : JSONArray {
+        val request = Request.Builder()
+            .url("http://$ip:3000/sessionsOutcome/$time")
+            .build()
+
+        return withContext(Dispatchers.IO) {
+            client.newCall(request).execute().use { response ->
+                if (!response.isSuccessful) throw IOException("HTTP ошибка ${response.code}")
+                val body = response.body?.string().orEmpty()
+                val arr = JSONArray(body)
+                arr
+            }
+        }
+    }
+    suspend fun getSessionPicker(ip:String, client: OkHttpClient, time: Long)  : JSONArray {
+        val request = Request.Builder()
+            .url("http://$ip:3000/sessionsPickers/$time")
+            .build()
+
+        return withContext(Dispatchers.IO) {
+            client.newCall(request).execute().use { response ->
+                if (!response.isSuccessful) throw IOException("HTTP ошибка ${response.code}")
+                val body = response.body?.string().orEmpty()
+                val arr = JSONArray(body)
+                arr
+            }
+        }
+    }
+    suspend fun getSuppliers(ip:String, client: OkHttpClient, time: Long)  : JSONArray {
+        val request = Request.Builder()
+            .url("http://$ip:3000/suppliers/$time")
+            .build()
+
+        return withContext(Dispatchers.IO) {
+            client.newCall(request).execute().use { response ->
+                if (!response.isSuccessful) throw IOException("HTTP ошибка ${response.code}")
+                val body = response.body?.string().orEmpty()
+                val arr = JSONArray(body)
+                arr
+            }
+        }
+    }
+    suspend fun getTrueSign(ip:String, client: OkHttpClient, time: Long)  : JSONArray {
+        val request = Request.Builder()
+            .url("http://$ip:3000/trueSign/$time")
+            .build()
+
+        return withContext(Dispatchers.IO) {
+            client.newCall(request).execute().use { response ->
+                if (!response.isSuccessful) throw IOException("HTTP ошибка ${response.code}")
+                val body = response.body?.string().orEmpty()
+                val arr = JSONArray(body)
+                arr
+            }
+        }
+    }
+    suspend fun getUsers(ip:String, client: OkHttpClient, time: Long)  : JSONArray {
+        val request = Request.Builder()
+            .url("http://$ip:3000/users/$time")
+            .build()
+
+        return withContext(Dispatchers.IO) {
+            client.newCall(request).execute().use { response ->
+                if (!response.isSuccessful) throw IOException("HTTP ошибка ${response.code}")
+                val body = response.body?.string().orEmpty()
+                val arr = JSONArray(body)
+                arr
+            }
+        }
+    }
+    suspend fun getGoods(ip:String, client: OkHttpClient, time: Long)  : JSONArray {
+        val request = Request.Builder()
+            .url("http://$ip:3000/goods/$time")
+            .build()
+
+        return withContext(Dispatchers.IO) {
+            client.newCall(request).execute().use { response ->
+                if (!response.isSuccessful) throw IOException("HTTP ошибка ${response.code}")
+                val body = response.body?.string().orEmpty()
+                val arr = JSONArray(body)
+                arr
             }
         }
     }
@@ -456,18 +739,16 @@ class Request {
             }
         }
     }
-    suspend fun updateBorkGoods(ip: String, suppliementGoods: GoodsBork) {
+    suspend fun updateCell(ip: String, cell: Cell, client: OkHttpClient) {
         val json = JSONObject()
-            .put("id", suppliementGoods.Id)
-            .put("cellId", suppliementGoods.cellId)
-            .put("catalogId", suppliementGoods.catalogId)
-            .put("amount", suppliementGoods.amount)
-            .put("createdAt", suppliementGoods.createdAt)
+            .put("id", cell.id)
+            .put("typeCellId", cell.typeCellId)
+            .put("parentCellId", cell.parentCellId)
+            .put("name", cell.name)
             .toString()
         val requestBody = json.toRequestBody("application/json".toMediaTypeOrNull())
-        val client = OkHttpClient()
         val request = Request.Builder()
-            .url("http://$ip:3000/goodsBork/update")
+            .url("http://$ip:3000/cell/update")
             .put(requestBody)
             .build()
 
@@ -493,12 +774,12 @@ class Request {
             }
         }
     }
-    suspend fun sendBorkBarcode(ip: String, barcode: BarcodeBork): JSONObject {
-        val client = OkHttpClient()
+    suspend fun sendBorkBarcode(ip: String, barcode: Barcode, client: OkHttpClient): JSONObject {
         val json = JSONObject()
+            .put("id", barcode.id)
             .put("catalogId", barcode.catalogId)
             .put("name", barcode.name)
-            .put("type", barcode.type)
+            .put("supplierId", barcode.supplierId)
             .toString()
         val requestBody = json.toRequestBody("application/json".toMediaTypeOrNull())
         val request = Request.Builder()
@@ -515,6 +796,35 @@ class Request {
             }
         }
     }
-*/
+    suspend fun sendMovement(ip: String, movement: Movement, client: OkHttpClient): JSONObject {
+
+        val json = JSONObject()
+            .put("id", movement.id)
+            .put("cellFromId", movement.cellFromId)
+            .put("cellToId", movement.cellToId)
+            .put("catalogId", movement.catalogId)
+            .put("goodsId", movement.goodsId)
+            .put("qty", movement.qty)
+            .put("userId", movement.userId)
+            .put("executedAt", movement.executedAt)
+            .put("operationType", movement.operationType)
+            .put("entityId", movement.entityId)
+            .toString()
+        val requestBody = json.toRequestBody("application/json".toMediaTypeOrNull())
+        val request = Request.Builder()
+            .url("http://$ip:3000/movement/")
+            .post(requestBody)
+            .build()
+
+        return withContext(Dispatchers.IO) {
+            client.newCall(request).execute().use { response ->
+                if (!response.isSuccessful) throw IOException("HTTP ошибка ${response.code}")
+                val body = response.body?.string().orEmpty()
+                var jsonObj = JSONObject(body)
+                jsonObj
+            }
+        }
+    }
+
 
 }

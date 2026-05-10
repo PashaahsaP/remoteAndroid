@@ -8,5 +8,9 @@ data class CellType(
     @PrimaryKey(autoGenerate = false) val id: String,
     val type: String,
     val mask: String?,
+    val createdAt: Long,
+    val updatedAt: Long,
+    val deletedAt: Long?,
+    val isDeleted: Boolean,
     val other: String? // JSON
 )

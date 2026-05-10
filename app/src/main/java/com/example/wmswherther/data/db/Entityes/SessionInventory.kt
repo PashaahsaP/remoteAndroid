@@ -32,5 +32,8 @@ data class SessionInventory(
     val createdAt: Long,
     val startedAt: Long?,
     val finishedAt: Long?,
+    val updatedAt: Long,
+    val deletedAt: Long?,
+    val isDeleted: Boolean,
     val other: String? // JSON
 )

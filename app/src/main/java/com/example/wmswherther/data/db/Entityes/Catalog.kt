@@ -14,5 +14,9 @@ data class Catalog(
     val name: String,
     val sku: String?,
     val supplierId: String,
+    val createdAt: Long,
+    val updatedAt: Long,
+    val deletedAt: Long?,
+    val isDeleted: Boolean,
     val other: String? // JSON
 )

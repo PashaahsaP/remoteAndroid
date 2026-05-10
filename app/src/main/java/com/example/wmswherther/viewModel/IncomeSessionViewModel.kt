@@ -18,6 +18,7 @@ import com.example.wmswherther.data.db.Repositories.IncomeRepository
 import com.example.wmswherther.data.factory.ChangeFactory
 import com.example.wmswherther.data.factory.IncomeItemFactory
 import com.example.wmswherther.data.factory.MovementFactory
+import com.google.gson.Gson
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
@@ -110,8 +111,8 @@ class IncomeSessionViewModel : ViewModel() {
     fun setCellName(cellName: String){
         _currentCellName.value = cellName
     }
-    fun updateCollection(incomeRepo: IncomeRepository, barcode: String?){
-        var barcoded = Barcode("","","","","")
+    /*fun updateCollection(incomeRepo: IncomeRepository, barcode: String?){
+        var barcoded = Barcode("","","","",3)
         viewModelScope.launch {
             var result : List<IncomeItem> = mutableListOf()
             withContext(Dispatchers.IO) {
@@ -135,7 +136,7 @@ class IncomeSessionViewModel : ViewModel() {
                 }
             }
         }
-    }
+    }*/
     suspend fun loadItems (incomeRepo: IncomeRepository,
                            sessionId: String,
                             cell: Cell) : List<IncomeItem>{
@@ -227,7 +228,8 @@ class IncomeSessionViewModel : ViewModel() {
         var sessionChange = ChangeFactory.create(
             entityId = session.id,
             supplierId = session.supplierId.toString(),
-            operationType = OperationType.UpdateIncomeSession
+            operationType = OperationType.UpdateIncomeSession,
+            payload = Gson().toJson(session)
         )
 
         incomeRepo.updateIncomeSessionAsync(
@@ -258,7 +260,8 @@ class IncomeSessionViewModel : ViewModel() {
         var moreChange = ChangeFactory.create(
             entityId = diffMove.id,
             supplierId = session.supplierId.toString(),
-            operationType = OperationType.IncomeMovement
+            operationType = OperationType.IncomeMovement,
+            payload = Gson().toJson(diffMove)
         )
 
         incomeRepo.insertMovementAsync(diffMove, moreChange)
@@ -267,7 +270,8 @@ class IncomeSessionViewModel : ViewModel() {
         var updateGoodsChange = ChangeFactory.create(
             entityId = goodsId.id,
             supplierId = session.supplierId.toString(),
-            operationType = OperationType.UpdateGoods
+            operationType = OperationType.UpdateGoods,
+            payload = Gson().toJson(goods)
         )
         incomeRepo.updateGoodsAsync(
             goods.copy(amount = goodsId.haveCount, isAvailable = true),
@@ -280,7 +284,8 @@ class IncomeSessionViewModel : ViewModel() {
             var removeChange = ChangeFactory.create(
                 entityId = goods.id,
                 supplierId = session.id,
-                operationType = OperationType.DeleteGoods
+                operationType = OperationType.DeleteGoods,
+                payload = Gson().toJson(goods)
             )
             incomeRepo.deleteGoodsAsync(goods = goods, change = removeChange)
         } else {
@@ -297,7 +302,8 @@ class IncomeSessionViewModel : ViewModel() {
             var movementChange = ChangeFactory.create(
                 entityId = innerMovement.id,
                 supplierId = session.supplierId.toString(),
-                operationType = OperationType.IncomeMovement
+                operationType = OperationType.IncomeMovement,
+                payload = Gson().toJson(innerMovement)
             )
             incomeRepo.insertMovementAsync(innerMovement, movementChange)
         }
@@ -326,7 +332,8 @@ class IncomeSessionViewModel : ViewModel() {
         var moreChange = ChangeFactory.create(
             entityId = diffMove.id,
             supplierId = session.supplierId.toString(),
-            operationType = OperationType.IncomeMovement
+            operationType = OperationType.IncomeMovement,
+            payload = Gson().toJson(diffMove)
         )
         incomeRepo.insertMovementAsync(diffMove, moreChange)
 
@@ -335,7 +342,8 @@ class IncomeSessionViewModel : ViewModel() {
         var updateGoodsChange = ChangeFactory.create(
             entityId = goodsItem.id,
             supplierId = session.supplierId.toString(),
-            operationType = OperationType.UpdateGoods
+            operationType = OperationType.UpdateGoods,
+            payload = Gson().toJson(goodsItem)
         )
         incomeRepo.updateGoodsAsync(
             goods.copy(amount = goodsItem.haveCount, isAvailable = true),
@@ -357,7 +365,8 @@ class IncomeSessionViewModel : ViewModel() {
         var movementChange = ChangeFactory.create(
             entityId = innerMovement.id,
             supplierId = session.supplierId.toString(),
-            operationType = OperationType.IncomeMovement
+            operationType = OperationType.IncomeMovement,
+            payload = Gson().toJson(innerMovement)
         )
         incomeRepo.insertMovementAsync(innerMovement, movementChange)
     }
@@ -370,9 +379,10 @@ class IncomeSessionViewModel : ViewModel() {
     ) {
         var innerGoods = incomeRepo.getGoodsById(goodsItem.id)
         var goodsChange = ChangeFactory.create(
-            innerGoods.id,
-            session.supplierId.toString(),
-            OperationType.UpdateGoods)
+            entityId =  innerGoods.id,
+            supplierId =  session.supplierId.toString(),
+            payload = Gson().toJson(innerGoods),
+            operationType =  OperationType.UpdateGoods)
         incomeRepo.updateGoodsAsync(innerGoods.copy(isAvailable = true, amount = innerGoods.amount), goodsChange)
 
         var incomeCell = incomeRepo.getCellByName("income")
@@ -389,7 +399,8 @@ class IncomeSessionViewModel : ViewModel() {
         var movementChange = ChangeFactory.create(
             entityId = innerMovement.id,
             supplierId = session.supplierId.toString(),
-            operationType = OperationType.IncomeMovement
+            operationType = OperationType.IncomeMovement,
+            payload =  Gson().toJson(innerMovement)
         )
 
         incomeRepo.insertMovementAsync(innerMovement, movementChange)

@@ -15,6 +15,10 @@ import androidx.fragment.app.activityViewModels
 import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
+import androidx.work.Constraints
+import androidx.work.NetworkType
+import androidx.work.OneTimeWorkRequestBuilder
+import androidx.work.WorkManager
 import com.example.wmsRemote.R
 import com.example.wmsRemote.data.db.MainDB
 import com.example.wmsRemote.databinding.FragmentIncomeSessionBinding
@@ -27,6 +31,7 @@ import com.example.wmswherther.data.db.Repositories.AssemblyRepository
 import com.example.wmswherther.data.db.Repositories.IncomeRepository
 import com.example.wmswherther.data.db.Repositories.InventoryRepository
 import com.example.wmswherther.data.db.Repositories.MoveeRepository
+import com.example.wmswherther.data.db.SyncWorker
 import com.example.wmswherther.data.factory.IncomeItemFactory
 import com.example.wmswherther.viewModel.IncomeSessionViewModel
 import com.example.wmswherther.viewModel.MainViewModel
@@ -64,6 +69,18 @@ class IncomeSessionFragment : Fragment() {
             val sessionId = arguments?.getString("id")
             val incomeRepo = ServiceLocator.incomeRepository
                 ?: IncomeRepository(MainDB.getDB(requireActivity()).getDao())
+
+            val constraints = Constraints.Builder()
+                .setRequiredNetworkType(NetworkType.CONNECTED)
+                .build()
+
+            val request = OneTimeWorkRequestBuilder<SyncWorker>()
+                .setConstraints(constraints)
+                .build()
+
+            WorkManager.getInstance(requireActivity())
+                .enqueue(request)
+
 
             viewModel.Barcode.observe(viewLifecycleOwner, { barcode ->
                 prepareBarcodeAndUpdateUI(barcode, incomeRepo)

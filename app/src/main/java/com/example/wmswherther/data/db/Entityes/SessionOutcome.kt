@@ -22,5 +22,8 @@ data class SessionOutcome(
     val startedAt: Long?,
     val finishedAt: Long?,
     val pickerSessionId: String?,
+    val updatedAt: Long,
+    val deletedAt: Long?,
+    val isDeleted: Boolean,
     val other: String? // JSON
 )

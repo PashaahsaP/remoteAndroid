@@ -14,5 +14,9 @@ data class User(
     val firstName: String,
     val lastName: String,
     val credentialId: Long,
+    val createdAt: Long,
+    val updatedAt: Long,
+    val deletedAt: Long?,
+    val isDeleted: Boolean,
     val other: String? // JSON
 )

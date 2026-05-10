@@ -36,7 +36,7 @@ class AssemblyViewModel : ViewModel() {
         viewModelScope.launch {
             withContext(Dispatchers.IO){
                 data = dao.getPickerSessions()
-                    .filter { item-> item.status == StatusType.Created.ordinal.toString() }
+                    .filter { item-> item.status == StatusType.Created.ordinal }
                     .map { item -> TaskMenuItem(
                         item.supplierId.toString(),
                         item.id.toString(),

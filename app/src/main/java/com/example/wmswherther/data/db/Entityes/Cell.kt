@@ -21,4 +21,8 @@ data class Cell (
     val parentCellId: String?,
     @ColumnInfo(name = "name")
     var name: String,
+    val createdAt: Long,
+    val updatedAt: Long,
+    val deletedAt: Long?,
+    val isDeleted: Boolean,
 )

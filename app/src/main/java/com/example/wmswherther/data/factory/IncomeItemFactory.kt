@@ -1,8 +1,24 @@
 package com.example.wmswherther.data.factory
 
+import com.example.wmsRemote.data.enums.StatusType
 import com.example.wmswherther.Classes.IncomeItem
+import java.util.UUID
 
 object IncomeItemFactory {
+    fun create(sessionId: String, goodsId: String) : com.example.wmswherther.data.db.Entityes.IncomeItem{
+       return com.example.wmswherther.data.db.Entityes.IncomeItem(
+            id = UUID.randomUUID().toString(),
+            sessionId = sessionId,
+            goodsId = goodsId,
+            status = StatusType.Created.ordinal,
+            createdAt = System.currentTimeMillis(),
+            updatedAt = System.currentTimeMillis(),
+            deletedAt = null,
+            isDeleted = false,
+            other = null
+        )
+    }
+
     fun createNewGoods(
         name: String,
         catalogId: String,

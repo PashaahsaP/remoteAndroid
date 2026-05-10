@@ -18,6 +18,7 @@ import com.example.wmswherther.data.factory.CellFactory
 import com.example.wmswherther.data.factory.ChangeFactory
 import com.example.wmswherther.data.factory.MovementFactory
 import com.example.wmswherther.viewModel.MainViewModel
+import com.google.gson.Gson
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
@@ -129,14 +130,16 @@ class AssemblySessionViewModel : ViewModel() {
             val change = ChangeFactory.create(
                 entityId = movement.id,
                 supplierId = session.supplierId.toString(),
-                operationType = OperationType.InsertMovement
+                operationType = OperationType.InsertMovement,
+                payload = Gson().toJson(movement)
             )
             assemblyRepo.insertMovementSync(movement, change)
 
             var goodsChange = ChangeFactory.create(
                 entityId = goods.id,
                 supplierId = session.supplierId.toString(),
-                operationType = OperationType.UpdateGoods
+                operationType = OperationType.UpdateGoods,
+                payload = Gson().toJson(goods.copy(cellId = outCell.id, amount = resultItem.amount))
             )
             assemblyRepo.updateGoodsAsync(goods.copy(cellId = outCell.id, amount = resultItem.amount), goodsChange)
 
@@ -152,7 +155,8 @@ class AssemblySessionViewModel : ViewModel() {
             val lessChange = ChangeFactory.create(
                 entityId = movement.id,
                 supplierId = session.supplierId.toString(),
-                operationType = OperationType.InsertMovement
+                operationType = OperationType.InsertMovement,
+                payload = Gson().toJson(lessMovement)
             )
             assemblyRepo.insertMovementSync(lessMovement, lessChange)
 
@@ -170,14 +174,16 @@ class AssemblySessionViewModel : ViewModel() {
             val change = ChangeFactory.create(
                 entityId = movement.id,
                 supplierId = session.supplierId.toString(),
-                operationType = OperationType.InsertMovement
+                operationType = OperationType.InsertMovement,
+                payload = Gson().toJson(movement)
             )
             assemblyRepo.insertMovementSync(movement, change)
 
             var goodsChange = ChangeFactory.create(
                 entityId = goods.id,
                 supplierId = session.supplierId.toString(),
-                operationType = OperationType.UpdateGoods
+                operationType = OperationType.UpdateGoods,
+                payload = Gson().toJson(goods.copy(cellId = outCell.id, amount = resultItem.amount))
             )
             assemblyRepo.updateGoodsAsync(goods.copy(cellId = outCell.id, amount = resultItem.amount), goodsChange)
 
@@ -193,7 +199,8 @@ class AssemblySessionViewModel : ViewModel() {
             val moreChange = ChangeFactory.create(
                 entityId = movement.id,
                 supplierId = session.supplierId.toString(),
-                operationType = OperationType.InsertMovement
+                operationType = OperationType.InsertMovement,
+                payload = Gson().toJson(moreMovement)
             )
             assemblyRepo.insertMovementSync(moreMovement, moreChange)
         }
@@ -209,7 +216,8 @@ class AssemblySessionViewModel : ViewModel() {
         val change = ChangeFactory.create(
             entityId = movement.id,
             supplierId = session.supplierId.toString(),
-            operationType = OperationType.InsertMovement
+            operationType = OperationType.InsertMovement,
+            payload = Gson().toJson(movement)
         )
 
         assemblyRepo.insertMovementSync(movement, change)
@@ -236,7 +244,8 @@ class AssemblySessionViewModel : ViewModel() {
         val change = ChangeFactory.create(
             entityId = movement.id,
             supplierId = session.supplierId.toString(),
-            operationType = OperationType.InsertMovement
+            operationType = OperationType.InsertMovement,
+            payload = Gson().toJson(movement)
         )
 
         assemblyRepo.insertMovementSync(movement, change)
@@ -262,7 +271,8 @@ class AssemblySessionViewModel : ViewModel() {
             val change = ChangeFactory.create(
                 entityId = movement.id,
                 supplierId = session.supplierId.toString(),
-                operationType = OperationType.InsertMovement
+                operationType = OperationType.InsertMovement,
+                payload = Gson().toJson(movement)
             )
 
             assemblyRepo.insertMovementSync(movement, change)
@@ -271,7 +281,8 @@ class AssemblySessionViewModel : ViewModel() {
             var goodsChange = ChangeFactory.create(
                 entityId = goods.id,
                 supplierId = session.supplierId.toString(),
-                operationType = OperationType.UpdateGoods
+                operationType = OperationType.UpdateGoods,
+                payload = Gson().toJson(goods.copy(cellId = outCell.id))
             )
             assemblyRepo.updateGoodsAsync(goods.copy(cellId = outCell.id), goodsChange)
 
@@ -282,10 +293,11 @@ class AssemblySessionViewModel : ViewModel() {
         var sessionChange = ChangeFactory.create(
             entityId = session.id,
             supplierId = session.supplierId.toString(),
-            operationType = OperationType.UpdatePickerSession
+            operationType = OperationType.UpdatePickerSession,
+            payload = Gson().toJson(session)
         )
         assemblyRepo.updatePickerSessionSync(
-            session.copy(status = status.ordinal.toString()),
+            session.copy(status = status.ordinal),
             sessionChange
         )
     }
@@ -334,7 +346,8 @@ class AssemblySessionViewModel : ViewModel() {
             val change = ChangeFactory.create(
                 entityId = cell.id,
                 supplierId = session.supplierId.toString(),
-                operationType = OperationType.InsertMovement
+                operationType = OperationType.InsertMovement,
+                payload = Gson().toJson(cell)
             )
             outCell = assemblyRepo.insertCellSync(cell, change)
         }

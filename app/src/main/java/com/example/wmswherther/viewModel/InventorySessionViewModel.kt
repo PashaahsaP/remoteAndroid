@@ -19,6 +19,7 @@ import com.example.wmswherther.data.db.Repositories.InventoryRepository
 import com.example.wmswherther.data.factory.ChangeFactory
 import com.example.wmswherther.data.factory.InventoryDiffFactory
 import com.example.wmswherther.data.factory.InventorySessionFactory
+import com.google.gson.Gson
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
@@ -152,7 +153,8 @@ class InventorySessionViewModel : ViewModel(){
             var changes = ChangeFactory.create(
                 entityId = item.id,
                 supplierId = supplierId.toString(),
-                operationType = OperationType.InsertInventoryDiff
+                operationType = OperationType.InsertInventoryDiff,
+                payload = Gson().toJson(item)
             )
             inventoryRepo.insertInventoryDiffItemAsync(item, changes)
         }
@@ -174,7 +176,8 @@ class InventorySessionViewModel : ViewModel(){
         var changes = ChangeFactory.create(
             entityId = session.id,
             supplierId = supplierId.toString(),
-            operationType = OperationType.InsertInventorySession
+            operationType = OperationType.InsertInventorySession,
+            payload = Gson().toJson(session)
         )
 
         inventoryRepo.insertInventorySessionAsync(session, changes)

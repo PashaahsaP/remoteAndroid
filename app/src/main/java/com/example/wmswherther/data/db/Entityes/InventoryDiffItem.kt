@@ -18,5 +18,9 @@ data class InventoryDiffItem(
     val parentCellId: String,
     val diffCount: Int,
     val status: Int,
+    val createdAt: Long,
+    val updatedAt: Long,
+    val deletedAt: Long?,
+    val isDeleted: Boolean,
     val other: String? // JSON
 )

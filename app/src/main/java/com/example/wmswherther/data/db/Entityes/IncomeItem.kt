@@ -14,5 +14,9 @@ data class IncomeItem(
     val sessionId: String,
     val goodsId: String,
     val status: Int,
+    val createdAt: Long,
+    val updatedAt: Long,
+    val deletedAt: Long?,
+    val isDeleted: Boolean,
     val other: String? // JSON
 )

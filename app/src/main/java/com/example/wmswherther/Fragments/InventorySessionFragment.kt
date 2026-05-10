@@ -22,6 +22,7 @@ import com.example.wmswherther.Classes.UiState
 import com.example.wmswherther.data.db.Entityes.Barcode
 import com.example.wmswherther.data.db.Entityes.Cell
 import com.example.wmswherther.data.db.Repositories.InventoryRepository
+import com.example.wmswherther.data.factory.CellFactory
 import com.example.wmswherther.viewModel.InventorySessionViewModel
 import com.example.wmswherther.viewModel.MainViewModel
 import kotlinx.coroutines.Dispatchers
@@ -391,8 +392,7 @@ class InventorySessionFragment: Fragment() {
             if(isPickerCell(barcode, inventoryRepo)) {
                 var cellType =  inventoryRepo.getCellTypeByName("Picker").first()
                 val uuid = UUID.randomUUID()
-                var newCell = Cell(
-                    id = uuid.toString(),
+                var newCell = CellFactory.create(
                     typeCellId = cellType.id,
                     parentCellId = inventoryRepo.getCellByName(localViewModel.currentCellName.value.toString()).id,
                     name = barcode

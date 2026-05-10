@@ -7,5 +7,9 @@ import androidx.room.PrimaryKey
 data class Credential(
     @PrimaryKey(autoGenerate = true) val id: Long,
     val type: String,
+    val createdAt: Long,
+    val updatedAt: Long,
+    val deletedAt: Long?,
+    val isDeleted: Boolean,
     val other: String? // JSON
 )

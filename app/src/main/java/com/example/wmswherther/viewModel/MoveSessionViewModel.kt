@@ -21,6 +21,7 @@ import com.example.wmswherther.data.factory.ChangeFactory
 import com.example.wmswherther.data.factory.GoodsFactory
 import com.example.wmswherther.data.factory.MovementFactory
 import com.example.wmswherther.viewModel.MainViewModel
+import com.google.gson.Gson
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
@@ -259,7 +260,8 @@ class MoveSessionViewModel : ViewModel() {
             var changes = ChangeFactory.create(
                 entityId = item.catalogId,
                 supplierId = (viewModel.uiState.value as UiState.MoveSessionMenu).supplierId,
-                operationType = OperationType.UpdateCell
+                operationType = OperationType.UpdateCell,
+                payload = Gson().toJson(item)
             )
             var cell = moveRepo.getCellById(item.catalogId)
             moveRepo.updateCellAsync(cell.copy(parentCellId = cellTo.id), changes)
@@ -282,7 +284,8 @@ class MoveSessionViewModel : ViewModel() {
             var changes = ChangeFactory.create(
                 entityId = newCell.id,
                 supplierId = (viewModel.uiState.value as UiState.MoveSessionMenu).supplierId,
-                operationType = OperationType.InsertCell
+                operationType = OperationType.InsertCell,
+                payload = Gson().toJson(newCell)
             )
             moveRepo.insertCellSync(newCell, changes)
             cellTo = newCell
@@ -303,7 +306,8 @@ class MoveSessionViewModel : ViewModel() {
         var changes = ChangeFactory.create(
             entityId = goods.id,
             supplierId = (viewModel.uiState.value as UiState.MoveSessionMenu).supplierId,
-            operationType = OperationType.InsertGoods
+            operationType = OperationType.InsertGoods,
+            payload = Gson().toJson(goods)
         )
         moveRepo.insertGoodsAsync(goods,changes)
     }
@@ -317,14 +321,16 @@ class MoveSessionViewModel : ViewModel() {
             var deleteChanges = ChangeFactory.create(
                 entityId = item.goodsId,
                 supplierId = (viewModel.uiState.value as UiState.MoveSessionMenu).supplierId,
-                operationType = OperationType.DeleteGoods
+                operationType = OperationType.DeleteGoods,
+                payload = Gson().toJson(item)
             )
             moveRepo.deleteGoodsAsync(moveRepo.getGoodsById(item.goodsId), deleteChanges)
         } else {
             var updateChange =ChangeFactory.create(
                 entityId = item.goodsId,
                 supplierId = (viewModel.uiState.value as UiState.MoveSessionMenu).supplierId,
-                operationType = OperationType.UpdateGoods
+                operationType = OperationType.UpdateGoods,
+                payload = Gson().toJson(item)
             )
             var updatedGoods = moveRepo.getGoodsById(item.goodsId)
                 .copy(amount = item.allCount - item.haveCount)
@@ -341,7 +347,8 @@ class MoveSessionViewModel : ViewModel() {
         var destinationChange: Change = ChangeFactory.create(
             entityId = destinationGoods.id,
             supplierId = (viewModel.uiState.value as UiState.MoveSessionMenu).supplierId,
-            operationType = OperationType.UpdateGoods
+            operationType = OperationType.UpdateGoods,
+            payload = Gson().toJson(destinationGoods)
         )
         moveRepo.updateGoodsAsync(destinationGoods.copy(amount = item.haveCount + destinationGoods.amount), destinationChange)
     }
@@ -402,7 +409,8 @@ class MoveSessionViewModel : ViewModel() {
         var change = ChangeFactory.create(
             entityId = movement.id,
             supplierId = (viewModel.uiState.value as UiState.MoveSessionMenu).supplierId,
-            operationType = OperationType.InsertMovement
+            operationType = OperationType.InsertMovement,
+            payload = Gson().toJson(movement)
         )
         moveRepo.insertMovementAsync(movement, change)
     }

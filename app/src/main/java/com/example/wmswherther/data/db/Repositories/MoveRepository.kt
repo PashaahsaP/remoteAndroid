@@ -8,7 +8,10 @@ import com.example.wmswherther.Classes.UiState
 import com.example.wmswherther.data.db.Entityes.Cell
 import com.example.wmswherther.data.db.Entityes.Change
 import com.example.wmswherther.data.db.Entityes.Goods
+import com.example.wmswherther.data.factory.CellFactory
+import com.example.wmswherther.data.factory.ChangeFactory
 import com.example.wmswherther.viewModel.MainViewModel
+import com.google.gson.Gson
 import java.util.UUID
 
 class MoveRepository(
@@ -44,20 +47,18 @@ class MoveRepository(
         var cell = dao.getCellByName(barcode)
         if (cell == null) {
             var curCell = dao.getCellByName(sourceCellName) // откуда идет перемещение
-            var newCell = Cell(
-                id = UUID.randomUUID().toString(),
+            var newCell = CellFactory.create(
                 typeCellId = curCell.typeCellId,
                 parentCellId = curCell.parentCellId,
                 name = barcode
             )
-            var changes = Change(
-                id = UUID.randomUUID().toString(),
+            var changes = ChangeFactory.create(
+                payload = Gson().toJson(newCell),
                 entityId = newCell.id,
-                operationType = OperationType.InsertCell.ordinal,
-                status = StatusType.Created.ordinal,
                 supplierId = (viewModel.uiState.value as UiState.MoveSessionMenu).supplierId,
-                other = null
+                operationType = OperationType.InsertCell
             )
+
             dao.insertCellSync(newCell, changes)
             cell = newCell
         }
@@ -68,15 +69,15 @@ class MoveRepository(
                                cellTo: Cell, dao: Dao,
                                viewModel: MainViewModel) {
         if(item.haveCount == 1) { // ячейка выбрана поэтому 1, больше 1 быть не может
-            var changes = Change(
-                id = UUID.randomUUID().toString(),
-                entityId = item.catalogId,
-                operationType = OperationType.UpdateCell.ordinal,
-                status = StatusType.Created.ordinal,
-                supplierId = (viewModel.uiState.value as UiState.MoveSessionMenu).supplierId,
-                other = null
-            )
             var cell = dao.getCellById(item.catalogId)
+
+            var changes = ChangeFactory.create(
+                payload = Gson().toJson(cell.copy(parentCellId = cellTo.id)),
+                entityId = cell.id,
+                supplierId = (viewModel.uiState.value as UiState.MoveSessionMenu).supplierId,
+                operationType = OperationType.UpdateCell
+            )
+
             dao.updateCellAsync(cell.copy(parentCellId = cellTo.id), changes)
         }
     }
