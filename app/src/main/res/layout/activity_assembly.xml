@@ -8,6 +8,11 @@
     android:orientation="vertical"
     android:padding="0dp"
     >
+<androidx.swiperefreshlayout.widget.SwipeRefreshLayout
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:id="@+id/swipe">
+
 
     <LinearLayout
         android:id="@+id/llMenuContainer"
@@ -95,5 +100,5 @@
         </ScrollView>
     </LinearLayout>
 
-
+</androidx.swiperefreshlayout.widget.SwipeRefreshLayout>
 </androidx.constraintlayout.widget.ConstraintLayout>

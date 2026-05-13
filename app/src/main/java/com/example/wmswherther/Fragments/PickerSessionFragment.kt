@@ -223,90 +223,6 @@ class PickerSessionFragment: Fragment() {
             }
         })
         localViewModel.loadCollection(assemblyRepo,sessionId)
-        binding.etCount.setOnEditorActionListener { v, actionId, event ->
-            if (actionId == EditorInfo.IME_ACTION_DONE || actionId == EditorInfo.IME_ACTION_UNSPECIFIED && event.action == ACTION_DOWN) {
-                val text = binding.etCount.text.toString()
-                if (text != "") {
-                    if (localViewModel.activeElement.value!!.amount == text.toInt()) {
-                        lifecycleScope.launch {
-                            withContext(Dispatchers.IO) {
-                                var curItem = assemblyRepo.getPickerItemById(localViewModel.activeElement.value!!.assemblyItemId)
-                                assemblyRepo.updatePickerItem(curItem.copy(finishedAt = System.currentTimeMillis(), status = StatusType.Finished.ordinal))
-
-                                // Если равно
-                                    //
-                            }
-                            // Добавить запись в бд
-                            // создать запись goods и movement
-                            //если равно
-
-                            //если больше. Создать элемент в more, переместить его в ячейку с товаром, и потом уже выполнить операцию соединения
-                            //если меньше.
-
-
-                            // Иначе надо сменить элемент
-                            withContext(Dispatchers.Main) {
-                                localViewModel.appendResultItem(localViewModel._items.value!!.last().copy(amount = text.toInt()))
-                                localViewModel._items.value = localViewModel._items.value!!.drop(1)
-                                if(localViewModel._items.value!!.count() != 0){
-                                    var coll: AssemblyItem = localViewModel._items.value!!.first()
-                                    localViewModel._activeElement.value = coll
-                                    localViewModel._menuStatus.value = AssemblySessionMenuType.ScanningMode.ordinal
-                                }else{
-                                    localViewModel._menuStatus.value = AssemblySessionMenuType.OutMode.ordinal
-
-                                }
-
-                            }
-                        }
-
-
-                    }else{
-                        // Если количество меньше или больше заявленного то спросить уверен ли что норм все и при нажатии нет надо вернуть фокус
-                        val notificationView = LayoutInflater.from(requireActivity())
-                            .inflate(R.layout.dialog, null)
-
-                        val tv = notificationView.findViewById<TextView>(R.id.etDialog)
-                        val btnYess = notificationView.findViewById<Button>(R.id.btnYes)
-                        val btnCancell = notificationView.findViewById<Button>(R.id.btnNo)
-
-                        var notificationDialog = AlertDialog.Builder(requireActivity())
-                            .setView(notificationView)
-                            .create()
-
-                        tv.setText("Количество товара не соответствует заявленому. Продолжить?")
-                        btnYess.setOnClickListener {
-
-                            localViewModel.appendResultItem(localViewModel._items.value!!.last().copy(amount = text.toInt()))
-                            localViewModel._items.value = localViewModel._items.value!!.drop(1)
-                            // Обновить текущий элемент
-                            var coll : AssemblyItem = localViewModel._items.value!!.first()
-                            localViewModel._activeElement.value = coll
-                            // Сменить фокус
-                            localViewModel._menuStatus.value = AssemblySessionMenuType.ScanningMode.ordinal
-                            notificationDialog.dismiss()
-
-                        }
-                        btnCancell.setOnClickListener {
-                            binding.etCount.requestFocus()
-                            binding.etCount.post {
-                                binding.etCount.setTextColor(Color.WHITE)
-                                binding.etCount.selectAll()
-                            }
-                        }
-
-                        notificationDialog.show()
-
-
-                    }
-
-                    binding.etCount.setTextColor(ContextCompat.getColor(requireActivity(), R.color.regularGrey))
-                }
-                return@setOnEditorActionListener true
-            }
-            return@setOnEditorActionListener false
-
-        }
         viewModel.Barcode.observe(viewLifecycleOwner, { barcode ->
             if(barcode != "" && viewModel.uiState.value is UiState.AssemblySessionMenu) {
                 lifecycleScope.launch {
@@ -359,7 +275,96 @@ class PickerSessionFragment: Fragment() {
                 }
             }
         })
+        with(binding){
+            swipe.setOnRefreshListener {
+                pullChanges(requireActivity())
+                swipe.isRefreshing = false
+            }
+            etCount.setOnEditorActionListener { v, actionId, event ->
+                if (actionId == EditorInfo.IME_ACTION_DONE || actionId == EditorInfo.IME_ACTION_UNSPECIFIED && event.action == ACTION_DOWN) {
+                    val text = binding.etCount.text.toString()
+                    if (text != "") {
+                        if (localViewModel.activeElement.value!!.amount == text.toInt()) {
+                            lifecycleScope.launch {
+                                withContext(Dispatchers.IO) {
+                                    var curItem = assemblyRepo.getPickerItemById(localViewModel.activeElement.value!!.assemblyItemId)
+                                    assemblyRepo.updatePickerItem(curItem.copy(finishedAt = System.currentTimeMillis(), status = StatusType.Finished.ordinal))
 
+                                    // Если равно
+                                    //
+                                }
+                                // Добавить запись в бд
+                                // создать запись goods и movement
+                                //если равно
+
+                                //если больше. Создать элемент в more, переместить его в ячейку с товаром, и потом уже выполнить операцию соединения
+                                //если меньше.
+
+
+                                // Иначе надо сменить элемент
+                                withContext(Dispatchers.Main) {
+                                    localViewModel.appendResultItem(localViewModel._items.value!!.last().copy(amount = text.toInt()))
+                                    localViewModel._items.value = localViewModel._items.value!!.drop(1)
+                                    if(localViewModel._items.value!!.count() != 0){
+                                        var coll: AssemblyItem = localViewModel._items.value!!.first()
+                                        localViewModel._activeElement.value = coll
+                                        localViewModel._menuStatus.value = AssemblySessionMenuType.ScanningMode.ordinal
+                                    }else{
+                                        localViewModel._menuStatus.value = AssemblySessionMenuType.OutMode.ordinal
+
+                                    }
+
+                                }
+                            }
+
+
+                        }else{
+                            // Если количество меньше или больше заявленного то спросить уверен ли что норм все и при нажатии нет надо вернуть фокус
+                            val notificationView = LayoutInflater.from(requireActivity())
+                                .inflate(R.layout.dialog, null)
+
+                            val tv = notificationView.findViewById<TextView>(R.id.etDialog)
+                            val btnYess = notificationView.findViewById<Button>(R.id.btnYes)
+                            val btnCancell = notificationView.findViewById<Button>(R.id.btnNo)
+
+                            var notificationDialog = AlertDialog.Builder(requireActivity())
+                                .setView(notificationView)
+                                .create()
+
+                            tv.setText("Количество товара не соответствует заявленому. Продолжить?")
+                            btnYess.setOnClickListener {
+
+                                localViewModel.appendResultItem(localViewModel._items.value!!.last().copy(amount = text.toInt()))
+                                localViewModel._items.value = localViewModel._items.value!!.drop(1)
+                                // Обновить текущий элемент
+                                var coll : AssemblyItem = localViewModel._items.value!!.first()
+                                localViewModel._activeElement.value = coll
+                                // Сменить фокус
+                                localViewModel._menuStatus.value = AssemblySessionMenuType.ScanningMode.ordinal
+                                notificationDialog.dismiss()
+
+                            }
+                            btnCancell.setOnClickListener {
+                                binding.etCount.requestFocus()
+                                binding.etCount.post {
+                                    binding.etCount.setTextColor(Color.WHITE)
+                                    binding.etCount.selectAll()
+                                }
+                            }
+
+                            notificationDialog.show()
+
+
+                        }
+
+                        binding.etCount.setTextColor(ContextCompat.getColor(requireActivity(), R.color.regularGrey))
+                    }
+                    return@setOnEditorActionListener true
+                }
+                return@setOnEditorActionListener false
+
+            }
+        }
         return  binding.root
     }
 
@@ -422,6 +427,19 @@ class PickerSessionFragment: Fragment() {
 private fun pushChanges(requireActivity: FragmentActivity) {
     val data = Data.Builder()
         .putString("sync_type", "PUSH")
+        .build()
+
+    val request =
+        OneTimeWorkRequestBuilder<SyncWorker>()
+            .setInputData(data)
+            .build()
+
+    WorkManager.getInstance(requireActivity)
+        .enqueue(request)
+}
+private fun pullChanges(requireActivity: FragmentActivity) {
+    val data = Data.Builder()
+        .putString("sync_type", "FULL")
         .build()
 
     val request =

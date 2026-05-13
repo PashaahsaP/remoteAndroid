@@ -107,14 +107,18 @@ class IncomeFragment : Fragment() {
             withContext(Dispatchers.IO) {
                 var request: Request = Request()
                 data = localViewModel.updateSupplierList(incomeRepo)
-                //pullChanges1(requireActivity(), listOf(PullItem(Entities.Supplier,234),PullItem(Entities.Catalog, 235235)))
-                pullChanges(requireActivity())
             }
             withContext(Dispatchers.Main) {
                 localViewModel.setTaskCollection(data)
             }
         }
-
+        with(binding){
+            pullChanges(requireActivity())
+            swipe.setOnRefreshListener {
+                pullChanges(requireActivity())
+                swipe.isRefreshing = false
+            }
+        }
 
 
         return  binding.root

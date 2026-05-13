@@ -5,7 +5,10 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:paddingTop="0dp"
     android:layout_marginTop="0dp">
-
+<androidx.swiperefreshlayout.widget.SwipeRefreshLayout
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:id="@+id/swipe">
     <TextView
         android:id="@+id/tvCellName"
         android:layout_width="wrap_content"
@@ -60,5 +63,5 @@
         android:layout_marginBottom="20dp">
 
     </Button>
-
+</androidx.swiperefreshlayout.widget.SwipeRefreshLayout>
 </androidx.constraintlayout.widget.ConstraintLayout>

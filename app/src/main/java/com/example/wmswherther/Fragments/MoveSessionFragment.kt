@@ -139,6 +139,10 @@ class MoveSessionFragment: Fragment() {
             btnCancel.setOnClickListener {
                 localViewModel.updateIsMoving(false)
             }
+            swipe.setOnRefreshListener {
+                pullChanges(requireActivity())
+                swipe.isRefreshing = false
+            }
         }
 
         return binding.root
@@ -171,4 +175,17 @@ fun isCell(cell: String, list: List<CellType>): Boolean {
 }
 fun convertToInt(nullableInt: Int?): Int {
     return nullableInt ?: 0  // If nullableInt is null, use 0 as default
+}
+private fun pullChanges(requireActivity: FragmentActivity) {
+    val data = Data.Builder()
+        .putString("sync_type", "FULL")
+        .build()
+
+    val request =
+        OneTimeWorkRequestBuilder<SyncWorker>()
+            .setInputData(data)
+            .build()
+
+    WorkManager.getInstance(requireActivity)
+        .enqueue(request)
 }

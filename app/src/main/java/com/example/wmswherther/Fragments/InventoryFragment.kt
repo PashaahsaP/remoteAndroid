@@ -6,10 +6,14 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.fragment.app.Fragment
+import androidx.fragment.app.FragmentActivity
 import androidx.fragment.app.activityViewModels
 import androidx.lifecycle.ViewModelProvider
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
+import androidx.work.Data
+import androidx.work.OneTimeWorkRequestBuilder
+import androidx.work.WorkManager
 import com.example.wmsRemote.data.db.MainDB
 import com.example.wmsRemote.databinding.FragmentInventoryBinding
 import com.example.wmswherther.Adapters.IncomeMenuAdapter
@@ -17,6 +21,7 @@ import com.example.wmswherther.Adapters.InventoryAdapter
 import com.example.wmswherther.Adapters.InventoryOrderMenuAdapter
 import com.example.wmswherther.Classes.UiState
 import com.example.wmswherther.data.db.Repositories.InventoryRepository
+import com.example.wmswherther.data.db.SyncWorker
 import com.example.wmswherther.viewModel.InventoryViewModel
 import com.example.wmswherther.viewModel.MainViewModel
 
@@ -68,7 +73,25 @@ class InventoryFragment: Fragment() {
         })
         localViewModel.LoadSuppliers(requireActivity(), inventoryRepo)
         localViewModel.LoadOrder(requireActivity(), inventoryRepo)
-
+        with(binding){
+            swipe.setOnRefreshListener {
+                pullChanges(requireActivity())
+                swipe.isRefreshing = false
+            }
+        }
         return  binding.root
     }
+}
+private fun pullChanges(requireActivity: FragmentActivity) {
+    val data = Data.Builder()
+        .putString("sync_type", "FULL")
+        .build()
+
+    val request =
+        OneTimeWorkRequestBuilder<SyncWorker>()
+            .setInputData(data)
+            .build()
+
+    WorkManager.getInstance(requireActivity)
+        .enqueue(request)
 }

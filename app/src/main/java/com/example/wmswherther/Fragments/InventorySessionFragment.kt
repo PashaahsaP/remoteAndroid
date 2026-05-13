@@ -74,7 +74,12 @@ class InventorySessionFragment: Fragment() {
                 }
             }
         }
-
+        with(binding){
+            swipe.setOnRefreshListener {
+                pullChanges(requireActivity())
+                swipe.isRefreshing = false
+            }
+        }
         localViewModel.items.observe(viewLifecycleOwner,{ items ->
             adapter.updateCollection(items, localViewModel.getSelectedItem())
             recyclerView.smoothScrollToPosition(localViewModel.getSelectedItem())
@@ -496,6 +501,19 @@ class InventorySessionFragment: Fragment() {
 private fun pushChanges(requireActivity: FragmentActivity) {
     val data = Data.Builder()
         .putString("sync_type", "PUSH")
+        .build()
+
+    val request =
+        OneTimeWorkRequestBuilder<SyncWorker>()
+            .setInputData(data)
+            .build()
+
+    WorkManager.getInstance(requireActivity)
+        .enqueue(request)
+}
+private fun pullChanges(requireActivity: FragmentActivity) {
+    val data = Data.Builder()
+        .putString("sync_type", "FULL")
         .build()
 
     val request =

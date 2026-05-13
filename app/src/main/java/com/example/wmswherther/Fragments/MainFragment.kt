@@ -6,12 +6,17 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.fragment.app.Fragment
+import androidx.fragment.app.FragmentActivity
 import androidx.fragment.app.activityViewModels
 import androidx.fragment.app.commit
 import androidx.fragment.app.replace
+import androidx.work.Data
+import androidx.work.OneTimeWorkRequestBuilder
+import androidx.work.WorkManager
 import com.example.wmsRemote.R
 import com.example.wmsRemote.databinding.FragmentMainBinding
 import com.example.wmswherther.Classes.UiState
+import com.example.wmswherther.data.db.SyncWorker
 import com.example.wmswherther.viewModel.MainViewModel
 
 
@@ -114,7 +119,24 @@ class MainFragment : Fragment(R.layout.fragment_main) {
 
                 viewModel.setActiveUi(UiState.AssemblyMenu(prevState = viewModel.uiState.value))
             }
+            swipe.setOnRefreshListener {
+                pullChanges(requireActivity())
+                swipe.isRefreshing = false
+            }
         }
         return binding.root
     }
+}
+private fun pullChanges(requireActivity: FragmentActivity) {
+    val data = Data.Builder()
+        .putString("sync_type", "FULL")
+        .build()
+
+    val request =
+        OneTimeWorkRequestBuilder<SyncWorker>()
+            .setInputData(data)
+            .build()
+
+    WorkManager.getInstance(requireActivity)
+        .enqueue(request)
 }

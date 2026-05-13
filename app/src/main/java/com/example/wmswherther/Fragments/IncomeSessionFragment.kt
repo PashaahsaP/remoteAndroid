@@ -151,7 +151,12 @@ class IncomeSessionFragment : Fragment() {
                 finishSessionAndReturnToPreviousFragment(incomeRepo, sessionId)
 
             }
-
+            with(binding){
+                swipe.setOnRefreshListener {
+                    pullChanges(requireActivity())
+                    swipe.isRefreshing = false
+                }
+            }
             initSession(incomeRepo, sessionId)
             
             return  binding.root
@@ -466,6 +471,19 @@ class IncomeSessionFragment : Fragment() {
 private fun pushChanges(requireActivity: FragmentActivity) {
     val data = Data.Builder()
         .putString("sync_type", "PUSH")
+        .build()
+
+    val request =
+        OneTimeWorkRequestBuilder<SyncWorker>()
+            .setInputData(data)
+            .build()
+
+    WorkManager.getInstance(requireActivity)
+        .enqueue(request)
+}
+private fun pullChanges(requireActivity: FragmentActivity) {
+    val data = Data.Builder()
+        .putString("sync_type", "FULL")
         .build()
 
     val request =
