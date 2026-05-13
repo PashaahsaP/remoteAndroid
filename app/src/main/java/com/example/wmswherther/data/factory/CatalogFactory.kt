@@ -4,7 +4,7 @@ import com.example.wmswherther.data.db.Entityes.Catalog
 import java.util.UUID
 
 object CatalogFactory {
-    fun create(name: String, sku: String, supplierId: String) : Catalog{
+    fun create(name: String, sku: String, supplierId: Int) : Catalog{
         return Catalog(
             id = UUID.randomUUID().toString(),
             name = name,

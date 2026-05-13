@@ -4,9 +4,9 @@ import com.example.wmswherther.data.db.Entityes.Supplier
 import java.util.UUID
 
 object SupplierFactory {
-    fun create(name: String) : Supplier{
+    fun create(name: String, id: Int) : Supplier{
        return Supplier(
-            id = UUID.randomUUID().toString(),
+            id = id,
             name = name,
             createdAt = System.currentTimeMillis(),
             updatedAt = System.currentTimeMillis(),

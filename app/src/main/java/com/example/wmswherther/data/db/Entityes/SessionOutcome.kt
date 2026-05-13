@@ -14,7 +14,7 @@ import androidx.room.PrimaryKey
     ])
 data class SessionOutcome(
     @PrimaryKey(autoGenerate = false) val id: String,
-    val supplierId: String?,
+    val supplierId: Int?,
     val toCellId: String?,
     val outCellId: String?,
     val status: Int,

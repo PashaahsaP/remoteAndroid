@@ -16,7 +16,7 @@ data class Barcode(
     @PrimaryKey(autoGenerate = false) val id: String,
     val name: String,
     val catalogId: String,
-    val supplierId: String?,
+    val supplierId: Int?,
     val createdAt: Long,
     val updatedAt: Long,
     val deletedAt: Long?,

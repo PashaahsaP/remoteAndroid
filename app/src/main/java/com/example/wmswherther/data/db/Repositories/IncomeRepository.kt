@@ -33,7 +33,7 @@ class IncomeRepository (private val dao: Dao) {
                     number = item.id,
                     date = LocalDate.now().toString(),
                     supplierId = supplier!!.id,
-                    sessionId = supplier!!.id
+                    sessionId = supplier.name
 
                 )}
         return result

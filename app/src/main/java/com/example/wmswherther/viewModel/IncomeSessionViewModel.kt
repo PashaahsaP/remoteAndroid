@@ -227,7 +227,7 @@ class IncomeSessionViewModel : ViewModel() {
     ) {
         var sessionChange = ChangeFactory.create(
             entityId = session.id,
-            supplierId = session.supplierId.toString(),
+            supplierId = session.supplierId,
             operationType = OperationType.UpdateIncomeSession,
             payload = Gson().toJson(session)
         )
@@ -259,7 +259,7 @@ class IncomeSessionViewModel : ViewModel() {
         )
         var moreChange = ChangeFactory.create(
             entityId = diffMove.id,
-            supplierId = session.supplierId.toString(),
+            supplierId = session.supplierId,
             operationType = OperationType.IncomeMovement,
             payload = Gson().toJson(diffMove)
         )
@@ -269,7 +269,7 @@ class IncomeSessionViewModel : ViewModel() {
         // обновить статус goods
         var updateGoodsChange = ChangeFactory.create(
             entityId = goodsId.id,
-            supplierId = session.supplierId.toString(),
+            supplierId = session.supplierId,
             operationType = OperationType.UpdateGoods,
             payload = Gson().toJson(goods)
         )
@@ -283,7 +283,7 @@ class IncomeSessionViewModel : ViewModel() {
         if (goodsId.haveCount == 0) {
             var removeChange = ChangeFactory.create(
                 entityId = goods.id,
-                supplierId = session.id,
+                supplierId = session.supplierId,
                 operationType = OperationType.DeleteGoods,
                 payload = Gson().toJson(goods)
             )
@@ -301,7 +301,7 @@ class IncomeSessionViewModel : ViewModel() {
             )
             var movementChange = ChangeFactory.create(
                 entityId = innerMovement.id,
-                supplierId = session.supplierId.toString(),
+                supplierId = session.supplierId,
                 operationType = OperationType.IncomeMovement,
                 payload = Gson().toJson(innerMovement)
             )
@@ -331,7 +331,7 @@ class IncomeSessionViewModel : ViewModel() {
 
         var moreChange = ChangeFactory.create(
             entityId = diffMove.id,
-            supplierId = session.supplierId.toString(),
+            supplierId = session.supplierId,
             operationType = OperationType.IncomeMovement,
             payload = Gson().toJson(diffMove)
         )
@@ -341,7 +341,7 @@ class IncomeSessionViewModel : ViewModel() {
         // обновить статус goods
         var updateGoodsChange = ChangeFactory.create(
             entityId = goodsItem.id,
-            supplierId = session.supplierId.toString(),
+            supplierId = session.supplierId,
             operationType = OperationType.UpdateGoods,
             payload = Gson().toJson(goodsItem)
         )
@@ -364,7 +364,7 @@ class IncomeSessionViewModel : ViewModel() {
 
         var movementChange = ChangeFactory.create(
             entityId = innerMovement.id,
-            supplierId = session.supplierId.toString(),
+            supplierId = session.supplierId,
             operationType = OperationType.IncomeMovement,
             payload = Gson().toJson(innerMovement)
         )
@@ -380,7 +380,7 @@ class IncomeSessionViewModel : ViewModel() {
         var innerGoods = incomeRepo.getGoodsById(goodsItem.id)
         var goodsChange = ChangeFactory.create(
             entityId =  innerGoods.id,
-            supplierId =  session.supplierId.toString(),
+            supplierId =  session.supplierId,
             payload = Gson().toJson(innerGoods),
             operationType =  OperationType.UpdateGoods)
         incomeRepo.updateGoodsAsync(innerGoods.copy(isAvailable = true, amount = innerGoods.amount), goodsChange)
@@ -398,7 +398,7 @@ class IncomeSessionViewModel : ViewModel() {
 
         var movementChange = ChangeFactory.create(
             entityId = innerMovement.id,
-            supplierId = session.supplierId.toString(),
+            supplierId = session.supplierId,
             operationType = OperationType.IncomeMovement,
             payload =  Gson().toJson(innerMovement)
         )

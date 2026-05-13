@@ -1,5 +1,6 @@
 package com.example.wmswherther.data.db.Repositories
 
+import android.util.Log
 import com.example.wmsRemote.data.enums.OperationType
 import com.example.wmswherther.data.db.Entityes.Barcode
 import com.example.wmswherther.data.db.Entityes.Catalog
@@ -12,8 +13,11 @@ import com.example.wmswherther.data.db.Entityes.Movement
 import com.example.wmswherther.data.db.Entityes.SessionIncome
 import com.example.wmswherther.data.db.Entityes.SessionInventory
 import com.example.wmswherther.data.db.Entityes.SessionPicker
+import com.example.wmswherther.data.db.PullItem
 import com.example.wmswherther.data.db.Request
+import com.example.wmswherther.data.enums.Entities
 import com.google.gson.Gson
+import kotlinx.coroutines.awaitAll
 import okhttp3.OkHttpClient
 import org.json.JSONArray
 
@@ -36,7 +40,7 @@ class SyncRepository (
                     Barcode::class.java
                 )
 
-                request.sendBorkBarcode(ip, barcode, client)
+                request.sendBarcode(ip, barcode, client)
             }
             OperationType.InsertMovement.ordinal -> {
 
@@ -137,35 +141,36 @@ class SyncRepository (
     }
     suspend fun syncPull(
         ip: String,
-        operation: List< Pair<String, Long>>
-    ) : List<JSONArray>{
-        var result : MutableList<JSONArray> = mutableListOf<JSONArray>()
+        operation: List< PullItem>
+    ) : List<Pair<Entities,JSONArray>>{
+        var result   = mutableListOf<Pair<Entities,JSONArray>>()
        for (dataType in operation){
-           when(dataType.first){
-               "Catalog" -> result += request.getCatalogs(ip, client, dataType.second)
-               "Goods" -> result += request.getGoods(ip, client, dataType.second)
-               "Barcode" -> result += request.getBarcodes(ip, client, dataType.second)
-               "Cell" -> result += request.getCells(ip, client, dataType.second)
-               "CellType" -> result += request.getCellTypes(ip, client, dataType.second)
-               "Credential" -> result += request.getCredentials(ip, client, dataType.second)
-               "IncomeItem" -> result += request.getIncomeItem(ip, client, dataType.second)
-               "InventoryDiffItem" -> result += request.getInventoryDiffItem(ip, client, dataType.second)
-               "Movement" -> result += request.getMovement(ip, client, dataType.second)
-               "OutcomeItem" -> result += request.getOutcomeItem(ip, client, dataType.second)
-               "PackageEntity" -> result += request.getPackageEntity(ip, client, dataType.second)
-               "PickerItem" -> result += request.getPickerItems(ip, client, dataType.second)
-               "Service" -> result += request.getService(ip, client, dataType.second)
-               "SessionIncome" -> result += request.getSessionIncome(ip, client, dataType.second)
-               "SessionInventory" -> result += request.getSessionInventory(ip, client, dataType.second)
-               "SessionOutcome" -> result += request.getSessionOutcome(ip, client, dataType.second)
-               "SessionPicker" -> result += request.getSessionPicker(ip, client, dataType.second)
-               "Supplier" -> result += request.getSuppliers(ip, client, dataType.second)
-               "TrueSign" -> result += request.getTrueSign(ip, client, dataType.second)
-               "User" -> result += request.getUsers(ip, client, dataType.second)
+           when(dataType.entity){
+               Entities.Catalog -> result += Pair(Entities.Catalog, request.getCatalogs(ip, client, dataType.time))
+               Entities.Goods -> result += Pair(Entities.Goods, request.getGoods(ip, client, dataType.time))
+               Entities.Barcode -> result += Pair(Entities.Barcode,  request.getBarcodes(ip, client, dataType.time))
+               Entities.Cell -> result += Pair(Entities.Cell, request.getCells(ip, client, dataType.time))
+               Entities.TypeCell -> result += Pair(Entities.TypeCell, request.getCellTypes(ip, client, dataType.time))
+               Entities.Credential -> result += Pair(Entities.Credential, request.getCredentials(ip, client, dataType.time))
+               Entities.IncomeItem -> result += Pair(Entities.IncomeItem,  request.getIncomeItem(ip, client, dataType.time))
+               Entities.InventoryDiffItem -> result += Pair(Entities.InventoryDiffItem, request.getInventoryDiffItem(ip, client, dataType.time))
+               Entities.Movement -> result += Pair(Entities.Movement, request.getMovement(ip, client, dataType.time))
+               Entities.OutcomeItem -> result += Pair(Entities.OutcomeItem, request.getOutcomeItem(ip, client, dataType.time))
+               Entities.Package -> result += Pair(Entities.Package, request.getPackageEntity(ip, client, dataType.time))
+               Entities.PickerItem -> result += Pair(Entities.PickerItem, request.getPickerItems(ip, client, dataType.time))
+               Entities.Service -> result += Pair(Entities.Service, request.getService(ip, client, dataType.time))
+               Entities.SessionIncome -> result += Pair(Entities.SessionIncome, request.getSessionIncome(ip, client, dataType.time))
+               Entities.SessionInventory -> result += Pair( Entities.SessionInventory, request.getSessionInventory(ip, client, dataType.time))
+               Entities.SessionOutcome -> result += Pair(Entities.SessionOutcome, request.getSessionOutcome(ip, client, dataType.time))
+               Entities.SessionPicker -> result += Pair(Entities.SessionPicker, request.getSessionPicker(ip, client, dataType.time))
+               Entities.Supplier -> result += Pair(Entities.Supplier, request.getSuppliers(ip, client, dataType.time))
+               Entities.TrueSign -> result += Pair(Entities.TrueSign, request.getTrueSign(ip, client, dataType.time))
+               Entities.User -> result += Pair(Entities.User, request.getUsers(ip, client, dataType.time))
 
 
            }
        }
+        Log.d("#####", Gson().toJson(result))
         return  result
     }
 }

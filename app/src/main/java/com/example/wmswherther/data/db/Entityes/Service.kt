@@ -12,7 +12,7 @@ import androidx.room.PrimaryKey
         ])
 data class Service (
     @PrimaryKey(autoGenerate = false) val id: String,
-    val supplierId: String?,
+    val supplierId: Int?,
     val name: String,
     val createdAt: Long,
     val updatedAt: Long,

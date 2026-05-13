@@ -6,7 +6,7 @@ import com.example.wmswherther.data.db.Entityes.Change
 import java.util.UUID
 
 object ChangeFactory {
-    fun create(payload: String, entityId: String, supplierId: String?, operationType: OperationType): Change {
+    fun create(payload: String, entityId: String, supplierId: Int?, operationType: OperationType): Change {
         return Change(
             id = UUID.randomUUID().toString(),
             entityId = entityId,

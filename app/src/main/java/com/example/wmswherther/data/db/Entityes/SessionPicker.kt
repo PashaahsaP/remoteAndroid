@@ -12,7 +12,7 @@ import androidx.room.PrimaryKey
     ])
 data class SessionPicker(
     @PrimaryKey(autoGenerate = false) val id: String,
-    val supplierId: String?,
+    val supplierId: Int?,
     val outCellId: String?,
     val status: Int,
     val createdAt: Long,

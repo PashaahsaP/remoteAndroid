@@ -25,4 +25,5 @@ data class Cell (
     val updatedAt: Long,
     val deletedAt: Long?,
     val isDeleted: Boolean,
+    val other: String?
 )

@@ -1,7 +1,7 @@
 package com.example.wmswherther.Classes
 
 data class TaskMenuItem(
-    var supplierId: String,
+    var supplierId: Int?,
     var sessionId: String,
     var supplier: String,
     var progress: String,
@@ -25,13 +25,13 @@ sealed class IncomeItem {
     data class NewGoodsItem(
         var goodsName: String,
         var catalogId: String,
-        var supplierId: String,
+        var supplierId: Int,
     ) : IncomeItem()
     data class GoodsItem(
         val goodsName: String,
         val id: String,
         val catalogId: String,
-        val supplierId: String,
+        val supplierId: Int,
     ) : IncomeItem()
 
     data class TEItem(
@@ -80,11 +80,11 @@ data class InventorySessionItem(
 )
 data class MoveItem(
     val name: String,
-    val id: String
+    val id: Int
 )
 data class InventoryItem(
     val name: String,
-    val id: String
+    val id: Int
 )
 data class MoveSessionItem(
     var name: String,

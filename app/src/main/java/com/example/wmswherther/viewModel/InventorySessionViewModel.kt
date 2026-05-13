@@ -4,14 +4,11 @@ import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.example.wmsRemote.data.db.MainDB
 import com.example.wmsRemote.data.enums.OperationType
 import com.example.wmsRemote.data.enums.StatusType
 import com.example.wmswherther.Classes.InventorySessionItem
 import com.example.wmswherther.Classes.UiState
-import com.example.wmswherther.data.db.Entityes.Barcode
 import com.example.wmswherther.data.db.Entityes.Cell
-import com.example.wmswherther.data.db.Entityes.Change
 import com.example.wmswherther.data.db.Entityes.Goods
 import com.example.wmswherther.data.db.Entityes.InventoryDiffItem
 import com.example.wmswherther.data.db.Entityes.SessionInventory
@@ -23,7 +20,6 @@ import com.google.gson.Gson
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
-import java.util.UUID
 
 data class SortCollectionResult(val counter: Int,
                                 val curCount: Int,
@@ -111,7 +107,7 @@ class InventorySessionViewModel : ViewModel(){
     suspend fun finishSession(
         inventoryRepo: InventoryRepository,
         state: UiState.InventorySessionMenu,
-        supplierId: String?
+        supplierId: Int?
     ){
         var baseCell = inventoryRepo.getCellByName(currentCellName.value.toString())
         if(state.isSupplierModeActive){
@@ -143,7 +139,7 @@ class InventorySessionViewModel : ViewModel(){
         baseCell: Cell,
         inventoryRepo: InventoryRepository,
         sessionId: String,
-        supplierId: String?
+        supplierId: Int?
     ) {
         // get diffs
         var diffs: List<InventoryDiffItem> =
@@ -152,7 +148,7 @@ class InventorySessionViewModel : ViewModel(){
         diffs.forEach { item ->
             var changes = ChangeFactory.create(
                 entityId = item.id,
-                supplierId = supplierId.toString(),
+                supplierId = supplierId,
                 operationType = OperationType.InsertInventoryDiff,
                 payload = Gson().toJson(item)
             )
@@ -161,21 +157,21 @@ class InventorySessionViewModel : ViewModel(){
     }
 
     private suspend fun createNewSessionAndSaveInDB(
-        supplierId: String?,
+        supplierId: Int?,
         baseCell: Cell,
         inventoryRepo: InventoryRepository,
         status: StatusType
     ): SessionInventory {
         // создание сессии
         var session = InventorySessionFactory.createNotInventoryTask(
-            supplierId = supplierId.toString(),
+            supplierId = supplierId,
             cellId = baseCell.id,
             status = status
         )
         // Получение данных
         var changes = ChangeFactory.create(
             entityId = session.id,
-            supplierId = supplierId.toString(),
+            supplierId = supplierId,
             operationType = OperationType.InsertInventorySession,
             payload = Gson().toJson(session)
         )

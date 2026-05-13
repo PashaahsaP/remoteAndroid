@@ -72,7 +72,7 @@ import java.util.UUID
 class MoveSessionTest {
     private lateinit var db: MainDB
     private lateinit var repo: MoveeRepository
-    private lateinit var supplierId : String
+    private var supplierId : Int = 123234
     lateinit var scenario: ActivityScenario<MainActivity>
     @Before
     fun setup() {
@@ -87,8 +87,7 @@ class MoveSessionTest {
 
         // 👉 подготовка данных
         runBlocking {
-            supplierId = "123234"
-            appendMoveDummyData(dao =dao , supplierId)
+            appendMoveDummyData(dao = dao , supplierId)
             appendFunctionality(db)
             appendUser(db)
         }
@@ -705,7 +704,7 @@ class MoveSessionTest {
         )
         db.getDao().insertUser(user)
     }
-    suspend fun appendMoveDummyData(dao: Dao, supplierId: String){
+    suspend fun appendMoveDummyData(dao: Dao, supplierId: Int){
         val vitekSupplier = Supplier(
             id = supplierId,
             name = "Vitek",

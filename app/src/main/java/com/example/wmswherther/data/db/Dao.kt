@@ -91,6 +91,8 @@ interface Dao {
     }
     // </editor-fold>
     // <editor-fold desc="TrueSign">
+    @Insert
+    fun insertTrueSign(sign: TrueSign)
 
     @Query("SELECT * FROM true_signs")
     fun getAllTrueSign(): List<TrueSign>
@@ -100,6 +102,8 @@ interface Dao {
 
     @Query("SELECT * FROM services")
     fun getAllService(): List<Service>
+    @Insert
+    fun insertService(service: Service)
 
     // </editor-fold>
     // <editor-fold desc="Package entities">
@@ -145,6 +149,8 @@ interface Dao {
     @Query("SELECT * FROM sessions_outcome")
     fun getAllOutcomeSession(): List<SessionOutcome>
 
+    @Insert
+    fun insertOutcomeSession(sessionOutcome: SessionOutcome)
     // </editor-fold>
     // <editor-fold desc="CellTypes">
     @Insert
@@ -172,7 +178,7 @@ interface Dao {
     @Query("SELECT * FROM suppliers")
     fun getAllSuppliers(): List<Supplier>
     @Query("SELECT * FROM suppliers WHERE id =:id")
-    suspend fun getSupplierById(id: String): Supplier
+    suspend fun getSupplierById(id: Int): Supplier
     // </editor-fold>
     // <editor-fold desc="Credential">
     @Insert

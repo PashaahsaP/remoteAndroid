@@ -5,7 +5,7 @@ import androidx.room.PrimaryKey
 
 @Entity(tableName = "suppliers")
 data class Supplier(
-    @PrimaryKey(autoGenerate = false) val id: String,
+    @PrimaryKey(autoGenerate = false) val id: Int,
     val name: String,
     val createdAt: Long,
     val updatedAt: Long,

@@ -129,7 +129,7 @@ class AssemblySessionViewModel : ViewModel() {
             )
             val change = ChangeFactory.create(
                 entityId = movement.id,
-                supplierId = session.supplierId.toString(),
+                supplierId = session.supplierId,
                 operationType = OperationType.InsertMovement,
                 payload = Gson().toJson(movement)
             )
@@ -137,7 +137,7 @@ class AssemblySessionViewModel : ViewModel() {
 
             var goodsChange = ChangeFactory.create(
                 entityId = goods.id,
-                supplierId = session.supplierId.toString(),
+                supplierId = session.supplierId,
                 operationType = OperationType.UpdateGoods,
                 payload = Gson().toJson(goods.copy(cellId = outCell.id, amount = resultItem.amount))
             )
@@ -154,7 +154,7 @@ class AssemblySessionViewModel : ViewModel() {
             )
             val lessChange = ChangeFactory.create(
                 entityId = movement.id,
-                supplierId = session.supplierId.toString(),
+                supplierId = session.supplierId,
                 operationType = OperationType.InsertMovement,
                 payload = Gson().toJson(lessMovement)
             )
@@ -173,7 +173,7 @@ class AssemblySessionViewModel : ViewModel() {
             )
             val change = ChangeFactory.create(
                 entityId = movement.id,
-                supplierId = session.supplierId.toString(),
+                supplierId = session.supplierId,
                 operationType = OperationType.InsertMovement,
                 payload = Gson().toJson(movement)
             )
@@ -181,7 +181,7 @@ class AssemblySessionViewModel : ViewModel() {
 
             var goodsChange = ChangeFactory.create(
                 entityId = goods.id,
-                supplierId = session.supplierId.toString(),
+                supplierId = session.supplierId,
                 operationType = OperationType.UpdateGoods,
                 payload = Gson().toJson(goods.copy(cellId = outCell.id, amount = resultItem.amount))
             )
@@ -198,7 +198,7 @@ class AssemblySessionViewModel : ViewModel() {
             )
             val moreChange = ChangeFactory.create(
                 entityId = movement.id,
-                supplierId = session.supplierId.toString(),
+                supplierId = session.supplierId,
                 operationType = OperationType.InsertMovement,
                 payload = Gson().toJson(moreMovement)
             )
@@ -215,7 +215,7 @@ class AssemblySessionViewModel : ViewModel() {
         )
         val change = ChangeFactory.create(
             entityId = movement.id,
-            supplierId = session.supplierId.toString(),
+            supplierId = session.supplierId,
             operationType = OperationType.InsertMovement,
             payload = Gson().toJson(movement)
         )
@@ -243,7 +243,7 @@ class AssemblySessionViewModel : ViewModel() {
         )
         val change = ChangeFactory.create(
             entityId = movement.id,
-            supplierId = session.supplierId.toString(),
+            supplierId = session.supplierId,
             operationType = OperationType.InsertMovement,
             payload = Gson().toJson(movement)
         )
@@ -270,7 +270,7 @@ class AssemblySessionViewModel : ViewModel() {
             )
             val change = ChangeFactory.create(
                 entityId = movement.id,
-                supplierId = session.supplierId.toString(),
+                supplierId = session.supplierId,
                 operationType = OperationType.InsertMovement,
                 payload = Gson().toJson(movement)
             )
@@ -280,7 +280,7 @@ class AssemblySessionViewModel : ViewModel() {
             var goods = assemblyRepo.getGoodsById(item.goodsId)
             var goodsChange = ChangeFactory.create(
                 entityId = goods.id,
-                supplierId = session.supplierId.toString(),
+                supplierId = session.supplierId,
                 operationType = OperationType.UpdateGoods,
                 payload = Gson().toJson(goods.copy(cellId = outCell.id))
             )
@@ -292,7 +292,7 @@ class AssemblySessionViewModel : ViewModel() {
     private suspend fun changeSessionStatus(session: SessionPicker, status: StatusType, assemblyRepo: AssemblyRepository) {
         var sessionChange = ChangeFactory.create(
             entityId = session.id,
-            supplierId = session.supplierId.toString(),
+            supplierId = session.supplierId,
             operationType = OperationType.UpdatePickerSession,
             payload = Gson().toJson(session)
         )
@@ -345,7 +345,7 @@ class AssemblySessionViewModel : ViewModel() {
             )
             val change = ChangeFactory.create(
                 entityId = cell.id,
-                supplierId = session.supplierId.toString(),
+                supplierId = session.supplierId,
                 operationType = OperationType.InsertMovement,
                 payload = Gson().toJson(cell)
             )

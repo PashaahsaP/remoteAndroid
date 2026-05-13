@@ -4,7 +4,7 @@ import com.example.wmswherther.data.db.Entityes.Barcode
 import java.util.UUID
 
 object BarcodeFactory {
-    fun create(name: String, catalogId: String, supplierId: String) : Barcode{
+    fun create(name: String, catalogId: String, supplierId: Int) : Barcode{
         return Barcode(
             id = UUID.randomUUID().toString(),
             name = name,

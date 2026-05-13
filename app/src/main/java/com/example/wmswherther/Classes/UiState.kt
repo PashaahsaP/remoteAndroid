@@ -45,7 +45,7 @@ sealed class UiState {
         val prevState: UiState? = null,
     ) : UiState()
     data class MoveSessionMenu(
-        val supplierId: String = "",
+        val supplierId: Int? = 0,
         val isSearchLoopActive: Boolean = true,
         val isBarcodeFieldActive: Boolean = false,
         val isBarcodeScanActive: Boolean = true,
@@ -67,7 +67,7 @@ sealed class UiState {
         val prevState: UiState? = null,
     ) : UiState()
     data class InventorySessionMenu(
-        val supplierId: String = "",
+        val supplierId: Int? = 0,
         val sessionId: String = "",
         val isSupplierModeActive: Boolean = false,
         val isSearchLoopActive: Boolean = true,
@@ -86,7 +86,7 @@ sealed class UiState {
         val prevState: UiState? = null,
     ) : UiState()
     data class AssemblySessionMenu(
-        val supplierId: String = "",
+        val supplierId: Int? = 0,
         val sessionId: String = "",
         val isSearchLoopActive: Boolean = true,
         val isBarcodeFieldActive: Boolean = false,

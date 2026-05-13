@@ -10,7 +10,7 @@ object InventorySessionFactory {
      */
 
     fun createNotInventoryTask(
-        supplierId: String,
+        supplierId: Int?,
         cellId: String,
         status: StatusType,
 

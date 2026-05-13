@@ -11,7 +11,7 @@ import androidx.room.PrimaryKey
     ])
 data class PackageEntity(
     @PrimaryKey(autoGenerate = false) val id: String,
-    val supplierId: String?,
+    val supplierId: Int?,
     val name: String?,
     val baseAmount: Int?,
     val catalogId: String?,

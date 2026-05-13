@@ -84,7 +84,7 @@ class IncomeSessionTest {
     private lateinit var db: MainDB
     private lateinit var repo: IncomeRepository
     private lateinit var sessionId : String
-    private lateinit var supplierId : String
+    private var supplierId : Int = 123123
     lateinit var scenario: ActivityScenario<MainActivity>
     @Before
     fun setup() {
@@ -99,7 +99,6 @@ class IncomeSessionTest {
         // 👉 подготовка данных
         runBlocking {
             sessionId = "123234"
-            supplierId = "123234"
             appendDummyData(dao, sessionId, supplierId)
             appendFunctionality(db)
             appendUser(db)
@@ -592,7 +591,7 @@ fun withTextColor(expectedColor: Int): Matcher<View> {
 }
 
 
-suspend fun appendDummyData(dao: Dao, sessionId: String, supplierId: String){
+suspend fun appendDummyData(dao: Dao, sessionId: String, supplierId: Int){
     val borkSupplier = Supplier(
         id = supplierId,
         name = "Bork",
@@ -602,8 +601,8 @@ suspend fun appendDummyData(dao: Dao, sessionId: String, supplierId: String){
         isDeleted = false,
         other = null
     )
-    SupplierFactory.create("Bork")
-    val atomySupplier = SupplierFactory.create("Atomy")
+    SupplierFactory.create("Bork", 0)
+    val atomySupplier = SupplierFactory.create("Atomy", 1)
     dao.insertSupplier(borkSupplier)
     dao.insertSupplier(atomySupplier)
 

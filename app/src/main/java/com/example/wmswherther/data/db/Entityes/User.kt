@@ -10,7 +10,7 @@ import androidx.room.PrimaryKey
 
     ])
 data class User(
-    @PrimaryKey(autoGenerate = true) val id: Long,
+    @PrimaryKey(autoGenerate = false) val id: Long,
     val firstName: String,
     val lastName: String,
     val credentialId: Long,

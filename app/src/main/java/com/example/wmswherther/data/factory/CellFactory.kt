@@ -15,7 +15,8 @@ object CellFactory {
             createdAt = System.currentTimeMillis(),
             updatedAt = System.currentTimeMillis(),
             deletedAt = null,
-            isDeleted = false
+            isDeleted = false,
+            other = null
         )
     }
 }

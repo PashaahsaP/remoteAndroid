@@ -5,7 +5,7 @@ import com.example.wmswherther.data.db.Entityes.SessionPicker
 import java.util.UUID
 
 object SessionPickerFactory {
-    fun create(supplierId: String, outCellId: String) : SessionPicker{
+    fun create(supplierId: Int, outCellId: String) : SessionPicker{
         return SessionPicker(
             id = UUID.randomUUID().toString(),
             supplierId = supplierId,

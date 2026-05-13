@@ -5,7 +5,7 @@ import androidx.room.PrimaryKey
 
 @Entity(tableName = "credentials")
 data class Credential(
-    @PrimaryKey(autoGenerate = true) val id: Long,
+    @PrimaryKey(autoGenerate = false) val id: Long,
     val type: String,
     val createdAt: Long,
     val updatedAt: Long,

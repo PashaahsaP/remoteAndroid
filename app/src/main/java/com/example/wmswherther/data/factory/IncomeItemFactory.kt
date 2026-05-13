@@ -24,7 +24,7 @@ object IncomeItemFactory {
         catalogId: String,
         parentCellId: String,
         parentCellName: String,
-        supplierId: String,
+        supplierId: Int,
         allCount: Int,
         teCount: Int
 
@@ -75,7 +75,7 @@ object IncomeItemFactory {
             goodsName = "",
             id = "",
             catalogId = "",
-            supplierId = "")
+            supplierId = 9999)
 
         if(goods is IncomeItem.NewGoodsItem) {
             item = IncomeItem.NewGoodsItem(
@@ -139,7 +139,7 @@ object IncomeItemFactory {
         catalogId: String,
         parentCellId: String,
         parentCellName: String,
-        supplierId: String,
+        supplierId: Int,
         allCount: Int
 
     ) : IncomeItem.GoodsItem{
@@ -213,7 +213,7 @@ object IncomeItemFactory {
         catalogId: String,
         parentCellId: String,
         parentCellName: String,
-        supplierId: String,
+        supplierId: Int,
         allCount: Int
 
     ) : IncomeItem.GoodsItem{

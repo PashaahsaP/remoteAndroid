@@ -42,7 +42,7 @@ class IncomeSessionDbTest {
     private lateinit var db: MainDB
     private lateinit var repo: IncomeRepository
     private lateinit var sessionId : String
-    private lateinit var supplierId : String
+    private var supplierId : Int = 123123123
     private lateinit var vm : IncomeSessionViewModel
 
     @Before
@@ -51,7 +51,6 @@ class IncomeSessionDbTest {
         db = MainDB.getDB(context)
         repo = IncomeRepository(db.getDao())
         sessionId = "12312312"
-        supplierId = "12312312"
         db = Room.inMemoryDatabaseBuilder(
             context,
             MainDB::class.java
@@ -72,7 +71,7 @@ class IncomeSessionDbTest {
             .map { item -> repo.getGoodsById(item.goodsId) }
         assertEquals(23, items.size)
     }
-    suspend fun appendDummyData(dao: Dao, sessionId: String, supplierId: String){
+    suspend fun appendDummyData(dao: Dao, sessionId: String, supplierId: Int){
         val borkSupplier = Supplier(
             id = supplierId,
             name = "Bork",
@@ -82,8 +81,8 @@ class IncomeSessionDbTest {
             isDeleted = false,
             other = null
         )
-        SupplierFactory.create("Bork")
-        val atomySupplier = SupplierFactory.create("Atomy")
+        SupplierFactory.create("Bork",0)
+        val atomySupplier = SupplierFactory.create("Atomy", 1)
         dao.insertSupplier(borkSupplier)
         dao.insertSupplier(atomySupplier)
 

@@ -14,11 +14,15 @@ import android.widget.Toast
 import androidx.appcompat.app.AlertDialog
 import androidx.core.content.ContextCompat
 import androidx.fragment.app.Fragment
+import androidx.fragment.app.FragmentActivity
 import androidx.fragment.app.activityViewModels
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
+import androidx.work.Data
+import androidx.work.OneTimeWorkRequestBuilder
+import androidx.work.WorkManager
 import com.example.wmsRemote.Adapters.AssemblySessionAdapter
 import com.example.wmsRemote.Adapters.AssemblySessionMainAdapter
 import com.example.wmsRemote.MainActivity
@@ -34,6 +38,7 @@ import com.example.wmswherther.Classes.IncomeItem
 import com.example.wmswherther.Classes.UiState
 import com.example.wmswherther.Classes.UiState.IncomeSessionMenu
 import com.example.wmswherther.data.db.Repositories.AssemblyRepository
+import com.example.wmswherther.data.db.SyncWorker
 import com.example.wmswherther.viewModel.MainViewModel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -88,6 +93,7 @@ class PickerSessionFragment: Fragment() {
                     btnYes.setOnClickListener {
                         val text = et.text.toString()
                         localViewModel.finishSession(assemblyRepo, text, sessionId, viewModel)
+                        pushChanges(requireActivity())
                     }
                     btnCancel.setOnClickListener {
                         dialog.dismiss()
@@ -114,6 +120,7 @@ class PickerSessionFragment: Fragment() {
                             sessionId,
                             viewModel
                         )
+                        pushChanges(requireActivity())
                     }
                     btnCancel.setOnClickListener {
                         dialog.dismiss()
@@ -194,6 +201,7 @@ class PickerSessionFragment: Fragment() {
                         btnYes.setOnClickListener {
                             val text = et.text.toString()
                             localViewModel.finishSession(assemblyRepo, text, sessionId, viewModel)
+                            pushChanges(requireActivity())
                         }
                         btnCancel.setOnClickListener {
                             dialog.dismiss()
@@ -410,4 +418,17 @@ class PickerSessionFragment: Fragment() {
             etCount.setText(newItem.amount.toString())
         }*/
     }
+}
+private fun pushChanges(requireActivity: FragmentActivity) {
+    val data = Data.Builder()
+        .putString("sync_type", "PUSH")
+        .build()
+
+    val request =
+        OneTimeWorkRequestBuilder<SyncWorker>()
+            .setInputData(data)
+            .build()
+
+    WorkManager.getInstance(requireActivity)
+        .enqueue(request)
 }

@@ -22,7 +22,7 @@ class MainViewModel : ViewModel() {
     private val _widhtScanningField = MutableLiveData<Int>(0)
     private val _isActiveSearchWindow = MutableLiveData<Boolean>(false)
     private val _searchLineData = MutableLiveData<String>(null)
-    private val _currentSupplierId = MutableLiveData<String>(null)
+    private val _currentSupplierId = MutableLiveData<Int>(0)
     private val _isSelectedMoveList = MutableLiveData<Boolean>(false)
     private val _isSelectedIncomeList = MutableLiveData<Boolean>(false)
     private val _isSelectedInventoryList = MutableLiveData<Boolean>(false)
@@ -40,7 +40,7 @@ class MainViewModel : ViewModel() {
     val IsCloseTE: LiveData<Boolean> get() = _IsCloseTE
     val IsActiveSearchWindow: LiveData<Boolean> get() = _isActiveSearchWindow
     val SearchLineData: LiveData<String> get() = _searchLineData
-    val CurrentSupplierId: LiveData<String> get() = _currentSupplierId
+    val CurrentSupplierId: LiveData<Int> get() = _currentSupplierId
     val IsSelectedMoveList: LiveData<Boolean> get() = _isSelectedMoveList
     val IsSelectedIncomeList: LiveData<Boolean> get() = _isSelectedIncomeList
     val IsSelectedInventoryList: LiveData<Boolean> get() = _isSelectedInventoryList
@@ -96,7 +96,7 @@ class MainViewModel : ViewModel() {
     fun deselectIncomeList(){
         _isSelectedIncomeList.value = false
     }
-    fun setCurrentSupplierId(str: String){
+    fun setCurrentSupplierId(str: Int?){
         _currentSupplierId.value = str
     }
     fun setSearchData(str: String){

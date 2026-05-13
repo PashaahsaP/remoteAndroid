@@ -6,11 +6,15 @@ import android.view.View
 import android.view.ViewGroup
 import androidx.appcompat.app.AlertDialog
 import androidx.fragment.app.Fragment
+import androidx.fragment.app.FragmentActivity
 import androidx.fragment.app.activityViewModels
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
+import androidx.work.Data
+import androidx.work.OneTimeWorkRequestBuilder
+import androidx.work.WorkManager
 import com.example.wmsRemote.Adapters.MoveSessionAdapter
 import com.example.wmsRemote.data.db.MainDB
 import com.example.wmsRemote.databinding.FragmentMoveSessionBinding
@@ -18,6 +22,7 @@ import com.example.wmsRemote.viewModel.MoveSessionViewModel
 import com.example.wmswherther.Classes.UiState
 import com.example.wmswherther.data.db.Entityes.CellType
 import com.example.wmswherther.data.db.Repositories.MoveeRepository
+import com.example.wmswherther.data.db.SyncWorker
 import com.example.wmswherther.viewModel.MainViewModel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -70,6 +75,7 @@ class MoveSessionFragment: Fragment() {
                 if (isCell(barcode, listTypes)) {
                     if (localViewModel.isMoving.value != null && localViewModel.isMoving.value!!) {
                         localViewModel.moveItems(barcode, moveRepo, viewModel)
+                        pushChanges(requireActivity())
                         // если числа равны то смена ячейки
                         // иначе создается новый goods
                         //TODO перемещение элементов если нажата клавиша
@@ -138,8 +144,22 @@ class MoveSessionFragment: Fragment() {
         return binding.root
     }
 
-}
 
+
+}
+private fun pushChanges(requireActivity: FragmentActivity) {
+    val data = Data.Builder()
+        .putString("sync_type", "PUSH")
+        .build()
+
+    val request =
+        OneTimeWorkRequestBuilder<SyncWorker>()
+            .setInputData(data)
+            .build()
+
+    WorkManager.getInstance(requireActivity)
+        .enqueue(request)
+}
 
 fun isCell(cell: String, list: List<CellType>): Boolean {
     list.forEach { cellType ->

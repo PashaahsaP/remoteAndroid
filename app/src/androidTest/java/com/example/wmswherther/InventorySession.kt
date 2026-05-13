@@ -81,7 +81,7 @@ class InventorySession {
 
     private lateinit var db: MainDB
     private lateinit var repo: InventoryRepository
-    private lateinit var supplierId : String
+    private var supplierId : Int = 123123
     private lateinit var inventoryId : String
     lateinit var scenario: ActivityScenario<MainActivity>
     @Before
@@ -96,7 +96,6 @@ class InventorySession {
 
         // 👉 подготовка данных
         runBlocking {
-            supplierId = "123234"
             inventoryId = "11111"
             appendMoveDummyData(dao = dao , supplierId, inventoryId)
             appendFunctionality(dao)
@@ -404,13 +403,14 @@ class InventorySession {
         onView(withId(R.id.rwInventorySessionList))
             .perform(
                 RecyclerViewActions.actionOnItem<RecyclerView.ViewHolder>(
-                    hasDescendant(withText("Kettle k520")),
+                    hasDescendant(withText("Kettle k510")),
                     click()
                 )
             )
+        Thread.sleep(500)
 
         onView(withId(R.id.etSelectedCount))
-            .perform(clearText(), typeText("23"))
+            .perform(replaceText("13"))
 
 
         onView(withId(R.id.etSelectedCount))
@@ -579,7 +579,7 @@ class InventorySession {
         )
         dao.insertUser(user)
     }
-    suspend fun appendMoveDummyData(dao: Dao, supplierId: String, sessionId: String){
+    suspend fun appendMoveDummyData(dao: Dao, supplierId: Int, sessionId: String){
         val vitekSupplier = Supplier(
             id = supplierId,
             name = "Vitek",

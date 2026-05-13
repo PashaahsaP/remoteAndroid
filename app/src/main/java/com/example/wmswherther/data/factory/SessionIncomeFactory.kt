@@ -6,7 +6,7 @@ import java.util.UUID
 
 object SessionIncomeFactory {
     fun create(
-        supplierId: String,
+        supplierId: Int,
         incomeCellId: String?,
         toCellId: String?
     ): SessionIncome{

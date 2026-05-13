@@ -6,17 +6,15 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.Button
-import android.widget.EditText
-import androidx.activity.addCallback
 import androidx.appcompat.app.AlertDialog
 import androidx.core.content.ContextCompat
 import androidx.fragment.app.Fragment
+import androidx.fragment.app.FragmentActivity
 import androidx.fragment.app.activityViewModels
 import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
-import androidx.work.Constraints
-import androidx.work.NetworkType
+import androidx.work.Data
 import androidx.work.OneTimeWorkRequestBuilder
 import androidx.work.WorkManager
 import com.example.wmsRemote.R
@@ -70,16 +68,6 @@ class IncomeSessionFragment : Fragment() {
             val incomeRepo = ServiceLocator.incomeRepository
                 ?: IncomeRepository(MainDB.getDB(requireActivity()).getDao())
 
-            val constraints = Constraints.Builder()
-                .setRequiredNetworkType(NetworkType.CONNECTED)
-                .build()
-
-            val request = OneTimeWorkRequestBuilder<SyncWorker>()
-                .setConstraints(constraints)
-                .build()
-
-            WorkManager.getInstance(requireActivity())
-                .enqueue(request)
 
 
             viewModel.Barcode.observe(viewLifecycleOwner, { barcode ->
@@ -126,6 +114,7 @@ class IncomeSessionFragment : Fragment() {
 
                     }else{
                         finishSessionAndReturnToPreviousFragment(incomeRepo, sessionId)
+
                     }
 
             })
@@ -160,6 +149,7 @@ class IncomeSessionFragment : Fragment() {
 
             binding.btnFinish.setOnClickListener {
                 finishSessionAndReturnToPreviousFragment(incomeRepo, sessionId)
+
             }
 
             initSession(incomeRepo, sessionId)
@@ -425,6 +415,7 @@ class IncomeSessionFragment : Fragment() {
                     incomeRepo = incomeRepo,
                     sessionId = sessionId.toString()
                 )
+                pushChanges(requireActivity())
             }
             withContext(Dispatchers.Main) {
                 requireActivity().onBackPressedDispatcher.onBackPressed()
@@ -471,5 +462,18 @@ class IncomeSessionFragment : Fragment() {
         }
     }
 
+}
+private fun pushChanges(requireActivity: FragmentActivity) {
+    val data = Data.Builder()
+        .putString("sync_type", "PUSH")
+        .build()
+
+    val request =
+        OneTimeWorkRequestBuilder<SyncWorker>()
+            .setInputData(data)
+            .build()
+
+    WorkManager.getInstance(requireActivity)
+        .enqueue(request)
 }
 //TODO когда выходишь из заявки то вылезает окно те мода

@@ -42,7 +42,7 @@ class InventoryViewModel : ViewModel() {
         viewModelScope.launch {
             withContext(Dispatchers.IO)  {
                 ordersList = inventoryRepo.getInventorySessions().map { item ->
-                    var supplier =  inventoryRepo.getSupplierById(item.supplierId ?: "")
+                    var supplier =  inventoryRepo.getSupplierById(item.supplierId ?: 0)
                     var cellName =  inventoryRepo.getCellById(    item.cellId ?: "").name
                     TaskMenuItem(supplier.id, item.id, supplier.name, StatusType.Created.name, "", cellName)
                 }

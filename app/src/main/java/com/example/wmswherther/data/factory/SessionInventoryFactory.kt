@@ -5,7 +5,7 @@ import com.example.wmswherther.data.db.Entityes.SessionInventory
 import java.util.UUID
 
 object SessionInventoryFactory {
-    fun create(supplierId: String, cellId: String, prevSessionId: String?) : SessionInventory{
+    fun create(supplierId: Int, cellId: String, prevSessionId: String?) : SessionInventory{
         return SessionInventory(
             id = UUID.randomUUID().toString(),
             supplierId = supplierId,

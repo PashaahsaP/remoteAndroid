@@ -8,11 +8,15 @@ import android.view.ViewGroup
 import androidx.appcompat.app.AlertDialog
 import androidx.core.content.ContextCompat
 import androidx.fragment.app.Fragment
+import androidx.fragment.app.FragmentActivity
 import androidx.fragment.app.activityViewModels
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
+import androidx.work.Data
+import androidx.work.OneTimeWorkRequestBuilder
+import androidx.work.WorkManager
 import com.example.wmsRemote.R
 import com.example.wmsRemote.data.db.MainDB
 import com.example.wmsRemote.databinding.FragmentInventorySessionBinding
@@ -22,6 +26,7 @@ import com.example.wmswherther.Classes.UiState
 import com.example.wmswherther.data.db.Entityes.Barcode
 import com.example.wmswherther.data.db.Entityes.Cell
 import com.example.wmswherther.data.db.Repositories.InventoryRepository
+import com.example.wmswherther.data.db.SyncWorker
 import com.example.wmswherther.data.factory.CellFactory
 import com.example.wmswherther.viewModel.InventorySessionViewModel
 import com.example.wmswherther.viewModel.MainViewModel
@@ -65,6 +70,7 @@ class InventorySessionFragment: Fragment() {
                         inventoryRepo,
                         viewModel.uiState.value as UiState.InventorySessionMenu,
                         viewModel.CurrentSupplierId.value)
+                    pushChanges(requireActivity())
                 }
             }
         }
@@ -148,6 +154,7 @@ class InventorySessionFragment: Fragment() {
                         viewModel.uiState.value as UiState.InventorySessionMenu,
                         viewModel.CurrentSupplierId.value
                     )
+                        pushChanges(requireActivity())
                 }
                 }
                 viewModel.switchActivityOfInventorySession()
@@ -485,4 +492,17 @@ class InventorySessionFragment: Fragment() {
                     }
         }
     }
+}
+private fun pushChanges(requireActivity: FragmentActivity) {
+    val data = Data.Builder()
+        .putString("sync_type", "PUSH")
+        .build()
+
+    val request =
+        OneTimeWorkRequestBuilder<SyncWorker>()
+            .setInputData(data)
+            .build()
+
+    WorkManager.getInstance(requireActivity)
+        .enqueue(request)
 }

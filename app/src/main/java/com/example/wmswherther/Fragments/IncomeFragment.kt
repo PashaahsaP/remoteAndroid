@@ -6,17 +6,22 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.fragment.app.Fragment
+import androidx.fragment.app.FragmentActivity
 import androidx.fragment.app.activityViewModels
 import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
+import androidx.work.Data
+import androidx.work.OneTimeWorkRequestBuilder
+import androidx.work.WorkManager
 import com.example.wmswherther.data.db.Entityes.Cell
 import com.example.wmsRemote.data.db.MainDB
 import com.example.wmsRemote.data.enums.OperationType
 import com.example.wmsRemote.data.enums.StatusType
 import com.example.wmsRemote.databinding.FragmentIncomeBinding
+import com.example.wmsRemote.models.client
 import com.example.wmswherther.Adapters.IncomeMenuAdapter
 import com.example.wmswherther.Classes.TaskMenuItem
 import com.example.wmswherther.data.db.Entityes.Barcode
@@ -32,7 +37,11 @@ import com.example.wmswherther.data.db.Entityes.SessionInventory
 import com.example.wmswherther.data.db.Entityes.SessionPicker
 import com.example.wmswherther.data.db.Entityes.Supplier
 import com.example.wmswherther.data.db.Entityes.User
+import com.example.wmswherther.data.db.PullItem
 import com.example.wmswherther.data.db.Repositories.IncomeRepository
+import com.example.wmswherther.data.db.Request
+import com.example.wmswherther.data.db.SyncWorker
+import com.example.wmswherther.data.enums.Entities
 import com.example.wmswherther.data.factory.BarcodeFactory
 import com.example.wmswherther.data.factory.CatalogFactory
 import com.example.wmswherther.data.factory.CellFactory
@@ -53,6 +62,7 @@ import com.google.gson.Gson
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import okhttp3.OkHttpClient
 import java.util.UUID
 import kotlin.getValue
 
@@ -74,9 +84,9 @@ class IncomeFragment : Fragment() {
 
                 //appendDummyData(MainDB.getDB(requireActivity()))
                 //appendMoveDummyData(MainDB.getDB(requireActivity()))
-                appendPickerDummyData(MainDB.getDB(requireActivity()))
-                appendUser(MainDB.getDB(requireActivity()))
-               appendFunctionality(MainDB.getDB(requireActivity()))
+               // appendPickerDummyData(MainDB.getDB(requireActivity()))
+                //appendUser(MainDB.getDB(requireActivity()))
+               //appendFunctionality(MainDB.getDB(requireActivity()))
             }
         }
         //viewModel.setCurrFragment(this)
@@ -95,7 +105,10 @@ class IncomeFragment : Fragment() {
         lifecycleScope.launch {
             var data : List<TaskMenuItem> = listOf()
             withContext(Dispatchers.IO) {
+                var request: Request = Request()
                 data = localViewModel.updateSupplierList(incomeRepo)
+                //pullChanges1(requireActivity(), listOf(PullItem(Entities.Supplier,234),PullItem(Entities.Catalog, 235235)))
+                pullChanges(requireActivity())
             }
             withContext(Dispatchers.Main) {
                 localViewModel.setTaskCollection(data)
@@ -112,8 +125,8 @@ class IncomeFragment : Fragment() {
 
 suspend fun appendDummyData(db: MainDB){
     val dao = db.getDao()
-    val borkSupplier = SupplierFactory.create("Bork")
-    val atomySupplier = SupplierFactory.create("Atomy")
+    val borkSupplier = SupplierFactory.create("Bork", 0)
+    val atomySupplier = SupplierFactory.create("Atomy", 1)
     dao.insertSupplier(borkSupplier)
     dao.insertSupplier(atomySupplier)
 
@@ -306,9 +319,9 @@ suspend fun appendDummyData(db: MainDB){
 
 
 }
-suspend fun appendMoveDummyData(db: MainDB){
+suspend fun appendMoveDummyDataa(db: MainDB){
     val dao = db.getDao()
-    val vitekSupplier = SupplierFactory.create("Vitek")
+    val vitekSupplier = SupplierFactory.create("Vitek",2)
     dao.insertSupplier(vitekSupplier)
 
     val incomeType = CellTypeFactory.create(
@@ -453,6 +466,108 @@ suspend fun appendMoveDummyData(db: MainDB){
 
 
 }
+suspend fun appendMoveDummyData(db: MainDB){
+    val dao = db.getDao()
+    val vitekSupplier = SupplierFactory.create("Vitek",6)
+    dao.insertSupplier(vitekSupplier)
+
+    val incomeType = CellTypeFactory.create(
+        type = "Income",
+        mask = "IN##"
+    )
+    dao.insertCellType(incomeType)
+
+    val teType = CellTypeFactory.create(
+        type = "BoxTE",
+        mask = "N########"
+    )
+    dao.insertCellType(teType)
+    val pickerType = CellTypeFactory.create(
+        type = "Picker",
+        mask = "*###"
+    )
+    dao.insertCellType(pickerType)
+
+    var A111 = CellFactory.create(
+        typeCellId = pickerType.id,
+        parentCellId = null,
+        name = "A111"
+    )
+
+    dao.insertCell(A111)
+    var N00000001 = CellFactory.create(
+        typeCellId = teType.id,
+        parentCellId = A111.id,
+        name = "N00000001"
+    )
+
+
+    dao.insertCell(N00000001)
+
+    var inventoryTask = SessionInventoryFactory.create(
+        supplierId = vitekSupplier.id,
+        cellId = A111.id,
+        prevSessionId = null
+    )
+
+    dao.insertInventorySession(inventoryTask)
+
+    for (enum in 10 .. 29){
+        var catalog = CatalogFactory.create(
+            name = "Kettle k5${enum}",
+            sku = "3241223",
+            supplierId = vitekSupplier.id
+        )
+
+        var barcode = BarcodeFactory.create(
+            name = "46654537764${enum}",
+            catalogId = catalog.id,
+            supplierId = vitekSupplier.id
+        )
+
+        dao.insertCatalog(catalog)
+        dao.insertBarcode(barcode)
+
+
+        var goods = GoodsFactory.create(
+            amount = 3 + enum,
+            cellId = A111.id,
+            catalogId = catalog.id,
+            isAvailable = true
+        )
+
+        dao.insertGoods(goods)
+    }
+
+    for(enum in 50..52){
+        var catalog = CatalogFactory.create(
+            name = "Kettle k5${enum}",
+            sku = "3241223",
+            supplierId = vitekSupplier.id
+        )
+
+        var barcode = BarcodeFactory.create(
+            name = "46654537764${enum}",
+            catalogId = catalog.id,
+            supplierId = vitekSupplier.id
+        )
+
+        dao.insertCatalog(catalog)
+        dao.insertBarcode(barcode)
+
+
+        var goods = GoodsFactory.create(
+            amount = 3 + enum,
+            cellId = N00000001.id,
+            catalogId = catalog.id,
+            isAvailable = true
+        )
+
+        dao.insertGoods(goods)
+    }
+
+
+}
 suspend fun appendPickerDummyData(db: MainDB){
     val dao = db.getDao()
     var type = CellTypeFactory.create(
@@ -461,7 +576,7 @@ suspend fun appendPickerDummyData(db: MainDB){
     )
     dao.insertCellType(type)
 
-    val vitekSupplier = SupplierFactory.create("Vitek")
+    val vitekSupplier = SupplierFactory.create("Vitek",4)
     dao.insertSupplier(vitekSupplier)
 
     val incomeType = CellTypeFactory.create(
@@ -812,4 +927,31 @@ private fun appendUser(db: MainDB) {
         credentialId = credentialId
     )
     db.getDao().insertUser(user)
+}
+/*private fun pullChanges1(requireActivity: FragmentActivity, data: List<PullItem>) {
+    val data = Data.Builder()
+        .putString("sync_type", "PULL")
+        .putString("pullData", Gson().toJson(data))
+        .build()
+
+    val request =
+        OneTimeWorkRequestBuilder<SyncWorker>()
+            .setInputData(data)
+            .build()
+
+    WorkManager.getInstance(requireActivity)
+        .enqueue(request)
+}*/
+private fun pullChanges(requireActivity: FragmentActivity) {
+    val data = Data.Builder()
+        .putString("sync_type", "FULL")
+        .build()
+
+    val request =
+        OneTimeWorkRequestBuilder<SyncWorker>()
+            .setInputData(data)
+            .build()
+
+    WorkManager.getInstance(requireActivity)
+        .enqueue(request)
 }

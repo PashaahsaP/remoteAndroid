@@ -25,7 +25,7 @@ import androidx.room.PrimaryKey
 )
 data class SessionInventory(
     @PrimaryKey(autoGenerate = false) val id: String,
-    val supplierId: String?,
+    val supplierId: Int?,
     val cellId: String?,
     val prevSessionId: String?,
     val status: Int,

@@ -86,7 +86,7 @@ class AssemblyTest {
     private lateinit var db: MainDB
     private lateinit var repo: AssemblyRepository
     private lateinit var sessionId : String
-    private lateinit var supplierId : String
+     var supplierId : Int = 1111
     lateinit var scenario: ActivityScenario<MainActivity>
     @Before
     fun setup() {
@@ -101,7 +101,6 @@ class AssemblyTest {
         // 👉 подготовка данных
         runBlocking {
             sessionId = "123234"
-            supplierId = "11111"
             appendPickerDummyData(dao, sessionId, supplierId)
             appendFunctionality(dao)
             appendUser(dao)
@@ -361,7 +360,7 @@ class AssemblyTest {
             }
         }
     }
-    suspend fun appendPickerDummyData(dao: Dao, sessionId: String, supplierId: String){
+    suspend fun appendPickerDummyData(dao: Dao, sessionId: String, supplierId: Int){
         var type = CellTypeFactory.create(
             type = "Outcome",
             mask = "OUT##"
@@ -668,7 +667,7 @@ class AssemblyTest {
 
 
     }
-    suspend fun appendDummyData(dao: Dao, sessionId: String, supplierId: String){
+    suspend fun appendDummyData(dao: Dao, sessionId: String, supplierId: Int){
         val borkSupplier = Supplier(
             id = supplierId,
             name = "Bork",
@@ -678,8 +677,8 @@ class AssemblyTest {
             isDeleted = false,
             other = null
         )
-            SupplierFactory.create("Bork")
-        val atomySupplier = SupplierFactory.create("Atomy")
+            SupplierFactory.create("Bork", 1)
+        val atomySupplier = SupplierFactory.create("Atomy",0)
         dao.insertSupplier(borkSupplier)
         dao.insertSupplier(atomySupplier)
 

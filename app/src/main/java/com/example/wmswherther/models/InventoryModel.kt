@@ -13,7 +13,6 @@ import kotlinx.coroutines.CoroutineScope
 // <editor-fold desc="main methods">
 
 var client = Request()
-var ip = "192.168.6.208"
 suspend fun processInputBarcode(
     input: String,
     db: MainDB,
