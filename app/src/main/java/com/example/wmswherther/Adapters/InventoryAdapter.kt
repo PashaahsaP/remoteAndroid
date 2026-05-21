@@ -35,6 +35,10 @@ class InventoryAdapter (
         val item = data[position]
         holder.btn.text = item.name
         holder.btn.setOnClickListener {
+            // TODO когда сделаю контроль состояния пользователя надо обновить статус сессии
+            //change status
+            // if return null, refresh a page
+            //if ok replace page on a sesstion page
             var newFragment = InventorySessionFragment()//
 
             fragment.parentFragmentManager.commit {

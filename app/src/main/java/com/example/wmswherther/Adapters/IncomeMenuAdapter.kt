@@ -32,6 +32,10 @@ class IncomeMenuAdapter(var data: List<TaskMenuItem>,var fragment: Fragment, var
         position: Int
     ) {
         holder.container.setOnClickListener {
+            // TODO когда сделаю контроль состояния пользователя надо обновить статус сессии
+            //change status
+            // if return null, refresh a page
+            //if ok replace page on a sesstion page
             var newFragment = IncomeSessionFragment()
             val bundle = Bundle().apply {
                 putString("id", data[position].number.toString())//number contain sessionId

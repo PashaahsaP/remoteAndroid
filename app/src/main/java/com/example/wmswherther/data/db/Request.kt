@@ -31,6 +31,69 @@ import java.time.LocalDateTime
 
 class Request {
 
+    suspend fun updateIncomeSession(ip:String, sessionId: String, status: Int) : String {
+        val client = OkHttpClient()
+        val json = JSONObject()
+            .put("id", sessionId)
+            .put("status", status)
+            .toString()
+        val requestBody = json.toRequestBody("application/json".toMediaTypeOrNull())
+
+        val request = Request.Builder()
+            .url("http://$ip:3000/incomeSession/updateStatus")
+            .put(requestBody)
+            .build()
+
+        return withContext(Dispatchers.IO) {
+            client.newCall(request).execute().use { response ->
+                if (!response.isSuccessful) throw IOException("HTTP ошибка ${response.code}")
+                val body = response.body?.string().orEmpty()
+                body
+            }
+        }
+    }
+    suspend fun updateInventorySession(ip:String, sessionId: String, status: Int) : String {
+        val client = OkHttpClient()
+        val json = JSONObject()
+            .put("id", sessionId)
+            .put("status", status)
+            .toString()
+        val requestBody = json.toRequestBody("application/json".toMediaTypeOrNull())
+
+        val request = Request.Builder()
+            .url("http://$ip:3000/inventorySession/updateStatus")
+            .put(requestBody)
+            .build()
+
+        return withContext(Dispatchers.IO) {
+            client.newCall(request).execute().use { response ->
+                if (!response.isSuccessful) throw IOException("HTTP ошибка ${response.code}")
+                val body = response.body?.string().orEmpty()
+                body
+            }
+        }
+    }
+    suspend fun updateAssemblySession(ip:String, sessionId: String, status: Int) : String {
+        val client = OkHttpClient()
+        val json = JSONObject()
+            .put("id", sessionId)
+            .put("status", status)
+            .toString()
+        val requestBody = json.toRequestBody("application/json".toMediaTypeOrNull())
+
+        val request = Request.Builder()
+            .url("http://$ip:3000/assemblySession/updateStatus")
+            .put(requestBody)
+            .build()
+
+        return withContext(Dispatchers.IO) {
+            client.newCall(request).execute().use { response ->
+                if (!response.isSuccessful) throw IOException("HTTP ошибка ${response.code}")
+                val body = response.body?.string().orEmpty()
+                body
+            }
+        }
+    }
     suspend fun updateGoods(ip:String, goods: Goods, client: OkHttpClient) : String {
         val json = JSONObject()
             .put("id", goods.id)
