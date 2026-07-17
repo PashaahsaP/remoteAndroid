@@ -36,9 +36,11 @@ class AssemblyMenuAdapter(
     ) {
         var item = data[position]
         holder.container.setOnClickListener {
+            // TODO когда сделаю контроль состояния пользователя надо обновить статус сессии
+            //change status
+            // if return null, refresh a page
+            //if ok replace page on a sesstion page
             var newFragment = PickerSessionFragment()
-
-
             fragment.parentFragmentManager.commit {
                 setCustomAnimations(
                     R.anim.slide_in_right, // enter
