@@ -253,20 +253,17 @@ val MIGRATION_1_2 = object : Migration(1, 2) {
                 supplierId TEXT,
                 name TEXT,
                 baseAmount INTEGER,
-                catalogId TEXT,
                 weight REAL,
                 height REAL,
                 width REAL,
                 volume REAL,
                 other TEXT,
                 FOREIGN KEY(supplierId) REFERENCES Supplier(id) ON DELETE CASCADE,
-                FOREIGN KEY(catalogId) REFERENCES Catalog(id) ON DELETE CASCADE
             )
         """)
 
         // Создаем индексы для внешних ключей
         database.execSQL("CREATE INDEX IF NOT EXISTS index_packages_supplierId ON packages(supplierId)")
-        database.execSQL("CREATE INDEX IF NOT EXISTS index_packages_catalogId ON packages(catalogId)")
         // </editor-fold>
         // <editor-fold desc="PickerItems">
         database.execSQL("""

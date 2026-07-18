@@ -22,8 +22,8 @@ class IncomeRepository (private val dao: Dao) {
     }
     suspend fun getAllActiveIncomeSession() : List<TaskMenuItem> {
         var suppliers = dao.getAllSuppliers()
-
-        var result = dao.getAllIncomeSession()
+        var sessions = dao.getAllIncomeSession()
+        var result = sessions
             .filter { item -> item.status == StatusType.Created.ordinal }
             .map { item ->
                 var supplier = suppliers.firstOrNull { inner -> inner.id == item.supplierId }

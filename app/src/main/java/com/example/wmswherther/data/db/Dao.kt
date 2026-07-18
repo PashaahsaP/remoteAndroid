@@ -3,6 +3,7 @@ package com.example.wmsRemote.data.db
 import androidx.room.Dao
 import androidx.room.Delete
 import androidx.room.Insert
+import androidx.room.OnConflictStrategy
 import androidx.room.Query
 import androidx.room.Transaction
 import androidx.room.Update
@@ -69,7 +70,7 @@ interface Dao {
     suspend fun getCellTypes(): List<CellType>
     // </editor-fold>
     // <editor-fold desc="IncomeSession">
-    @Insert
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
     fun insertIncomeSession(incomeSession: SessionIncome)
     @Insert
     suspend fun insertIncomeSessionAsync(incomeSession: SessionIncome, change: Change) : Pair<Unit, Unit>{
@@ -107,7 +108,7 @@ interface Dao {
 
     // </editor-fold>
     // <editor-fold desc="Package entities">
-    @Insert
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
     fun insertPackageItem(packageItem: PackageEntity)
     @Transaction
     suspend fun insertIncomeItemSync(packageItem: PackageEntity, change: Change){

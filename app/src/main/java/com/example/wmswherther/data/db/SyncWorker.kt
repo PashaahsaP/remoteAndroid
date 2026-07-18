@@ -43,7 +43,7 @@ import java.io.IOException
 
 data class PullItem(
     val entity: Entities,
-    val time: Long
+    var time: Long
 )
 class SyncWorker(
     val context: Context,
@@ -102,7 +102,7 @@ class SyncWorker(
         for (operation in operations) {
 
             repository.syncPush(
-                ip = "192.168.0.11",
+                ip = "172.31.153.64",
                 operation = operation
             )
 
@@ -111,13 +111,13 @@ class SyncWorker(
     }
 
     suspend fun pulling(dao: Dao, repository: SyncRepository, data: List<PullItem>) {
-        var result = repository.syncPull("192.168.0.11", data)
+        var result = repository.syncPull("172.31.153.64", data)
         prepareAndAppendData(dao, result)
     }
 
     suspend fun totalPulling(dao: Dao, repository: SyncRepository) {
         var data = generateDataForRequest(dao)
-        var result = repository.syncPull("192.168.0.11", data)
+        var result = repository.syncPull("172.31.153.64", data)
         prepareAndAppendData(dao, result)
 
     }
@@ -325,7 +325,8 @@ class SyncWorker(
                     id = obj.getString("id"),
                     supplierId = obj.optInt("supplierId"),
                     incomeCellId = obj.optString("incomeCellId"),
-                    toCellId = obj.optString("toCellId"),
+                    //toCellId = obj.optString("toCellId"),
+                    toCellId = null,
                     status = obj.getInt("status"),
                     createdAt = obj.getLong("createdAt"),
                     startedAt = obj.optLong("startedAt"),
@@ -396,7 +397,7 @@ class SyncWorker(
                     supplierId = obj.optInt("supplierId"),
                     name = obj.optString("name"),
                     baseAmount = obj.optInt("baseAmount"),
-                    catalogId = obj.optString("catalogId"),
+                    //catalogId = obj.optString("catalogId"),
                     weight = obj.optDouble("weight"),
                     height = obj.optDouble("height"),
                     width = obj.optDouble("width"),
@@ -607,7 +608,12 @@ class SyncWorker(
         data += PullItem(Entities.Supplier, dao.getAllSuppliers().maxOfOrNull { it.updatedAt }?: 0)
         data += PullItem(Entities.TrueSign, dao.getAllTrueSign().maxOfOrNull { it.updatedAt }?: 0)
         data += PullItem(Entities.User, dao.getAllUser().maxOfOrNull { it.updatedAt }?: 0)
-        Log.d("!!!!!!", Gson().toJson(data))
+
+        data.forEach { inner ->
+            if(inner.time > 0){
+                 inner.time += 1L
+            }
+        }
         return data
     }
 }

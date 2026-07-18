@@ -105,7 +105,6 @@ class IncomeFragment : Fragment() {
         lifecycleScope.launch {
             var data : List<TaskMenuItem> = listOf()
             withContext(Dispatchers.IO) {
-                var request: Request = Request()
                 data = localViewModel.updateSupplierList(incomeRepo)
             }
             withContext(Dispatchers.Main) {
@@ -115,8 +114,17 @@ class IncomeFragment : Fragment() {
         with(binding){
             pullChanges(requireActivity())
             swipe.setOnRefreshListener {
-                pullChanges(requireActivity())
-                swipe.isRefreshing = false
+                lifecycleScope.launch {
+                    pullChanges(requireActivity())
+                    swipe.isRefreshing = false
+                    var data : List<TaskMenuItem> = listOf()
+                    withContext(Dispatchers.IO) {
+                        data = localViewModel.updateSupplierList(incomeRepo)
+                    }
+                    withContext(Dispatchers.Main) {
+                        localViewModel.setTaskCollection(data)
+                    }
+                }
             }
         }
 
@@ -177,7 +185,7 @@ suspend fun appendDummyData(db: MainDB){
         toCellId = IN01.id
     ) 
  
-    var sessionChange = ChangeFactory.create(
+    var  sessionChange = ChangeFactory.create(
         payload = Gson().toJson(session),
         entityId = session.id,
         supplierId = borkSupplier.id,

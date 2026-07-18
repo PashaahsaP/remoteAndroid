@@ -27,8 +27,10 @@ import androidx.room.PrimaryKey
         )
 
 
-    ]
+    ],
+
 )
+
 data class SessionIncome(
     @PrimaryKey(autoGenerate = false) val id: String,
     val supplierId: Int?,
