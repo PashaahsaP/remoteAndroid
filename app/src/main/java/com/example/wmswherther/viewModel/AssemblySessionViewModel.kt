@@ -131,7 +131,8 @@ class AssemblySessionViewModel : ViewModel() {
                 entityId = movement.id,
                 supplierId = session.supplierId,
                 operationType = OperationType.InsertMovement,
-                payload = Gson().toJson(movement)
+                payload = Gson().toJson(movement),
+                payloadBefore = Gson().toJson(movement),
             )
             assemblyRepo.insertMovementSync(movement, change)
 
@@ -139,7 +140,8 @@ class AssemblySessionViewModel : ViewModel() {
                 entityId = goods.id,
                 supplierId = session.supplierId,
                 operationType = OperationType.UpdateGoods,
-                payload = Gson().toJson(goods.copy(cellId = outCell.id, amount = resultItem.amount))
+                payload = Gson().toJson(goods.copy(cellId = outCell.id, amount = resultItem.amount)),
+                payloadBefore = Gson().toJson(goods),
             )
             assemblyRepo.updateGoodsAsync(goods.copy(cellId = outCell.id, amount = resultItem.amount), goodsChange)
 
@@ -156,7 +158,8 @@ class AssemblySessionViewModel : ViewModel() {
                 entityId = movement.id,
                 supplierId = session.supplierId,
                 operationType = OperationType.InsertMovement,
-                payload = Gson().toJson(lessMovement)
+                payload = Gson().toJson(lessMovement),
+                payloadBefore = Gson().toJson(lessMovement)
             )
             assemblyRepo.insertMovementSync(lessMovement, lessChange)
 
@@ -175,7 +178,8 @@ class AssemblySessionViewModel : ViewModel() {
                 entityId = movement.id,
                 supplierId = session.supplierId,
                 operationType = OperationType.InsertMovement,
-                payload = Gson().toJson(movement)
+                payload = Gson().toJson(movement),
+                payloadBefore = Gson().toJson(movement)
             )
             assemblyRepo.insertMovementSync(movement, change)
 
@@ -183,7 +187,8 @@ class AssemblySessionViewModel : ViewModel() {
                 entityId = goods.id,
                 supplierId = session.supplierId,
                 operationType = OperationType.UpdateGoods,
-                payload = Gson().toJson(goods.copy(cellId = outCell.id, amount = resultItem.amount))
+                payload = Gson().toJson(goods.copy(cellId = outCell.id, amount = resultItem.amount)),
+                payloadBefore = Gson().toJson(goods)
             )
             assemblyRepo.updateGoodsAsync(goods.copy(cellId = outCell.id, amount = resultItem.amount), goodsChange)
 
@@ -200,7 +205,8 @@ class AssemblySessionViewModel : ViewModel() {
                 entityId = movement.id,
                 supplierId = session.supplierId,
                 operationType = OperationType.InsertMovement,
-                payload = Gson().toJson(moreMovement)
+                payload = Gson().toJson(moreMovement),
+                payloadBefore = Gson().toJson(moreMovement)
             )
             assemblyRepo.insertMovementSync(moreMovement, moreChange)
         }
@@ -217,7 +223,8 @@ class AssemblySessionViewModel : ViewModel() {
             entityId = movement.id,
             supplierId = session.supplierId,
             operationType = OperationType.InsertMovement,
-            payload = Gson().toJson(movement)
+            payload = Gson().toJson(movement),
+            payloadBefore = Gson().toJson(movement)
         )
 
         assemblyRepo.insertMovementSync(movement, change)
@@ -245,7 +252,8 @@ class AssemblySessionViewModel : ViewModel() {
             entityId = movement.id,
             supplierId = session.supplierId,
             operationType = OperationType.InsertMovement,
-            payload = Gson().toJson(movement)
+            payload = Gson().toJson(movement),
+            payloadBefore = Gson().toJson(movement),
         )
 
         assemblyRepo.insertMovementSync(movement, change)
@@ -272,7 +280,8 @@ class AssemblySessionViewModel : ViewModel() {
                 entityId = movement.id,
                 supplierId = session.supplierId,
                 operationType = OperationType.InsertMovement,
-                payload = Gson().toJson(movement)
+                payload = Gson().toJson(movement),
+                payloadBefore = Gson().toJson(movement)
             )
 
             assemblyRepo.insertMovementSync(movement, change)
@@ -282,7 +291,8 @@ class AssemblySessionViewModel : ViewModel() {
                 entityId = goods.id,
                 supplierId = session.supplierId,
                 operationType = OperationType.UpdateGoods,
-                payload = Gson().toJson(goods.copy(cellId = outCell.id))
+                payload = Gson().toJson(goods.copy(cellId = outCell.id)),
+                payloadBefore = Gson().toJson(goods)
             )
             assemblyRepo.updateGoodsAsync(goods.copy(cellId = outCell.id), goodsChange)
 
@@ -294,7 +304,8 @@ class AssemblySessionViewModel : ViewModel() {
             entityId = session.id,
             supplierId = session.supplierId,
             operationType = OperationType.UpdatePickerSession,
-            payload = Gson().toJson(session)
+            payload = Gson().toJson(session.copy(status = status.ordinal)),
+            payloadBefore = Gson().toJson(session),
         )
         assemblyRepo.updatePickerSessionSync(
             session.copy(status = status.ordinal),
@@ -347,7 +358,8 @@ class AssemblySessionViewModel : ViewModel() {
                 entityId = cell.id,
                 supplierId = session.supplierId,
                 operationType = OperationType.InsertMovement,
-                payload = Gson().toJson(cell)
+                payload = Gson().toJson(cell),
+                payloadBefore = Gson().toJson(cell),
             )
             outCell = assemblyRepo.insertCellSync(cell, change)
         }

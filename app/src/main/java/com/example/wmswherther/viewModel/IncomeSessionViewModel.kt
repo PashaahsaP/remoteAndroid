@@ -225,15 +225,18 @@ class IncomeSessionViewModel : ViewModel() {
         session: SessionIncome,
         incomeRepo: IncomeRepository
     ) {
+        var newSession = session.copy(status = StatusType.Finished.ordinal, finishedAt = System.currentTimeMillis())
         var sessionChange = ChangeFactory.create(
             entityId = session.id,
             supplierId = session.supplierId,
             operationType = OperationType.UpdateIncomeSession,
-            payload = Gson().toJson(session)
+            payload = Gson().toJson(newSession),
+            payloadBefore = Gson().toJson(session)
+
         )
 
         incomeRepo.updateIncomeSessionAsync(
-            session.copy(status = StatusType.Finished.ordinal, finishedAt = System.currentTimeMillis()),
+            newSession,
             change = sessionChange
         )
     }
@@ -261,7 +264,8 @@ class IncomeSessionViewModel : ViewModel() {
             entityId = diffMove.id,
             supplierId = session.supplierId,
             operationType = OperationType.IncomeMovement,
-            payload = Gson().toJson(diffMove)
+            payload = Gson().toJson(diffMove),
+            payloadBefore =  Gson().toJson(diffMove),
         )
 
         incomeRepo.insertMovementAsync(diffMove, moreChange)
@@ -271,7 +275,8 @@ class IncomeSessionViewModel : ViewModel() {
             entityId = goodsId.id,
             supplierId = session.supplierId,
             operationType = OperationType.UpdateGoods,
-            payload = Gson().toJson(goods)
+            payload = Gson().toJson(goods.copy(amount = goodsId.haveCount, isAvailable = true)),
+            payloadBefore = Gson().toJson(goods)
         )
         incomeRepo.updateGoodsAsync(
             goods.copy(amount = goodsId.haveCount, isAvailable = true),
@@ -285,7 +290,8 @@ class IncomeSessionViewModel : ViewModel() {
                 entityId = goods.id,
                 supplierId = session.supplierId,
                 operationType = OperationType.DeleteGoods,
-                payload = Gson().toJson(goods)
+                payload = Gson().toJson(goods),
+                payloadBefore = Gson().toJson(goods)
             )
             incomeRepo.deleteGoodsAsync(goods = goods, change = removeChange)
         } else {
@@ -303,7 +309,8 @@ class IncomeSessionViewModel : ViewModel() {
                 entityId = innerMovement.id,
                 supplierId = session.supplierId,
                 operationType = OperationType.IncomeMovement,
-                payload = Gson().toJson(innerMovement)
+                payload = Gson().toJson(innerMovement),
+                payloadBefore =  Gson().toJson(innerMovement),
             )
             incomeRepo.insertMovementAsync(innerMovement, movementChange)
         }
@@ -333,7 +340,8 @@ class IncomeSessionViewModel : ViewModel() {
             entityId = diffMove.id,
             supplierId = session.supplierId,
             operationType = OperationType.IncomeMovement,
-            payload = Gson().toJson(diffMove)
+            payload = Gson().toJson(diffMove),
+            payloadBefore = Gson().toJson(diffMove),
         )
         incomeRepo.insertMovementAsync(diffMove, moreChange)
 
@@ -343,7 +351,8 @@ class IncomeSessionViewModel : ViewModel() {
             entityId = goodsItem.id,
             supplierId = session.supplierId,
             operationType = OperationType.UpdateGoods,
-            payload = Gson().toJson(goodsItem)
+            payload = Gson().toJson(goods.copy(amount = goodsItem.haveCount, isAvailable = true)),
+            payloadBefore =  Gson().toJson(goodsItem)
         )
         incomeRepo.updateGoodsAsync(
             goods.copy(amount = goodsItem.haveCount, isAvailable = true),
@@ -366,7 +375,9 @@ class IncomeSessionViewModel : ViewModel() {
             entityId = innerMovement.id,
             supplierId = session.supplierId,
             operationType = OperationType.IncomeMovement,
-            payload = Gson().toJson(innerMovement)
+            payload = Gson().toJson(innerMovement),
+            payloadBefore = Gson().toJson(innerMovement)
+
         )
         incomeRepo.insertMovementAsync(innerMovement, movementChange)
     }
@@ -381,7 +392,8 @@ class IncomeSessionViewModel : ViewModel() {
         var goodsChange = ChangeFactory.create(
             entityId =  innerGoods.id,
             supplierId =  session.supplierId,
-            payload = Gson().toJson(innerGoods),
+            payload = Gson().toJson(innerGoods.copy(isAvailable = true, amount = innerGoods.amount)),
+            payloadBefore = Gson().toJson(innerGoods),
             operationType =  OperationType.UpdateGoods)
         incomeRepo.updateGoodsAsync(innerGoods.copy(isAvailable = true, amount = innerGoods.amount), goodsChange)
 
@@ -400,7 +412,8 @@ class IncomeSessionViewModel : ViewModel() {
             entityId = innerMovement.id,
             supplierId = session.supplierId,
             operationType = OperationType.IncomeMovement,
-            payload =  Gson().toJson(innerMovement)
+            payload =  Gson().toJson(innerMovement),
+            payloadBefore = Gson().toJson(innerMovement)
         )
 
         incomeRepo.insertMovementAsync(innerMovement, movementChange)

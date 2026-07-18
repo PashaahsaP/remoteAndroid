@@ -257,13 +257,15 @@ class MoveSessionViewModel : ViewModel() {
         cellTo: Cell
     ) {
         if (item.haveCount == 1) { // ячейка выбрана поэтому 1, больше 1 быть не может
+            var cell = moveRepo.getCellById(item.catalogId)
             var changes = ChangeFactory.create(
                 entityId = item.catalogId,
                 supplierId = (viewModel.uiState.value as UiState.MoveSessionMenu).supplierId,
                 operationType = OperationType.UpdateCell,
-                payload = Gson().toJson(item)
+                payload = Gson().toJson(cell.copy(parentCellId = cellTo.id)),
+                payloadBefore = Gson().toJson(cell),
             )
-            var cell = moveRepo.getCellById(item.catalogId)
+
             moveRepo.updateCellAsync(cell.copy(parentCellId = cellTo.id), changes)
         }
     }
@@ -285,7 +287,9 @@ class MoveSessionViewModel : ViewModel() {
                 entityId = newCell.id,
                 supplierId = (viewModel.uiState.value as UiState.MoveSessionMenu).supplierId,
                 operationType = OperationType.InsertCell,
-                payload = Gson().toJson(newCell)
+                payload = Gson().toJson(newCell),
+                payloadBefore = Gson().toJson(newCell)
+
             )
             moveRepo.insertCellSync(newCell, changes)
             cellTo = newCell
@@ -307,7 +311,8 @@ class MoveSessionViewModel : ViewModel() {
             entityId = goods.id,
             supplierId = (viewModel.uiState.value as UiState.MoveSessionMenu).supplierId,
             operationType = OperationType.InsertGoods,
-            payload = Gson().toJson(goods)
+            payload = Gson().toJson(goods),
+            payloadBefore = Gson().toJson(goods)
         )
         moveRepo.insertGoodsAsync(goods,changes)
     }
@@ -322,18 +327,21 @@ class MoveSessionViewModel : ViewModel() {
                 entityId = item.goodsId,
                 supplierId = (viewModel.uiState.value as UiState.MoveSessionMenu).supplierId,
                 operationType = OperationType.DeleteGoods,
-                payload = Gson().toJson(item)
+                payload = Gson().toJson(item),
+                payloadBefore = Gson().toJson(item),
             )
             moveRepo.deleteGoodsAsync(moveRepo.getGoodsById(item.goodsId), deleteChanges)
         } else {
+            var updatedGoods = moveRepo.getGoodsById(item.goodsId)
+
             var updateChange =ChangeFactory.create(
                 entityId = item.goodsId,
                 supplierId = (viewModel.uiState.value as UiState.MoveSessionMenu).supplierId,
                 operationType = OperationType.UpdateGoods,
-                payload = Gson().toJson(item)
+                payload = Gson().toJson(updatedGoods .copy(amount = item.allCount - item.haveCount)),
+                payloadBefore = Gson().toJson(updatedGoods),
             )
-            var updatedGoods = moveRepo.getGoodsById(item.goodsId)
-                .copy(amount = item.allCount - item.haveCount)
+
             moveRepo.updateGoodsAsync(updatedGoods, updateChange)
         }
     }
@@ -348,7 +356,8 @@ class MoveSessionViewModel : ViewModel() {
             entityId = destinationGoods.id,
             supplierId = (viewModel.uiState.value as UiState.MoveSessionMenu).supplierId,
             operationType = OperationType.UpdateGoods,
-            payload = Gson().toJson(destinationGoods)
+            payload = Gson().toJson(destinationGoods.copy(amount = item.haveCount + destinationGoods.amount)),
+            payloadBefore = Gson().toJson(destinationGoods)
         )
         moveRepo.updateGoodsAsync(destinationGoods.copy(amount = item.haveCount + destinationGoods.amount), destinationChange)
     }
@@ -410,7 +419,8 @@ class MoveSessionViewModel : ViewModel() {
             entityId = movement.id,
             supplierId = (viewModel.uiState.value as UiState.MoveSessionMenu).supplierId,
             operationType = OperationType.InsertMovement,
-            payload = Gson().toJson(movement)
+            payload = Gson().toJson(movement),
+            payloadBefore = Gson().toJson(movement),
         )
         moveRepo.insertMovementAsync(movement, change)
     }

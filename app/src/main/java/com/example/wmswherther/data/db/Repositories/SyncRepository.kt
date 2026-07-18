@@ -31,7 +31,7 @@ class SyncRepository (
         operation: Change
     ) {
 
-        when(operation.operationType) {
+       when(operation.operationType) {
 
             OperationType.InsertBarcode.ordinal -> {
 
@@ -120,6 +120,8 @@ class SyncRepository (
                 )
 
                 request.updateIncomeSession(ip, sessionIncome, client)
+
+                //update change
             }
             OperationType.UpdateInventorySession.ordinal ->{
                 val sessionInventory = Gson().fromJson(

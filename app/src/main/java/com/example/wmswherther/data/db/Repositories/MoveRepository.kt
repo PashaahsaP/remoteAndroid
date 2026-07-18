@@ -54,6 +54,7 @@ class MoveRepository(
             )
             var changes = ChangeFactory.create(
                 payload = Gson().toJson(newCell),
+                payloadBefore = Gson().toJson(newCell),
                 entityId = newCell.id,
                 supplierId = (viewModel.uiState.value as UiState.MoveSessionMenu).supplierId,
                 operationType = OperationType.InsertCell
@@ -73,6 +74,7 @@ class MoveRepository(
 
             var changes = ChangeFactory.create(
                 payload = Gson().toJson(cell.copy(parentCellId = cellTo.id)),
+                payloadBefore = Gson().toJson(cell),
                 entityId = cell.id,
                 supplierId = (viewModel.uiState.value as UiState.MoveSessionMenu).supplierId,
                 operationType = OperationType.UpdateCell

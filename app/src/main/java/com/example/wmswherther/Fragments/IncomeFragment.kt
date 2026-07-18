@@ -113,9 +113,11 @@ class IncomeFragment : Fragment() {
         }
         with(binding){
             pullChanges(requireActivity())
+            pushChanges(requireActivity())
             swipe.setOnRefreshListener {
                 lifecycleScope.launch {
                     pullChanges(requireActivity())
+                    pushChanges(requireActivity())
                     swipe.isRefreshing = false
                     var data : List<TaskMenuItem> = listOf()
                     withContext(Dispatchers.IO) {
@@ -154,10 +156,11 @@ suspend fun appendDummyData(db: MainDB){
     ) 
     var cellChange = ChangeFactory.create(
         payload = Gson().toJson(IN01) ,
+        payloadBefore = Gson().toJson(IN01) ,
         entityId = IN01.id,
         supplierId = null,
         operationType = OperationType.InsertCell
-    ) 
+    )
     dao.insertCellSync(IN01, cellChange)
     
     var N00000001 = CellFactory.create(
@@ -167,6 +170,7 @@ suspend fun appendDummyData(db: MainDB){
     )
     var teChange = ChangeFactory.create(
         payload = Gson().toJson(N00000001),
+        payloadBefore = Gson().toJson(N00000001),
         entityId = N00000001.id,
         supplierId = null,
         operationType = OperationType.InsertCell
@@ -187,6 +191,7 @@ suspend fun appendDummyData(db: MainDB){
  
     var  sessionChange = ChangeFactory.create(
         payload = Gson().toJson(session),
+        payloadBefore = Gson().toJson(session),
         entityId = session.id,
         supplierId = borkSupplier.id,
         operationType = OperationType.InsertIncomeSession
@@ -201,6 +206,7 @@ suspend fun appendDummyData(db: MainDB){
         )
         var cellChangeSecond = ChangeFactory.create(
             payload = Gson().toJson(A111),
+            payloadBefore = Gson().toJson(A111),
             entityId = A111.id,
             supplierId = null,
             operationType = OperationType.InsertCell
@@ -213,6 +219,7 @@ suspend fun appendDummyData(db: MainDB){
         )
         var catalogChange = ChangeFactory.create(
             payload = Gson().toJson(catalog),
+            payloadBefore = Gson().toJson(catalog),
             entityId = catalog.id,
             supplierId = borkSupplier.id,
             operationType = OperationType.InsertCatalog
@@ -225,6 +232,7 @@ suspend fun appendDummyData(db: MainDB){
         )
         var barcodeChanges = ChangeFactory.create(
             payload = Gson().toJson(barcode),
+            payloadBefore = Gson().toJson(barcode),
             entityId = barcode.id,
             supplierId = borkSupplier.id,
             operationType = OperationType.InsertBarcode
@@ -241,6 +249,7 @@ suspend fun appendDummyData(db: MainDB){
         )
         var goodsChange = ChangeFactory.create(
             payload = Gson().toJson(goods),
+            payloadBefore = Gson().toJson(goods),
             entityId = goods.id,
             supplierId = borkSupplier.id,
             operationType = OperationType.InsertGoods
@@ -253,6 +262,7 @@ suspend fun appendDummyData(db: MainDB){
         )
         var incomeItemChange = ChangeFactory.create(
             payload = Gson().toJson(incomeItem),
+            payloadBefore = Gson().toJson(incomeItem),
             entityId = incomeItem.id,
             supplierId = borkSupplier.id,
             operationType = OperationType.InsertIncomeItem
@@ -269,6 +279,7 @@ suspend fun appendDummyData(db: MainDB){
         )
         var cellChangeSecond = ChangeFactory.create(
             payload = Gson().toJson(A111),
+            payloadBefore = Gson().toJson(A111),
             entityId = A111.id,
             supplierId = null,
             operationType = OperationType.InsertCell
@@ -281,6 +292,7 @@ suspend fun appendDummyData(db: MainDB){
         )
         var catalogChange = ChangeFactory.create(
             payload = Gson().toJson(catalog),
+            payloadBefore = Gson().toJson(catalog),
             entityId = catalog.id,
             supplierId = borkSupplier.id,
             operationType = OperationType.InsertCatalog
@@ -294,6 +306,7 @@ suspend fun appendDummyData(db: MainDB){
 
         var barcodeChanges = ChangeFactory.create(
             payload = Gson().toJson(barcode),
+            payloadBefore = Gson().toJson(barcode),
             entityId = barcode.id,
             supplierId = borkSupplier.id,
             operationType = OperationType.InsertBarcode
@@ -310,6 +323,7 @@ suspend fun appendDummyData(db: MainDB){
         )
         var goodsChange = ChangeFactory.create(
             payload = Gson().toJson(goods),
+            payloadBefore = Gson().toJson(goods),
             entityId = goods.id,
             supplierId = borkSupplier.id,
             operationType = OperationType.InsertGoods
@@ -322,6 +336,7 @@ suspend fun appendDummyData(db: MainDB){
         )
         var incomeItemChange = ChangeFactory.create(
             payload = Gson().toJson(incomeItem),
+            payloadBefore = Gson().toJson(incomeItem),
             entityId = incomeItem.id,
             supplierId = borkSupplier.id,
             operationType = OperationType.InsertIncomeItem
@@ -360,6 +375,7 @@ suspend fun appendMoveDummyDataa(db: MainDB){
     )
     var cellChange = ChangeFactory.create(
         payload = Gson().toJson(A111),
+        payloadBefore = Gson().toJson(A111),
         entityId = A111.id,
         supplierId = null,
         operationType = OperationType.InsertCell
@@ -372,6 +388,7 @@ suspend fun appendMoveDummyDataa(db: MainDB){
     )
     var teChange = ChangeFactory.create(
         payload = Gson().toJson(N00000001),
+        payloadBefore = Gson().toJson(N00000001),
         entityId = N00000001.id,
         supplierId = null,
         operationType = OperationType.InsertCell
@@ -386,6 +403,7 @@ suspend fun appendMoveDummyDataa(db: MainDB){
     )
     var inventoryChange = ChangeFactory.create(
         payload = Gson().toJson(inventoryTask),
+        payloadBefore = Gson().toJson(inventoryTask),
         entityId = inventoryTask.id,
         supplierId = vitekSupplier.id,
         operationType = OperationType.InsertInventorySession
@@ -400,6 +418,7 @@ suspend fun appendMoveDummyDataa(db: MainDB){
         )
         var catalogChange = ChangeFactory.create(
             payload = Gson().toJson(catalog),
+            payloadBefore = Gson().toJson(catalog),
             entityId = catalog.id,
             supplierId = vitekSupplier.id,
             operationType = OperationType.InsertCatalog
@@ -411,6 +430,7 @@ suspend fun appendMoveDummyDataa(db: MainDB){
         )
         var barcodeChanges = ChangeFactory.create(
             payload = Gson().toJson(barcode),
+            payloadBefore = Gson().toJson(barcode),
             entityId = barcode.id,
             supplierId = vitekSupplier.id,
             operationType = OperationType.InsertBarcode
@@ -427,6 +447,7 @@ suspend fun appendMoveDummyDataa(db: MainDB){
         )
         var goodsChange = ChangeFactory.create(
             payload = Gson().toJson(goods),
+            payloadBefore = Gson().toJson(goods),
             entityId = goods.id,
             supplierId = vitekSupplier.id,
             operationType = OperationType.InsertGoods
@@ -442,6 +463,7 @@ suspend fun appendMoveDummyDataa(db: MainDB){
         )
         var catalogChange = ChangeFactory.create(
             payload = Gson().toJson(catalog.id),
+            payloadBefore = Gson().toJson(catalog.id),
             entityId = catalog.id,
             supplierId = vitekSupplier.id,
             operationType = OperationType.InsertCatalog
@@ -453,6 +475,7 @@ suspend fun appendMoveDummyDataa(db: MainDB){
         )
         var barcodeChanges = ChangeFactory.create(
             payload = Gson().toJson(barcode),
+            payloadBefore = Gson().toJson(barcode),
             entityId = barcode.id,
             supplierId = vitekSupplier.id,
             operationType = OperationType.InsertBarcode
@@ -469,6 +492,7 @@ suspend fun appendMoveDummyDataa(db: MainDB){
         )
         var goodsChange = ChangeFactory.create(
             payload = Gson().toJson(goods),
+            payloadBefore = Gson().toJson(goods),
             entityId = goods.id,
             supplierId = vitekSupplier.id,
             operationType = OperationType.InsertGoods
@@ -614,6 +638,7 @@ suspend fun appendPickerDummyData(db: MainDB){
     ) 
     var cellChange = ChangeFactory.create(
         payload = Gson().toJson(A100),
+        payloadBefore = Gson().toJson(A100),
         entityId = A100.id,
         supplierId = null,
         operationType = OperationType.InsertCell
@@ -627,6 +652,7 @@ suspend fun appendPickerDummyData(db: MainDB){
     ) 
     var teChange = ChangeFactory.create(
         payload = Gson().toJson(N00000001),
+        payloadBefore = Gson().toJson(N00000001),
         entityId = N00000001.id,
         supplierId = null,
         operationType = OperationType.InsertCell
@@ -639,6 +665,7 @@ suspend fun appendPickerDummyData(db: MainDB){
     ) 
     var pickerChange = ChangeFactory.create(
         payload = Gson().toJson(pickerSession),
+        payloadBefore = Gson().toJson(pickerSession),
         entityId = pickerSession.id,
         supplierId = vitekSupplier.id,
         operationType = OperationType.InsertPickerSession
@@ -730,6 +757,7 @@ suspend fun appendPickerDummyData(db: MainDB){
         )  
         var cellChange = ChangeFactory.create(
             payload = Gson().toJson(A111),
+            payloadBefore = Gson().toJson(A111),
             entityId = A111.id,
             supplierId = null,
             operationType = OperationType.InsertCell
@@ -743,6 +771,7 @@ suspend fun appendPickerDummyData(db: MainDB){
             supplierId = vitekSupplier.id
         )
         var catalogChange = ChangeFactory.create(
+            payloadBefore = Gson().toJson(catalog),
             payload = Gson().toJson(catalog),
             entityId = catalog.id,
             supplierId = vitekSupplier.id,
@@ -756,6 +785,7 @@ suspend fun appendPickerDummyData(db: MainDB){
         )
         var barcodeChanges = ChangeFactory.create(
             payload = Gson().toJson(barcode),
+            payloadBefore = Gson().toJson(barcode),
             entityId = barcode.id,
             supplierId = vitekSupplier.id,
             operationType = OperationType.InsertBarcode
@@ -772,6 +802,7 @@ suspend fun appendPickerDummyData(db: MainDB){
         )
         var goodsChange = ChangeFactory.create(
             payload = Gson().toJson(goods),
+            payloadBefore = Gson().toJson(goods),
             entityId = goods.id,
             supplierId = vitekSupplier.id,
             operationType = OperationType.InsertGoods
@@ -786,6 +817,7 @@ suspend fun appendPickerDummyData(db: MainDB){
         )
         var pickerChange = ChangeFactory.create(
             payload = Gson().toJson(pickerItem),
+            payloadBefore = Gson().toJson(pickerItem),
             entityId = pickerItem.id,
             supplierId = vitekSupplier.id,
             operationType = OperationType.InsertGoods
@@ -957,6 +989,19 @@ private fun appendUser(db: MainDB) {
 private fun pullChanges(requireActivity: FragmentActivity) {
     val data = Data.Builder()
         .putString("sync_type", "FULL")
+        .build()
+
+    val request =
+        OneTimeWorkRequestBuilder<SyncWorker>()
+            .setInputData(data)
+            .build()
+
+    WorkManager.getInstance(requireActivity)
+        .enqueue(request)
+}
+private fun pushChanges(requireActivity: FragmentActivity) {
+    val data = Data.Builder()
+        .putString("sync_type", "PUSH")
         .build()
 
     val request =

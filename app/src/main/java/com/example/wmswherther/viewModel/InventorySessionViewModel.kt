@@ -150,7 +150,9 @@ class InventorySessionViewModel : ViewModel(){
                 entityId = item.id,
                 supplierId = supplierId,
                 operationType = OperationType.InsertInventoryDiff,
-                payload = Gson().toJson(item)
+                payload = Gson().toJson(item),
+                payloadBefore = Gson().toJson(item)
+
             )
             inventoryRepo.insertInventoryDiffItemAsync(item, changes)
         }
@@ -173,7 +175,9 @@ class InventorySessionViewModel : ViewModel(){
             entityId = session.id,
             supplierId = supplierId,
             operationType = OperationType.InsertInventorySession,
-            payload = Gson().toJson(session)
+            payload = Gson().toJson(session),
+            payloadBefore = Gson().toJson(session)
+
         )
 
         inventoryRepo.insertInventorySessionAsync(session, changes)

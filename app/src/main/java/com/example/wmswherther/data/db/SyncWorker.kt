@@ -97,7 +97,7 @@ class SyncWorker(
     }
 
     suspend fun pushing(dao: Dao, repository: SyncRepository) {
-        val operations = dao.getAllChanges()
+        val operations = dao.getAllChanges().filter { inner -> inner.status != StatusType.Finished.ordinal }
 
         for (operation in operations) {
 
