@@ -14,6 +14,7 @@ data class Change(
     val entityId: String,
     val operationType: Int,
     val payload: String,
+    val payloadBefore: String,
     val status: Int,
     val supplierId: Int?,
     val createdAt: Long,
