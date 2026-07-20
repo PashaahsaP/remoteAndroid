@@ -10,11 +10,14 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:id="@+id/swipe">
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent">
     <TextView
         android:id="@+id/tvCellName"
         android:layout_width="wrap_content"
         android:layout_height="20dp"
-        android:layout_marginStart="15dp"
+        android:layout_marginStart="20dp"
         app:layout_constraintBottom_toTopOf="@+id/rwIncomeSessionList"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent" />
@@ -64,5 +67,6 @@
         android:layout_marginBottom="20dp">
 
     </Button>
+    </androidx.constraintlayout.widget.ConstraintLayout>
 </androidx.swiperefreshlayout.widget.SwipeRefreshLayout>
 </androidx.constraintlayout.widget.ConstraintLayout>

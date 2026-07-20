@@ -1,5 +1,6 @@
 package com.example.wmswherther.Adapters
 
+import android.annotation.SuppressLint
 import android.content.Context
 import android.view.KeyEvent
 import android.view.LayoutInflater
@@ -354,6 +355,7 @@ class IncomeSessionAdapter(
         return data.count()
     }
 
+    @SuppressLint("NotifyDataSetChanged")
     fun updateCollection(items: List<IncomeItem>, selectedItem: Int){
         data = items
         notifyDataSetChanged()

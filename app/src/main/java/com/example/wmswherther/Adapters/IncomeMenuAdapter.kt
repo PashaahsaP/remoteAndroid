@@ -32,6 +32,7 @@ class IncomeMenuAdapter(var data: List<TaskMenuItem>,var fragment: Fragment, var
         position: Int
     ) {
         holder.container.setOnClickListener {
+            println("in OnBindView")
             // TODO когда сделаю контроль состояния пользователя надо обновить статус сессии
             //change status
             // if return null, refresh a page
@@ -54,6 +55,7 @@ class IncomeMenuAdapter(var data: List<TaskMenuItem>,var fragment: Fragment, var
 
             }
             viewModel.setActiveUi(UiState.IncomeSessionMenu(prevState = viewModel.uiState.value))
+            println("end OnBindView")
         }
         var item = data[position]
         holder.tvDate.text = item.date

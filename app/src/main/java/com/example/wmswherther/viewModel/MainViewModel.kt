@@ -49,6 +49,7 @@ class MainViewModel : ViewModel() {
 
   //  val MoveSupplierId: LiveData<String> get() = _moveSupplierId
     fun switchIncomeSessionActivity(){
+        println("switch status incomeSession")
       _isFinishIncomeSession.value = !_isFinishIncomeSession.value!!
     }
     fun switchAssemblySessionActivity(){

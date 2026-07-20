@@ -55,6 +55,7 @@ class IncomeSessionFragment : Fragment() {
             container: ViewGroup?,
             savedInstanceState: Bundle?
         ): View? {
+            println("in onCreateView")
             _binding = FragmentIncomeSessionBinding.inflate(inflater, container, false)
             var recyclerView: RecyclerView = binding.rwIncomeSessionList
             var adapterCollection = mutableListOf<IncomeItem>()
@@ -92,8 +93,9 @@ class IncomeSessionFragment : Fragment() {
             })
             viewModel.IsFinishIncomeSession.observe(viewLifecycleOwner, { status ->
                 if(status) {
-                    if(localViewModel.CurrentCountOfCount.value != localViewModel.CountOfCount.value 
-                        || localViewModel.IsOverCounter.value == true){
+                    if (localViewModel.CurrentCountOfCount.value != localViewModel.CountOfCount.value
+                        || localViewModel.IsOverCounter.value == true
+                    ) {
                         val view = LayoutInflater.from(activity)
                             .inflate(R.layout.dialog, null)
                         val btnYes = view.findViewById<Button>(R.id.btnYes)
@@ -104,19 +106,18 @@ class IncomeSessionFragment : Fragment() {
                             .create()
 
                         btnYes.setOnClickListener {
+                            println(107)
                             finishSessionAndReturnToPreviousFragment(incomeRepo, sessionId)
                         }
                         btnNo.setOnClickListener {
                             dialog.dismiss()
                         }
-                        }
-
-
-                    }else{
+                    } else {
+                        println(117)
                         finishSessionAndReturnToPreviousFragment(incomeRepo, sessionId)
 
                     }
-
+                }
             })
             localViewModel.CurrentCountOfCount.observe(viewLifecycleOwner, {counter ->
                 binding.tvLineCounter.text = "${counter.toString()}  /"
@@ -148,6 +149,7 @@ class IncomeSessionFragment : Fragment() {
             
 
             binding.btnFinish.setOnClickListener {
+                println(151)
                 finishSessionAndReturnToPreviousFragment(incomeRepo, sessionId)
 
             }
@@ -158,7 +160,8 @@ class IncomeSessionFragment : Fragment() {
                 }
             }
             initSession(incomeRepo, sessionId)
-            
+
+            println("end onCreateView")
             return  binding.root
         }
 

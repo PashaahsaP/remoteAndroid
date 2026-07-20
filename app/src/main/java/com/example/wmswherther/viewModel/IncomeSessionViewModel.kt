@@ -55,6 +55,7 @@ class IncomeSessionViewModel : ViewModel() {
         _countOfCount.value = count
     }
     fun updateItems(items: List<IncomeItem>){
+        println("in updateItems")
         var sortedCollection : MutableList<IncomeItem> = mutableListOf()
         var teCollection : MutableList<IncomeItem> = mutableListOf()
         var otherCollection : MutableList<IncomeItem> = mutableListOf()
@@ -96,20 +97,28 @@ class IncomeSessionViewModel : ViewModel() {
         }else{
             setFinishValidation(false)
         }
+        println("end updateItems")
     }
 
     fun getSelectedItem() : Int{
+        println("in getSelecteItem")
         var isCorrect = _selectedItem.value
         if (isCorrect != null)
             return isCorrect
         else
             return  0
+        println("end getSelecteItem")
+
     }
     fun setSelectedItem(selectedItemCount: Int){
+        println("in setSelectedItem")
         _selectedItem.value = selectedItemCount
+        println("end setSelectedItem")
     }
     fun setCellName(cellName: String){
+        println("in setCellName")
         _currentCellName.value = cellName
+        println("end setCellName")
     }
     /*fun updateCollection(incomeRepo: IncomeRepository, barcode: String?){
         var barcoded = Barcode("","","","",3)
@@ -140,6 +149,8 @@ class IncomeSessionViewModel : ViewModel() {
     suspend fun loadItems (incomeRepo: IncomeRepository,
                            sessionId: String,
                             cell: Cell) : List<IncomeItem>{
+        println("in load items")
+
         var listOfGoods: List<Pair<Goods, Cell>> = listOf()
         listOfGoods = incomeRepo.getGoodsAndTheirCells(sessionId)
 
@@ -192,14 +203,18 @@ class IncomeSessionViewModel : ViewModel() {
                 )
             }
         }
-
         return  result
+        println("end finish session")
+
     }
     suspend fun finishSession(incomeRepo: IncomeRepository, sessionId: String){
+        println("in finish session")
         var session = incomeRepo.getIncomeSessionById(sessionId)
 
         prepareIncomeItem(incomeRepo, session, sessionId)
         updateSession(session, incomeRepo)
+        println("end finish session")
+
     }
 
     private suspend fun prepareIncomeItem(
@@ -207,6 +222,7 @@ class IncomeSessionViewModel : ViewModel() {
         session: SessionIncome,
         sessionId: String
     ) {
+        println("in prepare Income Item")
         items.value?.forEach { item ->
 
             if (item.haveCount == item.allCount && item is IncomeItem.GoodsItem) {
@@ -219,12 +235,14 @@ class IncomeSessionViewModel : ViewModel() {
                 prepareLessItem(incomeRepo, item, session, sessionId)
             }
         }
+        println("end prepare Income Item")
     }
 
     private suspend fun updateSession(
         session: SessionIncome,
         incomeRepo: IncomeRepository
     ) {
+        println("in updateSession")
         var newSession = session.copy(status = StatusType.Finished.ordinal, finishedAt = System.currentTimeMillis())
         var sessionChange = ChangeFactory.create(
             entityId = session.id,
@@ -239,6 +257,7 @@ class IncomeSessionViewModel : ViewModel() {
             newSession,
             change = sessionChange
         )
+        println("end updateSession")
     }
 
     private suspend fun prepareLessItem(
@@ -247,6 +266,7 @@ class IncomeSessionViewModel : ViewModel() {
         session: SessionIncome,
         sessionId: String
     ) {
+        println("in prepareLessItem")
         var goods = incomeRepo.getGoodsById(goodsId.id)
         // если больше то
         // создать перемещение в Less
@@ -314,6 +334,7 @@ class IncomeSessionViewModel : ViewModel() {
             )
             incomeRepo.insertMovementAsync(innerMovement, movementChange)
         }
+        println("end prepareLessItem")
     }
 
     private suspend fun prepareMoreItem(
@@ -322,6 +343,7 @@ class IncomeSessionViewModel : ViewModel() {
         session: SessionIncome,
         sessionId: String
     ) {
+        println("in prepareMoreItem")
         var goods = incomeRepo.getGoodsById(goodsItem.id)
         // если больше то
         // создать перемещение в More
@@ -380,6 +402,7 @@ class IncomeSessionViewModel : ViewModel() {
 
         )
         incomeRepo.insertMovementAsync(innerMovement, movementChange)
+        println("end prepareMoreItem")
     }
 
     private suspend fun prepareEqualItem(
@@ -388,6 +411,7 @@ class IncomeSessionViewModel : ViewModel() {
         session: SessionIncome,
         sessionId: String
     ) {
+        println("int prepareEqualItem")
         var innerGoods = incomeRepo.getGoodsById(goodsItem.id)
         var goodsChange = ChangeFactory.create(
             entityId =  innerGoods.id,
@@ -417,9 +441,11 @@ class IncomeSessionViewModel : ViewModel() {
         )
 
         incomeRepo.insertMovementAsync(innerMovement, movementChange)
+        println("end prepareEqualItem")
     }
 
     fun setSelection(checked: Boolean) {
+        println("in setSelection")
         var list: MutableList<IncomeItem> = mutableListOf()
         if (checked){
             setCurCountOfCount(_countOfCount.value ?: 0)
@@ -436,9 +462,10 @@ class IncomeSessionViewModel : ViewModel() {
             }
             updateItems(list)
         }
+        println("in setSelection")
     }
     suspend private fun isTE(cell: String, incomeRepo: IncomeRepository): Boolean {
-
+        println("in isTE")
         val cells = incomeRepo.getTETypes()
 
         return cells.any { cellType ->
@@ -452,5 +479,7 @@ class IncomeSessionViewModel : ViewModel() {
                         }
                     }
         }
+        println("end isTE")
+
     }
 }
