@@ -23,6 +23,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import java.util.UUID
+import kotlin.random.Random
 
 class IncomeSessionViewModel : ViewModel() {
     private val _items = MutableLiveData<List<IncomeItem>>()
@@ -221,7 +222,7 @@ class IncomeSessionViewModel : ViewModel() {
         sessionId: String
     ) {
         items.value?.forEach { item ->
-
+            // TODO добавить обновление id ячейки у goods
             if (item.haveCount == item.allCount && item is IncomeItem.GoodsItem) {
                 prepareEqualItem(incomeRepo, item, session, sessionId)
             }
@@ -230,6 +231,38 @@ class IncomeSessionViewModel : ViewModel() {
             }
             if (item.haveCount < item.allCount && item is IncomeItem.GoodsItem) {
                 prepareLessItem(incomeRepo, item, session, sessionId)
+            }
+        }
+    }
+    private suspend fun prepareTeItem(
+        incomeRepo: IncomeRepository,
+        session: SessionIncome,
+        sessionId: String
+    ) {
+        items.value?.forEach { item ->
+            if(item is IncomeItem.TEItem || item is IncomeItem.NewTEItem){
+                // Добавить все те
+                var cell : Cell = incomeRepo.getCellByName((item as IncomeItem.TEItem).teName)
+
+                if(cell == null){
+                    cell = Cell(
+                        id = UUID.randomUUID(),
+                        typeCellId = incomeRepo.getCellTypes().first { inner -> inner. }
+
+                    )
+                    var change = ChangeFactory.create(
+
+                    )
+                    incomeRepo.insertCellAsync(cell)
+                }
+                // Проверить parent name и проставить id для элементов
+                //
+            }
+            if(item is IncomeItem.TEItem || item is IncomeItem.NewTEItem){
+                // Добавить все те
+                incomeRepo.getCellByName((item as IncomeItem.TEItem).teName)
+                // Проверить parent name и проставить id для элементов
+                //
             }
         }
     }
@@ -423,7 +456,6 @@ class IncomeSessionViewModel : ViewModel() {
         session: SessionIncome,
         sessionId: String
     ) {
-        println("int prepareEqualItem")
         var innerGoods = incomeRepo.getGoodsById(goodsItem.id)
         var goodsChange = ChangeFactory.create(
             entityId =  innerGoods.id,
@@ -454,7 +486,6 @@ class IncomeSessionViewModel : ViewModel() {
         )
 
         incomeRepo.insertMovementAsync(innerMovement, movementChange)
-        println("end prepareEqualItem")
     }
 
     fun setSelection(checked: Boolean) {

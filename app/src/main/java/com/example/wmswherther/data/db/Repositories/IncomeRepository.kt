@@ -77,8 +77,14 @@ class IncomeRepository (private val dao: Dao) {
     suspend fun getCatalogById(catalogId : String) : Catalog{
        return dao.getCatalogById(catalogId)
     }
+    suspend fun getCellTypes() : List<CellType>{
+        return dao.getCellTypes()
+    }
     suspend fun insertMovementAsync(movement: Movement, change: Change){
         dao.insertMovementSync(movement, change)
+    }
+    suspend fun insertCellAsync(cell: Cell, change: Change){
+        dao.insertCellSync(cell, change)
     }
     suspend fun updateIncomeSessionAsync(session: SessionIncome, change: Change){
         dao.updateIncomeSessionAsync(session, change)
