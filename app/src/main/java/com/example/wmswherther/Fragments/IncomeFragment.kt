@@ -103,6 +103,8 @@ class IncomeFragment : Fragment() {
         })
 
         lifecycleScope.launch {
+            pullChanges(requireActivity())
+            pushChanges(requireActivity())
             var data : List<TaskMenuItem> = listOf()
             withContext(Dispatchers.IO) {
                 data = localViewModel.updateSupplierList(incomeRepo)

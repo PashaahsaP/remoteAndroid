@@ -208,13 +208,11 @@ class IncomeSessionViewModel : ViewModel() {
 
     }
     suspend fun finishSession(incomeRepo: IncomeRepository, sessionId: String){
-        println("in finish session")
         var session = incomeRepo.getIncomeSessionById(sessionId)
 
         prepareIncomeItem(incomeRepo, session, sessionId)
         updateSession(session, incomeRepo)
-        println("end finish session")
-
+        deleteSession(session, incomeRepo)
     }
 
     private suspend fun prepareIncomeItem(
@@ -222,7 +220,6 @@ class IncomeSessionViewModel : ViewModel() {
         session: SessionIncome,
         sessionId: String
     ) {
-        println("in prepare Income Item")
         items.value?.forEach { item ->
 
             if (item.haveCount == item.allCount && item is IncomeItem.GoodsItem) {
@@ -235,14 +232,12 @@ class IncomeSessionViewModel : ViewModel() {
                 prepareLessItem(incomeRepo, item, session, sessionId)
             }
         }
-        println("end prepare Income Item")
     }
 
     private suspend fun updateSession(
         session: SessionIncome,
         incomeRepo: IncomeRepository
     ) {
-        println("in updateSession")
         var newSession = session.copy(status = StatusType.Finished.ordinal, finishedAt = System.currentTimeMillis())
         var sessionChange = ChangeFactory.create(
             entityId = session.id,
@@ -257,7 +252,24 @@ class IncomeSessionViewModel : ViewModel() {
             newSession,
             change = sessionChange
         )
-        println("end updateSession")
+    }
+    private suspend fun deleteSession(
+        session: SessionIncome,
+        incomeRepo: IncomeRepository
+    ) {
+        var sessionChange = ChangeFactory.create(
+            entityId = session.id,
+            supplierId = session.supplierId,
+            operationType = OperationType.DeleteIncomeSession,
+            payload = Gson().toJson(session),
+            payloadBefore = Gson().toJson(session)
+
+        )
+
+        incomeRepo.deleteIncomeSessionAsync(
+            session,
+            change = sessionChange
+        )
     }
 
     private suspend fun prepareLessItem(

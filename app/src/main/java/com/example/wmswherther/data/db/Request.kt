@@ -234,6 +234,34 @@ class Request {
             }
         }
     }
+    suspend fun deleteIncomeSession(ip: String, sessionIncome: SessionIncome, client: OkHttpClient) {
+        val json = JSONObject()
+            .put("id", sessionIncome.id)
+           /* .put("supplierId", sessionIncome.supplierId)
+            .put("toCellId", sessionIncome.toCellId)
+            .put("status", sessionIncome.status)
+            .put("createdAt", sessionIncome.createdAt)
+            .put("startedAt", sessionIncome.startedAt)
+            .put("finishedAt", sessionIncome.finishedAt)
+            .put("updatedAt", sessionIncome.updatedAt)
+            .put("deletedAt", sessionIncome.deletedAt)
+            .put("isDeleted", sessionIncome.isDeleted)
+            .put("other", sessionIncome.other)*/
+            .toString()
+        val requestBody = json.toRequestBody("application/json".toMediaTypeOrNull())
+        val request = Request.Builder()
+            .url("http://$ip:3000/incomeSession/delete")
+            .delete(requestBody)
+            .build()
+
+        return withContext(Dispatchers.IO) {
+            client.newCall(request).execute().use { response ->
+                if (!response.isSuccessful) throw IOException("HTTP ошибка ${response.code}")
+                val body = response.body?.string().orEmpty()
+                body
+            }
+        }
+    }
 
     suspend fun getCatalogs(ip:String, client: OkHttpClient, time: Long)  : JSONArray {
 

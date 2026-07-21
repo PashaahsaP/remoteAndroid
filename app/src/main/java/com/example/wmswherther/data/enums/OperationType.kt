@@ -13,6 +13,7 @@ enum class OperationType {
     InsertPickerItem,
     InsertMovement,
     DeleteGoods,
+    DeleteIncomeSession,
     UpdateGoods,
     UpdatePickerSession,
     UpdateIncomeSession,

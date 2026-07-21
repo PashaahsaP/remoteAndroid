@@ -23,9 +23,13 @@ import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.isVisible
 import androidx.core.view.setPadding
+import androidx.fragment.app.FragmentActivity
 import androidx.fragment.app.add
 import androidx.fragment.app.commit
 import androidx.lifecycle.lifecycleScope
+import androidx.work.Data
+import androidx.work.OneTimeWorkRequestBuilder
+import androidx.work.WorkManager
 import com.example.wmsRemote.databinding.ActivityMainBinding
 import com.example.wmsRemote.data.db.MainDB
 import com.example.wmswherther.Classes.IncomeItem
@@ -34,6 +38,7 @@ import com.example.wmswherther.Classes.UiState.*
 import com.example.wmswherther.Fragments.MainFragment
 import com.example.wmswherther.Fragments.SearchFragment
 import com.example.wmswherther.data.db.Entityes.Goods
+import com.example.wmswherther.data.db.SyncWorker
 import com.example.wmswherther.viewModel.IncomeSessionViewModel
 import com.example.wmswherther.viewModel.MainViewModel
 import kotlinx.coroutines.*
@@ -115,7 +120,10 @@ class MainActivity : AppCompatActivity() {
         setNavigationBar()
        // var searchData : MutableList<Pair<String, List<String>>> = mutableListOf()
         var barcodeBuffer: StringBuilder = StringBuilder()
-
+        lifecycleScope.launch {
+            pullChanges(this@MainActivity)
+            pushChanges(this@MainActivity)
+        }
         viewModel.uiState.observe(this){ State->
             when(State){
                 is SearchMenu ->{
@@ -1090,5 +1098,30 @@ private fun isCell(cell: String): Boolean {
 fun isBoxTE(str: String) : Boolean{
     return str.length == 9
 }
+private fun pullChanges(requireActivity: FragmentActivity) {
+    val data = Data.Builder()
+        .putString("sync_type", "FULL")
+        .build()
 
+    val request =
+        OneTimeWorkRequestBuilder<SyncWorker>()
+            .setInputData(data)
+            .build()
+
+    WorkManager.getInstance(requireActivity)
+        .enqueue(request)
+}
+private fun pushChanges(requireActivity: FragmentActivity) {
+    val data = Data.Builder()
+        .putString("sync_type", "PUSH")
+        .build()
+
+    val request =
+        OneTimeWorkRequestBuilder<SyncWorker>()
+            .setInputData(data)
+            .build()
+
+    WorkManager.getInstance(requireActivity)
+        .enqueue(request)
+}
 

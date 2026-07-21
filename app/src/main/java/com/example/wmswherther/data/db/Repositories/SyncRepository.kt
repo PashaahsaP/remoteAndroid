@@ -17,7 +17,12 @@ import com.example.wmswherther.data.db.PullItem
 import com.example.wmswherther.data.db.Request
 import com.example.wmswherther.data.enums.Entities
 import com.google.gson.Gson
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.async
 import kotlinx.coroutines.awaitAll
+import kotlinx.coroutines.coroutineScope
+import kotlinx.coroutines.supervisorScope
+import kotlinx.coroutines.withContext
 import okhttp3.OkHttpClient
 import org.json.JSONArray
 
@@ -139,67 +144,66 @@ class SyncRepository (
 
                 request.updateAssemblySession(ip, pickerSession, client)
             }
+           OperationType.DeleteIncomeSession.ordinal ->{
+               val incomeSession = Gson().fromJson(
+                   operation.payload,
+                   SessionIncome::class.java
+               )
+
+               request.deleteIncomeSession(ip, incomeSession, client)
+           }
+
+
         }
     }
     suspend fun syncPull(
         ip: String,
-        operation: List< PullItem>
-    ) : List<Pair<Entities,JSONArray>> {
-        val result = mutableListOf<Pair<Entities, JSONArray>>()
+        operation: List<PullItem>
+    ): List<Pair<Entities, JSONArray>> = supervisorScope { // Используем supervisorScope для независимости запросов
 
-        for (dataType in operation) {
-            try {
-                val jsonArray: JSONArray = when (dataType.entity) {
-                    Entities.Catalog -> request.getCatalogs(ip, client, dataType.time)
-                    Entities.Goods -> request.getGoods(ip, client, dataType.time)
-                    Entities.Barcode -> request.getBarcodes(ip, client, dataType.time)
-                    Entities.Cell -> request.getCells(ip, client, dataType.time)
-                    Entities.TypeCell -> request.getCellTypes(ip, client, dataType.time)
-                    Entities.Credential -> request.getCredentials(ip, client, dataType.time)
-                    Entities.IncomeItem -> request.getIncomeItem(ip, client, dataType.time)
-                    Entities.InventoryDiffItem -> request.getInventoryDiffItem(
-                        ip,
-                        client,
-                        dataType.time
+        val deferredResults = operation.map { dataType ->
+            async {
+                try {
+                    val jsonArray: JSONArray = when (dataType.entity) {
+                        Entities.Catalog -> request.getCatalogs(ip, client, dataType.time)
+                        Entities.Goods -> request.getGoods(ip, client, dataType.time)
+                        Entities.Barcode -> request.getBarcodes(ip, client, dataType.time)
+                        Entities.Cell -> request.getCells(ip, client, dataType.time)
+                        Entities.TypeCell -> request.getCellTypes(ip, client, dataType.time)
+                        Entities.Credential -> request.getCredentials(ip, client, dataType.time)
+                        Entities.IncomeItem -> request.getIncomeItem(ip, client, dataType.time)
+                        Entities.InventoryDiffItem -> request.getInventoryDiffItem(ip, client, dataType.time)
+                        Entities.Movement -> request.getMovement(ip, client, dataType.time)
+                        Entities.OutcomeItem -> request.getOutcomeItem(ip, client, dataType.time)
+                        Entities.Package -> request.getPackageEntity(ip, client, dataType.time)
+                        Entities.PickerItem -> request.getPickerItems(ip, client, dataType.time)
+                        Entities.Service -> request.getService(ip, client, dataType.time)
+                        Entities.SessionIncome -> request.getSessionIncome(ip, client, dataType.time)
+                        Entities.SessionInventory -> request.getSessionInventory(ip, client, dataType.time)
+                        Entities.SessionOutcome -> request.getSessionOutcome(ip, client, dataType.time)
+                        Entities.SessionPicker -> request.getSessionPicker(ip, client, dataType.time)
+                        Entities.Supplier -> request.getSuppliers(ip, client, dataType.time)
+                        Entities.TrueSign -> request.getTrueSign(ip, client, dataType.time)
+                        Entities.User -> request.getUsers(ip, client, dataType.time)
+                        Entities.Batches -> request.getBatches(ip, client, dataType.time)
+                    }
+                    // Возвращаем успешную пару
+                    Pair(dataType.entity, jsonArray)
+                } catch (e: Exception) {
+                    Log.e(
+                        "#####",
+                        "Ошибка при загрузке данных для ${dataType.entity}: ${e.localizedMessage}",
+                        e
                     )
-                    Entities.Movement -> request.getMovement(ip, client, dataType.time)
-                    Entities.OutcomeItem -> request.getOutcomeItem(ip, client, dataType.time)
-                    Entities.Package -> request.getPackageEntity(ip, client, dataType.time)
-                    Entities.PickerItem -> request.getPickerItems(ip, client, dataType.time)
-                    Entities.Service -> request.getService(ip, client, dataType.time)
-                    Entities.SessionIncome -> request.getSessionIncome(ip, client, dataType.time)
-                    Entities.SessionInventory -> request.getSessionInventory(
-                        ip,
-                        client,
-                        dataType.time
-                    )
-                    Entities.SessionOutcome -> request.getSessionOutcome(ip, client, dataType.time)
-                    Entities.SessionPicker -> request.getSessionPicker(ip, client, dataType.time)
-                    Entities.Supplier -> request.getSuppliers(ip, client, dataType.time)
-                    Entities.TrueSign -> request.getTrueSign(ip, client, dataType.time)
-                    Entities.User -> request.getUsers(ip, client, dataType.time)
-                    Entities.Batches -> request.getBatches(ip, client, dataType.time)
+                    // Возвращаем null в случае ошибки, чтобы потом отфильтровать
+                    null
                 }
-                result += Pair(dataType.entity, jsonArray)
-            } catch (e: Exception) {
-                // Логируем ошибку для конкретной сущности, но не роняем приложение
-                Log.e(
-                    "#####",
-                    "Ошибка при загрузке данных для ${dataType.entity}: ${e.localizedMessage}",
-                    e
-                )
-
-                // Опционально: можно добавить пустой массив или null, если вызывающий код это ожидает
-                // result += Pair(dataType.entity, JSONArray())
             }
         }
 
-// Внимание: Gson().toJson(result) всё еще может упасть из-за JSONArray или OOM!
-        try {
-            Log.d("#####", Gson().toJson(result))
-        } catch (e: Exception) {
-            Log.e("#####", "Не удалось сериализовать результат в JSON: ${e.localizedMessage}")
-        }
-        return result
+        val result = deferredResults.awaitAll().filterNotNull()
+
+        // 3. Возвращаем собранный список
+        return@supervisorScope result
     }
 }

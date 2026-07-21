@@ -91,6 +91,14 @@ interface Dao {
         val to = updateIncomeSessionChanges(change)
         return from to to
     }
+    @Transaction
+    suspend fun deleteIncomeSessionAsync(session: SessionIncome, change: Change) : Pair<Unit, Unit>{
+        val from = deleteIncomeSession(session)
+        val to = deleteIncomeSessionChanges(change)
+        return from to to
+    }
+    @Delete
+    suspend fun deleteIncomeSession(session: SessionIncome)
     // </editor-fold>
     // <editor-fold desc="TrueSign">
     @Insert(onConflict = OnConflictStrategy.REPLACE)
@@ -121,7 +129,7 @@ interface Dao {
 
     // </editor-fold>
     // <editor-fold desc="IncomeItem">
-    @Insert
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
     fun insertIncomeItem(incomeItem: IncomeItem)
     @Transaction
     suspend fun insertIncomeItemSync(incomeItem: IncomeItem, change: Change){
@@ -319,6 +327,9 @@ interface Dao {
     suspend fun updateCellChanges(change: Change)
     @Delete
     suspend fun deleteGoodsChanges(change: Change)
+    @Insert
+    suspend fun deleteIncomeSessionChanges(change: Change)
+
     @Query("SELECT * FROM changes")
     fun getAllChanges(): List<Change>
     @Update

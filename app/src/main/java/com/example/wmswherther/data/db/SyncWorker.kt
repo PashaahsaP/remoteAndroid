@@ -103,7 +103,7 @@ class SyncWorker(
         for (operation in operations) {
 
             repository.syncPush(
-                ip = "192.168.6.52",
+                ip = "172.31.153.64",
                 operation = operation
             )
 
@@ -112,13 +112,13 @@ class SyncWorker(
     }
 
     suspend fun pulling(dao: Dao, repository: SyncRepository, data: List<PullItem>) {
-        var result = repository.syncPull("192.168.6.52", data)
+        var result = repository.syncPull("172.31.153.64", data)
         prepareAndAppendData(dao, result)
     }
 
     suspend fun totalPulling(dao: Dao, repository: SyncRepository) {
         var data = generateDataForRequest(dao)
-        var result = repository.syncPull("192.168.6.52", data)
+        var result = repository.syncPull("172.31.153.64", data)
 
         prepareAndAppendData(dao, result)
 
@@ -128,11 +128,8 @@ class SyncWorker(
         dao: Dao,
         pairs: List<Pair<Entities, JSONArray>>
     ) {
-        println("!!!!!!")
-        println(pairs)
         val scope = CoroutineScope(Dispatchers.IO)
         pairs.forEach {
-            println(1)
             if (it.first.ordinal == Entities.Supplier.ordinal && it.second.length() != 0) {
                 Log.d("Size", Gson().toJson(it.second))
                 it.second.toEntity { obj ->
@@ -599,18 +596,14 @@ class SyncWorker(
         data += PullItem(Entities.TypeCell, dao.getCellTypes().maxOfOrNull { it.updatedAt }?: 0)
         data += PullItem(Entities.Credential, dao.getAllCredential().maxOfOrNull { it.updatedAt }?: 0)
         data += PullItem(Entities.IncomeItem, dao.getAllIncomeItem().maxOfOrNull { it.updatedAt }?: 0)
-        data += PullItem(
-            Entities.InventoryDiffItem,
-            dao.getInventoryDiffItems().maxOfOrNull { it.updatedAt }?: 0)
+        data += PullItem(Entities.InventoryDiffItem, dao.getInventoryDiffItems().maxOfOrNull { it.updatedAt }?: 0)
         data += PullItem(Entities.Movement, dao.getAllMovement().maxOfOrNull { it.updatedAt }?: 0)
         data += PullItem(Entities.OutcomeItem, dao.getAllOutcomeItems().maxOfOrNull { it.updatedAt }?: 0)
         data += PullItem(Entities.Package, dao.getAllPackageItems().maxOfOrNull { it.updatedAt }?: 0)
         data += PullItem(Entities.PickerItem, dao.getPickerItems().maxOfOrNull { it.updatedAt }?: 0)
         data += PullItem(Entities.Service, dao.getAllService().maxOfOrNull { it.updatedAt }?: 0)
         data += PullItem(Entities.SessionIncome, dao.getAllIncomeSession().maxOfOrNull { it.updatedAt }?: 0)
-        data += PullItem(
-            Entities.SessionInventory,
-            dao.getInventorySessions().maxOfOrNull { it.updatedAt }?: 0)
+        data += PullItem(Entities.SessionInventory, dao.getInventorySessions().maxOfOrNull { it.updatedAt }?: 0)
         data += PullItem(Entities.SessionOutcome, dao.getAllOutcomeSession().maxOfOrNull { it.updatedAt }?: 0)
         data += PullItem(Entities.SessionPicker, dao.getPickerSessions().maxOfOrNull { it.updatedAt }?: 0)
         data += PullItem(Entities.Supplier, dao.getAllSuppliers().maxOfOrNull { it.updatedAt }?: 0)

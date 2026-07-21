@@ -83,5 +83,8 @@ class IncomeRepository (private val dao: Dao) {
     suspend fun updateIncomeSessionAsync(session: SessionIncome, change: Change){
         dao.updateIncomeSessionAsync(session, change)
     }
+    suspend fun deleteIncomeSessionAsync(session: SessionIncome, change: Change){
+        dao.deleteIncomeSessionAsync(session, change)
+    }
 
 }
