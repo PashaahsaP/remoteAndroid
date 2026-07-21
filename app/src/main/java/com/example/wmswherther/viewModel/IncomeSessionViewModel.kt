@@ -422,9 +422,10 @@ class IncomeSessionViewModel : ViewModel() {
         incomeRepo.updateGoodsAsync(innerGoods.copy(isAvailable = true, amount = innerGoods.amount), goodsChange)
 
         var incomeCell = incomeRepo.getCellByName("income")
+        var toCellId = if (session.toCellId == null)  incomeCell.id else session.toCellId.toString()
         var innerMovement = MovementFactory.create(
             cellFromId = incomeCell.id,
-            cellToId = session.toCellId.toString(),
+            cellToId = toCellId,
             catalogId = innerGoods.catalogId,
             goodsId = innerGoods.id,
             qty = innerGoods.amount.toString(),
