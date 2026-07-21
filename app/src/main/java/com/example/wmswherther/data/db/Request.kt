@@ -265,6 +265,20 @@ class Request {
             }
         }
     }
+    suspend fun getBatches(ip:String, client: OkHttpClient, time: Long) : JSONArray {
+        val request = Request.Builder()
+            .url("http://$ip:3000/batches/$time")
+            .build()
+
+        return withContext(Dispatchers.IO) {
+            client.newCall(request).execute().use { response ->
+                if (!response.isSuccessful) throw IOException("HTTP ошибка ${response.code}")
+                val body = response.body?.string().orEmpty()
+                val arr = JSONArray(body)
+                arr
+            }
+        }
+    }
     suspend fun getCells(ip:String, client: OkHttpClient, time: Long)  : JSONArray {
         val request = Request.Builder()
             .url("http://$ip:3000/cells/$time")

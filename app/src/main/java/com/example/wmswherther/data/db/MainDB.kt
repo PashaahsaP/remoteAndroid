@@ -7,6 +7,7 @@ import androidx.room.RoomDatabase
 import androidx.room.migration.Migration
 import androidx.sqlite.db.SupportSQLiteDatabase
 import com.example.wmswherther.data.db.Entityes.Barcode
+import com.example.wmswherther.data.db.Entityes.Batches
 import com.example.wmswherther.data.db.Entityes.Catalog
 import com.example.wmswherther.data.db.Entityes.CellType
 import com.example.wmswherther.data.db.Entityes.Cell
@@ -31,6 +32,7 @@ import com.example.wmswherther.data.db.Entityes.User
 @Database(entities = [
 
     Barcode::class,
+    Batches::class,
     Catalog::class,
     Cell::class,
     CellType::class,
@@ -87,6 +89,7 @@ val MIGRATION_1_2 = object : Migration(1, 2) {
                 )
                 """
             )
+
             database.execSQL("CREATE INDEX IF NOT EXISTS index_barcodes_name ON barcodes(name)")
             // </editor-fold>
         // <editor-fold desc="Catalog">

@@ -66,7 +66,7 @@ class IncomeRepository (private val dao: Dao) {
         return dao.getBarcodeByName(barcode)
     }
     suspend fun getTETypes() : List<CellType>{
-       return dao.getCellTypes().filter { cellType -> cellType.type == "BoxTE" }
+       return dao.getCellTypes().filter { cellType -> cellType.type == "te" }
     }
     suspend fun getCellById(id: String): Cell{
         return dao.getCellById(id)

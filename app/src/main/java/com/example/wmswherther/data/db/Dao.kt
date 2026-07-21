@@ -8,6 +8,7 @@ import androidx.room.Query
 import androidx.room.Transaction
 import androidx.room.Update
 import com.example.wmswherther.data.db.Entityes.Barcode
+import com.example.wmswherther.data.db.Entityes.Batches
 import com.example.wmswherther.data.db.Entityes.Catalog
 import com.example.wmswherther.data.db.Entityes.CellType
 import com.example.wmswherther.data.db.Entityes.Cell
@@ -34,7 +35,7 @@ interface Dao {
     
 
     // <editor-fold desc="Cell">
-    @Insert
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insertCell(cell: Cell)
     @Update
     suspend fun updateCell(cell: Cell)
@@ -92,7 +93,7 @@ interface Dao {
     }
     // </editor-fold>
     // <editor-fold desc="TrueSign">
-    @Insert
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
     fun insertTrueSign(sign: TrueSign)
 
     @Query("SELECT * FROM true_signs")
@@ -103,7 +104,7 @@ interface Dao {
 
     @Query("SELECT * FROM services")
     fun getAllService(): List<Service>
-    @Insert
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
     fun insertService(service: Service)
 
     // </editor-fold>
@@ -133,7 +134,7 @@ interface Dao {
     fun getAllIncomeItemBySessionId(incomeSessionId: String): List<IncomeItem>
     // </editor-fold>
     // <editor-fold desc="OutcomeItem">
-    @Insert
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
     fun insertOutcomeItem(outcomeItem: OutcomeItem)
     @Transaction
     suspend fun insertOutcomeItemSync(outcomeItem: OutcomeItem, change: Change){
@@ -154,7 +155,7 @@ interface Dao {
     fun insertOutcomeSession(sessionOutcome: SessionOutcome)
     // </editor-fold>
     // <editor-fold desc="CellTypes">
-    @Insert
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
     fun insertCellType(cellType: CellType)
     @Insert
     suspend fun insertCellTypeSync(cellType: CellType, change: Change):Pair<Unit, Unit>{
@@ -168,7 +169,7 @@ interface Dao {
     suspend fun getCellTypeById(cellTypeId: String): CellType
     // </editor-fold>
     // <editor-fold desc="Supplier">
-    @Insert
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
     fun insertSupplier(supplier: Supplier)
     @Insert
     suspend fun insertSupplierSync(supplier: Supplier, change: Change) : Pair<Unit, Unit> {
@@ -182,7 +183,7 @@ interface Dao {
     suspend fun getSupplierById(id: Int): Supplier
     // </editor-fold>
     // <editor-fold desc="Credential">
-    @Insert
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
     fun insertCredential(credential: Credential) : Long
     @Query("SELECT * FROM credentials")
     fun getAllCredential(): List<Credential>
@@ -190,7 +191,7 @@ interface Dao {
     suspend fun getCredentialById(id: Long): Credential
     // </editor-fold>
     // <editor-fold desc="User">
-    @Insert
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
     fun insertUser(user: User)
     @Query("SELECT * FROM users")
     fun getAllUser(): List<User>
@@ -198,7 +199,7 @@ interface Dao {
     suspend fun getUserById(id: Long): User
     // </editor-fold>
     // <editor-fold desc="Catalog">
-    @Insert
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
     fun insertCatalog(catalog: Catalog)
     @Transaction
     suspend fun insertCatalogSync(catalog: Catalog, change: Change) : Pair<Unit, Unit>{
@@ -212,7 +213,7 @@ interface Dao {
     suspend fun getCatalogs(): List<Catalog>
 // </editor-fold>
     // <editor-fold desc="Goods">
-        @Insert
+        @Insert(onConflict = OnConflictStrategy.REPLACE)
         fun insertGoods(goods: Goods)
         @Transaction
         suspend fun insertGoodsAsync(goods: Goods, change: Change) : Pair<Unit, Unit>{
@@ -246,7 +247,8 @@ interface Dao {
         }
     // </editor-fold>
     // <editor-fold desc="Barcodes">
-    @Insert
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
+
     fun insertBarcode(barcode: Barcode)
     @Transaction
     suspend fun insertBarcodeAsync(barcode: Barcode, change: Change) : Pair<Unit, Unit>{
@@ -259,8 +261,23 @@ interface Dao {
     @Query("SELECT * FROM barcodes")
     suspend fun getBarcodes(): List<Barcode>
     // </editor-fold>
+    // <editor-fold desc="Batches">
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
+    fun insertBatch(batch: Batches)
+    @Transaction
+    suspend fun insertBatchAsync(batch: Batches, change: Change) : Pair<Unit, Unit>{
+        val from = insertBatch(batch)
+        var to = insertBatchesChanges(change)
+        return from to to
+    }
+    @Query("SELECT * FROM batches WHERE name =:batchName")
+    suspend fun getBatchByName(batchName: String): Batches
+    @Query("SELECT * FROM batches")
+    suspend fun getBatches(): List<Batches>
+    // </editor-fold>
     // <editor-fold desc="Changes">
-    @Insert
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
+
     suspend fun insertPackageChanges(change: Change)
     @Insert
     suspend fun insertOutcomeChanges(change: Change)
@@ -282,6 +299,8 @@ interface Dao {
     suspend fun insertGoodsChanges(change: Change)
     @Insert
     suspend fun insertBarcodeChanges(change: Change)
+    @Insert
+    suspend fun insertBatchesChanges(change: Change)
     @Insert
     suspend fun insertInventoryDiffItemChanges(change: Change)
     @Insert
@@ -306,7 +325,7 @@ interface Dao {
     suspend fun updateChange(change: Change)
     // </editor-fold>
     // <editor-fold desc="Movement">
-    @Insert
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insertMovement(movement: Movement)
     @Update
     suspend fun updateMovement(movement: Movement)
@@ -322,7 +341,7 @@ interface Dao {
     suspend fun getMovementById(movementId: String): Movement
     // </editor-fold>
     // <editor-fold desc="InventoryDiffItem">
-    @Insert
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
     fun insertInventoryDiffItem(diff: InventoryDiffItem)
     @Transaction
     suspend fun insertInventoryDiffItemAsync(diff: InventoryDiffItem, change: Change) : Pair<Unit, Unit>{
@@ -336,7 +355,7 @@ interface Dao {
     suspend fun getInventoryDiffItems(): List<InventoryDiffItem>
     // </editor-fold>
     // <editor-fold desc="SessionInventory">
-    @Insert
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
     fun insertInventorySession(session: SessionInventory)
     @Transaction
     suspend fun insertInventorySessionAsync(session: SessionInventory, change: Change) : Pair<Unit, Unit>{
@@ -352,7 +371,7 @@ interface Dao {
 
     // </editor-fold>
     // <editor-fold desc="SessionPicker">
-    @Insert
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
     fun insertPickerSession(session: SessionPicker)
     @Transaction
     suspend fun insertPickerSessionAsync(session: SessionPicker, change: Change) : Pair<Unit, Unit>{
@@ -374,7 +393,7 @@ interface Dao {
     }
     // </editor-fold>
     // <editor-fold desc="PickerItem">
-    @Insert
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
     fun insertPickerItem(item: PickerItem)
     @Transaction
     suspend fun insertPickerItemAsync(item: PickerItem, change: Change) : Pair<Unit, Unit>{

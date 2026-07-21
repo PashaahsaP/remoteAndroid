@@ -144,35 +144,62 @@ class SyncRepository (
     suspend fun syncPull(
         ip: String,
         operation: List< PullItem>
-    ) : List<Pair<Entities,JSONArray>>{
-        var result   = mutableListOf<Pair<Entities,JSONArray>>()
-       for (dataType in operation){
-           when(dataType.entity){
-               Entities.Catalog -> result += Pair(Entities.Catalog, request.getCatalogs(ip, client, dataType.time))
-               Entities.Goods -> result += Pair(Entities.Goods, request.getGoods(ip, client, dataType.time))
-               Entities.Barcode -> result += Pair(Entities.Barcode,  request.getBarcodes(ip, client, dataType.time))
-               Entities.Cell -> result += Pair(Entities.Cell, request.getCells(ip, client, dataType.time))
-               Entities.TypeCell -> result += Pair(Entities.TypeCell, request.getCellTypes(ip, client, dataType.time))
-               Entities.Credential -> result += Pair(Entities.Credential, request.getCredentials(ip, client, dataType.time))
-               Entities.IncomeItem -> result += Pair(Entities.IncomeItem,  request.getIncomeItem(ip, client, dataType.time))
-               Entities.InventoryDiffItem -> result += Pair(Entities.InventoryDiffItem, request.getInventoryDiffItem(ip, client, dataType.time))
-               Entities.Movement -> result += Pair(Entities.Movement, request.getMovement(ip, client, dataType.time))
-               Entities.OutcomeItem -> result += Pair(Entities.OutcomeItem, request.getOutcomeItem(ip, client, dataType.time))
-               Entities.Package -> result += Pair(Entities.Package, request.getPackageEntity(ip, client, dataType.time))
-               Entities.PickerItem -> result += Pair(Entities.PickerItem, request.getPickerItems(ip, client, dataType.time))
-               Entities.Service -> result += Pair(Entities.Service, request.getService(ip, client, dataType.time))
-               Entities.SessionIncome -> result += Pair(Entities.SessionIncome, request.getSessionIncome(ip, client, dataType.time))
-               Entities.SessionInventory -> result += Pair( Entities.SessionInventory, request.getSessionInventory(ip, client, dataType.time))
-               Entities.SessionOutcome -> result += Pair(Entities.SessionOutcome, request.getSessionOutcome(ip, client, dataType.time))
-               Entities.SessionPicker -> result += Pair(Entities.SessionPicker, request.getSessionPicker(ip, client, dataType.time))
-               Entities.Supplier -> result += Pair(Entities.Supplier, request.getSuppliers(ip, client, dataType.time))
-               Entities.TrueSign -> result += Pair(Entities.TrueSign, request.getTrueSign(ip, client, dataType.time))
-               Entities.User -> result += Pair(Entities.User, request.getUsers(ip, client, dataType.time))
+    ) : List<Pair<Entities,JSONArray>> {
+        val result = mutableListOf<Pair<Entities, JSONArray>>()
 
+        for (dataType in operation) {
+            try {
+                val jsonArray: JSONArray = when (dataType.entity) {
+                    Entities.Catalog -> request.getCatalogs(ip, client, dataType.time)
+                    Entities.Goods -> request.getGoods(ip, client, dataType.time)
+                    Entities.Barcode -> request.getBarcodes(ip, client, dataType.time)
+                    Entities.Cell -> request.getCells(ip, client, dataType.time)
+                    Entities.TypeCell -> request.getCellTypes(ip, client, dataType.time)
+                    Entities.Credential -> request.getCredentials(ip, client, dataType.time)
+                    Entities.IncomeItem -> request.getIncomeItem(ip, client, dataType.time)
+                    Entities.InventoryDiffItem -> request.getInventoryDiffItem(
+                        ip,
+                        client,
+                        dataType.time
+                    )
+                    Entities.Movement -> request.getMovement(ip, client, dataType.time)
+                    Entities.OutcomeItem -> request.getOutcomeItem(ip, client, dataType.time)
+                    Entities.Package -> request.getPackageEntity(ip, client, dataType.time)
+                    Entities.PickerItem -> request.getPickerItems(ip, client, dataType.time)
+                    Entities.Service -> request.getService(ip, client, dataType.time)
+                    Entities.SessionIncome -> request.getSessionIncome(ip, client, dataType.time)
+                    Entities.SessionInventory -> request.getSessionInventory(
+                        ip,
+                        client,
+                        dataType.time
+                    )
+                    Entities.SessionOutcome -> request.getSessionOutcome(ip, client, dataType.time)
+                    Entities.SessionPicker -> request.getSessionPicker(ip, client, dataType.time)
+                    Entities.Supplier -> request.getSuppliers(ip, client, dataType.time)
+                    Entities.TrueSign -> request.getTrueSign(ip, client, dataType.time)
+                    Entities.User -> request.getUsers(ip, client, dataType.time)
+                    Entities.Batches -> request.getBatches(ip, client, dataType.time)
+                }
+                result += Pair(dataType.entity, jsonArray)
+            } catch (e: Exception) {
+                // Логируем ошибку для конкретной сущности, но не роняем приложение
+                Log.e(
+                    "#####",
+                    "Ошибка при загрузке данных для ${dataType.entity}: ${e.localizedMessage}",
+                    e
+                )
 
-           }
-       }
-        Log.d("#####", Gson().toJson(result))
-        return  result
+                // Опционально: можно добавить пустой массив или null, если вызывающий код это ожидает
+                // result += Pair(dataType.entity, JSONArray())
+            }
+        }
+
+// Внимание: Gson().toJson(result) всё еще может упасть из-за JSONArray или OOM!
+        try {
+            Log.d("#####", Gson().toJson(result))
+        } catch (e: Exception) {
+            Log.e("#####", "Не удалось сериализовать результат в JSON: ${e.localizedMessage}")
+        }
+        return result
     }
 }

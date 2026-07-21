@@ -466,10 +466,9 @@ class IncomeSessionViewModel : ViewModel() {
         println("in setSelection")
     }
     suspend private fun isTE(cell: String, incomeRepo: IncomeRepository): Boolean {
-        println("in isTE")
         val cells = incomeRepo.getTETypes()
-
-        return cells.any { cellType ->
+        println(cells)
+        var result = cells.any { cellType ->
             val mask = cellType.mask ?: return@any false
 
             mask.length == cell.length &&
@@ -480,7 +479,9 @@ class IncomeSessionViewModel : ViewModel() {
                         }
                     }
         }
-        println("end isTE")
+        println(result)
+        println("##############")
+        return result
 
     }
 }

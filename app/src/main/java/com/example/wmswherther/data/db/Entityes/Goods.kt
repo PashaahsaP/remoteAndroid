@@ -3,6 +3,8 @@ package com.example.wmswherther.data.db.Entityes
 import androidx.room.Entity
 import androidx.room.ForeignKey
 import androidx.room.Index
+import androidx.room.Insert
+import androidx.room.OnConflictStrategy
 import androidx.room.PrimaryKey
 
 @Entity(
@@ -13,6 +15,7 @@ import androidx.room.PrimaryKey
     ],
     indices = [Index("cellId"), Index("catalogId")]
 )
+
 data class Goods(
     @PrimaryKey(autoGenerate = false) val id: String,
     val amount: Int,

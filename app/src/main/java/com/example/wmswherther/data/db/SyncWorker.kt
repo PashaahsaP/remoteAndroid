@@ -8,6 +8,7 @@ import com.example.wmsRemote.data.db.Dao
 import com.example.wmsRemote.data.db.MainDB
 import com.example.wmsRemote.data.enums.StatusType
 import com.example.wmswherther.data.db.Entityes.Barcode
+import com.example.wmswherther.data.db.Entityes.Batches
 import com.example.wmswherther.data.db.Entityes.Catalog
 import com.example.wmswherther.data.db.Entityes.Cell
 import com.example.wmswherther.data.db.Entityes.CellType
@@ -77,7 +78,7 @@ class SyncWorker(
                 }
 
                 SyncType.FULL.name -> {
-                    //pushing(dao, repository)
+                    pushing(dao, repository)
                     totalPulling(dao, repository)
                 }
             }
@@ -102,7 +103,7 @@ class SyncWorker(
         for (operation in operations) {
 
             repository.syncPush(
-                ip = "172.31.153.64",
+                ip = "192.168.6.52",
                 operation = operation
             )
 
@@ -111,13 +112,14 @@ class SyncWorker(
     }
 
     suspend fun pulling(dao: Dao, repository: SyncRepository, data: List<PullItem>) {
-        var result = repository.syncPull("172.31.153.64", data)
+        var result = repository.syncPull("192.168.6.52", data)
         prepareAndAppendData(dao, result)
     }
 
     suspend fun totalPulling(dao: Dao, repository: SyncRepository) {
         var data = generateDataForRequest(dao)
-        var result = repository.syncPull("172.31.153.64", data)
+        var result = repository.syncPull("192.168.6.52", data)
+
         prepareAndAppendData(dao, result)
 
     }
@@ -126,8 +128,11 @@ class SyncWorker(
         dao: Dao,
         pairs: List<Pair<Entities, JSONArray>>
     ) {
+        println("!!!!!!")
+        println(pairs)
         val scope = CoroutineScope(Dispatchers.IO)
         pairs.forEach {
+            println(1)
             if (it.first.ordinal == Entities.Supplier.ordinal && it.second.length() != 0) {
                 Log.d("Size", Gson().toJson(it.second))
                 it.second.toEntity { obj ->
@@ -149,6 +154,7 @@ class SyncWorker(
         }
         delay(150)
         pairs.forEach {
+
             if(it.first.ordinal ==  Entities.Catalog.ordinal && it.second.length() != 0) {
                 it.second.toEntity { obj ->
                     var catalog = Catalog(
@@ -169,7 +175,6 @@ class SyncWorker(
             }
         }
         delay(150)
-
         pairs.forEach {
             if(it.first.ordinal ==  Entities.TypeCell.ordinal&& it.second.length() != 0) {
                 it.second.toEntity { obj ->
@@ -190,7 +195,6 @@ class SyncWorker(
             }
         }
         delay(150)
-
         pairs.forEach {
             if(it.first.ordinal ==  Entities.Cell.ordinal&& it.second.length() != 0)
             {it.second.toEntity { obj ->
@@ -211,7 +215,6 @@ class SyncWorker(
             }}
         }
         delay(150)
-
         pairs.forEach {
             if(it.first.ordinal ==  Entities.Credential.ordinal&& it.second.length() != 0)
             {it.second.toEntity { obj ->
@@ -230,7 +233,6 @@ class SyncWorker(
             }}
         }
         delay(150)
-
         pairs.forEach {
             if(it.first.ordinal ==  Entities.User.ordinal&& it.second.length() != 0)
             {it.second.toEntity { obj ->
@@ -251,7 +253,6 @@ class SyncWorker(
             }}
         }
         delay(150)
-
         pairs.forEach {
             if(it.first.ordinal ==  Entities.Goods.ordinal&& it.second.length() != 0)
             {it.second.toEntity { obj ->
@@ -274,7 +275,6 @@ class SyncWorker(
             }}
         }
         delay(150)
-
         pairs.forEach {
             if(it.first.ordinal ==  Entities.Barcode.ordinal && it.second.length() != 0)
             {it.second.toEntity { obj ->
@@ -296,7 +296,26 @@ class SyncWorker(
             }}
         }
         delay(150)
+        pairs.forEach {
+            if(it.first.ordinal ==  Entities.Batches.ordinal && it.second.length() != 0)
+            {it.second.toEntity { obj ->
+                var batch = Batches(
+                    id = obj.getInt("id"),
+                    name = obj.getString("name"),
+                    catalogId = obj.getString("catalogId"),
+                    createdAt = obj.getLong("createdAt"),
+                    updatedAt = obj.getLong("updatedAt"),
+                    deletedAt = obj.optLong("deletedAt"),
+                    isDeleted = obj.getBoolean("isDeleted"),
+                    other = obj.optString("other")
+                )
 
+                scope.launch {
+                    dao.insertBatch(batch)
+                }
+            }}
+        }
+        delay(150)
         pairs.forEach {
             if(it.first.ordinal ==  Entities.TrueSign.ordinal && it.second.length() != 0)
             {it.second.toEntity { obj ->
@@ -317,7 +336,6 @@ class SyncWorker(
             }}
         }
         delay(150)
-
         pairs.forEach {
             if(it.first.ordinal ==  Entities.SessionIncome.ordinal && it.second.length() != 0)
             {it.second.toEntity { obj ->
@@ -342,7 +360,6 @@ class SyncWorker(
             }}
         }
         delay(150)
-
         pairs.forEach {
             if(it.first.ordinal ==  Entities.IncomeItem.ordinal && it.second.length() != 0)
             {it.second.toEntity { obj ->
@@ -363,7 +380,6 @@ class SyncWorker(
             }}
         }
         delay(150)
-
         pairs.forEach {
             if(it.first.ordinal ==  Entities.Service.ordinal && it.second.length() != 0)
             {it.second.toEntity { obj ->
@@ -383,7 +399,6 @@ class SyncWorker(
             }}
         }
         delay(150)
-
         pairs.forEach {
             if(it.first.ordinal ==  Entities.Package.ordinal && it.second.length() != 0)
             {it.second.toEntity { obj ->
@@ -409,7 +424,6 @@ class SyncWorker(
             }}
         }
         delay(150)
-
         pairs.forEach {
             if(it.first.ordinal ==  Entities.Movement.ordinal && it.second.length() != 0)
             {it.second.toEntity { obj ->
@@ -435,7 +449,6 @@ class SyncWorker(
             }}
         }
         delay(150)
-
         pairs.forEach {
             if(it.first.ordinal ==  Entities.SessionInventory.ordinal && it.second.length() != 0)
             {it.second.toEntity { obj ->
@@ -459,7 +472,6 @@ class SyncWorker(
             }}
         }
         delay(150)
-
         pairs.forEach {
             if(it.first.ordinal ==  Entities.InventoryDiffItem.ordinal && it.second.length() != 0)
             {it.second.toEntity { obj ->
@@ -484,7 +496,6 @@ class SyncWorker(
             }}
         }
         delay(150)
-
         pairs.forEach {
             if(it.first.ordinal ==  Entities.SessionPicker.ordinal && it.second.length() != 0)
             {it.second.toEntity { obj ->
@@ -507,7 +518,6 @@ class SyncWorker(
             }}
         }
         delay(150)
-
         pairs.forEach {
             if(it.first.ordinal ==  Entities.PickerItem.ordinal && it.second.length() != 0)
             {it.second.toEntity { obj ->
@@ -531,7 +541,6 @@ class SyncWorker(
             }}
         }
         delay(150)
-
         pairs.forEach {
             if(it.first.ordinal ==  Entities.SessionOutcome.ordinal && it.second.length() != 0)
             {it.second.toEntity { obj ->
@@ -556,7 +565,6 @@ class SyncWorker(
             }}
         }
         delay(150)
-
         pairs.forEach {
             if(it.first.ordinal ==  Entities.OutcomeItem.ordinal && it.second.length() != 0)
             {it.second.toEntity { obj ->
@@ -579,7 +587,6 @@ class SyncWorker(
         }
         delay(150)
 
-
     }
 
     suspend fun generateDataForRequest(dao: Dao): MutableList<PullItem> {
@@ -587,6 +594,7 @@ class SyncWorker(
         data += PullItem(Entities.Catalog, dao.getCatalogs().maxOfOrNull { it.updatedAt } ?: 0)
         data += PullItem(Entities.Goods, dao.getGoods().maxOfOrNull { it.updatedAt }?: 0)
         data += PullItem(Entities.Barcode, dao.getBarcodes().maxOfOrNull { it.updatedAt }?: 0)
+        data += PullItem(Entities.Batches, dao.getBatches().maxOfOrNull { it.updatedAt }?: 0)
         data += PullItem(Entities.Cell, dao.getAllCells().maxOfOrNull { it.updatedAt }?: 0)
         data += PullItem(Entities.TypeCell, dao.getCellTypes().maxOfOrNull { it.updatedAt }?: 0)
         data += PullItem(Entities.Credential, dao.getAllCredential().maxOfOrNull { it.updatedAt }?: 0)

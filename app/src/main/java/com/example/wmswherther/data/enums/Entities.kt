@@ -7,6 +7,7 @@ enum class Entities {
     Cell,
     Goods,
     Barcode,
+    Batches,
     Credential,
     User,
     SessionIncome,
