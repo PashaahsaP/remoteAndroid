@@ -15,6 +15,7 @@ import com.example.wmswherther.data.db.Entityes.Goods
 import com.example.wmswherther.data.db.Entityes.Movement
 import com.example.wmswherther.data.db.Entityes.SessionIncome
 import com.example.wmswherther.data.db.Repositories.IncomeRepository
+import com.example.wmswherther.data.factory.CellFactory
 import com.example.wmswherther.data.factory.ChangeFactory
 import com.example.wmswherther.data.factory.IncomeItemFactory
 import com.example.wmswherther.data.factory.MovementFactory
@@ -240,27 +241,68 @@ class IncomeSessionViewModel : ViewModel() {
         sessionId: String
     ) {
         items.value?.forEach { item ->
-            if(item is IncomeItem.TEItem || item is IncomeItem.NewTEItem){
+            if(item is IncomeItem.TEItem  ){
                 // Добавить все те
                 var cell : Cell = incomeRepo.getCellByName((item as IncomeItem.TEItem).teName)
 
                 if(cell == null){
-                    cell = Cell(
-                        id = UUID.randomUUID(),
-                        typeCellId = incomeRepo.getCellTypes().first { inner -> inner. }
-
+                    cell = CellFactory.create(
+                        typeCellId = incomeRepo.getCellTypes().first { cellType ->
+                            var mask = cellType.mask
+                            mask?.length == item.teName.length &&
+                                    mask.indices.all { i ->
+                                        when (mask[i]) {
+                                            '#' -> item.teName[i].isDigit()
+                                            '*' -> item.teName[i].isLetter()
+                                            else -> mask[i] == item.teName[i]
+                                        }
+                                    }
+                        }.id,
+                        parentCellId = session.incomeCellId,
+                        name = item.teName
                     )
+
                     var change = ChangeFactory.create(
-
+                        payload = Gson().toJson(cell),
+                        payloadBefore = Gson().toJson(cell),
+                        entityId = cell.id,
+                        supplierId = session.supplierId,
+                        operationType = OperationType.InsertCell
                     )
-                    incomeRepo.insertCellAsync(cell)
+                    incomeRepo.insertCellAsync(cell,change)
                 }
-                // Проверить parent name и проставить id для элементов
-                //
+
             }
-            if(item is IncomeItem.TEItem || item is IncomeItem.NewTEItem){
+            if(  item is IncomeItem.NewTEItem){
                 // Добавить все те
-                incomeRepo.getCellByName((item as IncomeItem.TEItem).teName)
+                var cell : Cell = incomeRepo.getCellByName((item as IncomeItem.TEItem).teName)
+                if(cell == null){
+                    cell = CellFactory.create(
+                        typeCellId = incomeRepo.getCellTypes().first { cellType ->
+                            var mask = cellType.mask
+                            mask?.length == item.teName.length &&
+                                    mask.indices.all { i ->
+                                        when (mask[i]) {
+                                            '#' -> item.teName[i].isDigit()
+                                            '*' -> item.teName[i].isLetter()
+                                            else -> mask[i] == item.teName[i]
+                                        }
+                                    }
+                        }.id,
+                        parentCellId = session.incomeCellId,
+                        name = item.teName
+                    )
+
+                    var change = ChangeFactory.create(
+                        payload = Gson().toJson(cell),
+                        payloadBefore = Gson().toJson(cell),
+                        entityId = cell.id,
+                        supplierId = session.supplierId,
+                        operationType = OperationType.InsertCell
+                    )
+
+                    incomeRepo.insertCellAsync(cell,change)
+                }
                 // Проверить parent name и проставить id для элементов
                 //
             }
