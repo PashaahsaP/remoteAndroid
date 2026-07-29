@@ -38,6 +38,7 @@ import com.example.wmswherther.Classes.UiState.*
 import com.example.wmswherther.Fragments.MainFragment
 import com.example.wmswherther.Fragments.SearchFragment
 import com.example.wmswherther.data.db.Entityes.Goods
+import com.example.wmswherther.data.db.Repositories.InventoryRepository
 import com.example.wmswherther.data.db.SyncWorker
 import com.example.wmswherther.viewModel.IncomeSessionViewModel
 import com.example.wmswherther.viewModel.MainViewModel
@@ -1125,3 +1126,18 @@ private fun pushChanges(requireActivity: FragmentActivity) {
         .enqueue(request)
 }
 
+suspend private fun isTE(cell: String, inventoryRepo: InventoryRepository): Boolean {
+    val cells = inventoryRepo.getCellTypes().filter { cellType -> cellType.type == "BoxTE" }
+
+    return cells.any { cellType ->
+        val mask = cellType.mask ?: return@any false
+
+        mask.length == cell.length &&
+                mask.indices.all { i ->
+                    when (mask[i]) {
+                        '#' -> cell[i].isDigit()
+                        else -> mask[i] == cell[i]
+                    }
+                }
+    }
+}

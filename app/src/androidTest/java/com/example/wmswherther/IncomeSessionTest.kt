@@ -618,6 +618,7 @@ suspend fun appendDummyData(dao: Dao, sessionId: String, supplierId: Int){
     )
     var cellChange = ChangeFactory.create(
         payload = Gson().toJson(IN01) ,
+        payloadBefore = Gson().toJson(IN01) ,
         entityId = IN01.id,
         supplierId = null,
         operationType = OperationType.InsertCell
@@ -631,6 +632,7 @@ suspend fun appendDummyData(dao: Dao, sessionId: String, supplierId: Int){
     )
     var teChange = ChangeFactory.create(
         payload = Gson().toJson(N00000001),
+        payloadBefore = Gson().toJson(N00000001),
         entityId = N00000001.id,
         supplierId = null,
         operationType = OperationType.InsertCell
@@ -665,6 +667,7 @@ suspend fun appendDummyData(dao: Dao, sessionId: String, supplierId: Int){
 
     var sessionChange = ChangeFactory.create(
         payload = Gson().toJson(session),
+        payloadBefore = Gson().toJson(session),
         entityId = session.id,
         supplierId = borkSupplier.id,
         operationType = OperationType.InsertIncomeSession
@@ -679,6 +682,7 @@ suspend fun appendDummyData(dao: Dao, sessionId: String, supplierId: Int){
         )
         var cellChangeSecond = ChangeFactory.create(
             payload = Gson().toJson(A111),
+            payloadBefore = Gson().toJson(A111),
             entityId = A111.id,
             supplierId = null,
             operationType = OperationType.InsertCell
@@ -691,6 +695,7 @@ suspend fun appendDummyData(dao: Dao, sessionId: String, supplierId: Int){
         )
         var catalogChange = ChangeFactory.create(
             payload = Gson().toJson(catalog),
+            payloadBefore = Gson().toJson(catalog),
             entityId = catalog.id,
             supplierId = borkSupplier.id,
             operationType = OperationType.InsertCatalog
@@ -703,6 +708,7 @@ suspend fun appendDummyData(dao: Dao, sessionId: String, supplierId: Int){
         )
         var barcodeChanges = ChangeFactory.create(
             payload = Gson().toJson(barcode),
+            payloadBefore = Gson().toJson(barcode),
             entityId = barcode.id,
             supplierId = borkSupplier.id,
             operationType = OperationType.InsertBarcode
@@ -719,6 +725,7 @@ suspend fun appendDummyData(dao: Dao, sessionId: String, supplierId: Int){
         )
         var goodsChange = ChangeFactory.create(
             payload = Gson().toJson(goods),
+            payloadBefore = Gson().toJson(goods),
             entityId = goods.id,
             supplierId = borkSupplier.id,
             operationType = OperationType.InsertGoods
@@ -731,6 +738,7 @@ suspend fun appendDummyData(dao: Dao, sessionId: String, supplierId: Int){
         )
         var incomeItemChange = ChangeFactory.create(
             payload = Gson().toJson(incomeItem),
+            payloadBefore = Gson().toJson(incomeItem),
             entityId = incomeItem.id,
             supplierId = borkSupplier.id,
             operationType = OperationType.InsertIncomeItem
@@ -748,6 +756,7 @@ suspend fun appendDummyData(dao: Dao, sessionId: String, supplierId: Int){
         )
         var cellChangeSecond = ChangeFactory.create(
             payload = Gson().toJson(A111),
+            payloadBefore = Gson().toJson(A111),
             entityId = A111.id,
             supplierId = null,
             operationType = OperationType.InsertCell
@@ -760,6 +769,7 @@ suspend fun appendDummyData(dao: Dao, sessionId: String, supplierId: Int){
         )
         var catalogChange = ChangeFactory.create(
             payload = Gson().toJson(catalog),
+            payloadBefore = Gson().toJson(catalog),
             entityId = catalog.id,
             supplierId = borkSupplier.id,
             operationType = OperationType.InsertCatalog
@@ -773,6 +783,7 @@ suspend fun appendDummyData(dao: Dao, sessionId: String, supplierId: Int){
 
         var barcodeChanges = ChangeFactory.create(
             payload = Gson().toJson(barcode),
+            payloadBefore = Gson().toJson(barcode),
             entityId = barcode.id,
             supplierId = borkSupplier.id,
             operationType = OperationType.InsertBarcode
@@ -789,6 +800,7 @@ suspend fun appendDummyData(dao: Dao, sessionId: String, supplierId: Int){
         )
         var goodsChange = ChangeFactory.create(
             payload = Gson().toJson(goods),
+            payloadBefore = Gson().toJson(goods),
             entityId = goods.id,
             supplierId = borkSupplier.id,
             operationType = OperationType.InsertGoods
@@ -801,6 +813,7 @@ suspend fun appendDummyData(dao: Dao, sessionId: String, supplierId: Int){
         )
         var incomeItemChange = ChangeFactory.create(
             payload = Gson().toJson(incomeItem),
+            payloadBefore = Gson().toJson(incomeItem),
             entityId = incomeItem.id,
             supplierId = borkSupplier.id,
             operationType = OperationType.InsertIncomeItem

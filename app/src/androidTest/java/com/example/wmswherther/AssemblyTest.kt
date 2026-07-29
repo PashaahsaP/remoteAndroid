@@ -401,6 +401,7 @@ class AssemblyTest {
         )
         var cellChange = ChangeFactory.create(
             payload = Gson().toJson(A100),
+            payloadBefore = Gson().toJson(A100),
             entityId = A100.id,
             supplierId = null,
             operationType = OperationType.InsertCell
@@ -414,6 +415,7 @@ class AssemblyTest {
         )
         var teChange = ChangeFactory.create(
             payload = Gson().toJson(N00000001),
+            payloadBefore = Gson().toJson(N00000001),
             entityId = N00000001.id,
             supplierId = null,
             operationType = OperationType.InsertCell
@@ -435,6 +437,7 @@ class AssemblyTest {
         )
         var pickerChange = ChangeFactory.create(
             payload = Gson().toJson(pickerSession),
+            payloadBefore = Gson().toJson(pickerSession),
             entityId = pickerSession.id,
             supplierId = vitekSupplier.id,
             operationType = OperationType.InsertPickerSession
@@ -526,6 +529,7 @@ class AssemblyTest {
             )
             var cellChange = ChangeFactory.create(
                 payload = Gson().toJson(A111),
+                payloadBefore = Gson().toJson(A111),
                 entityId = A111.id,
                 supplierId = null,
                 operationType = OperationType.InsertCell
@@ -540,6 +544,7 @@ class AssemblyTest {
             )
             var catalogChange = ChangeFactory.create(
                 payload = Gson().toJson(catalog),
+                payloadBefore = Gson().toJson(catalog),
                 entityId = catalog.id,
                 supplierId = vitekSupplier.id,
                 operationType = OperationType.InsertCatalog
@@ -552,6 +557,7 @@ class AssemblyTest {
             )
             var barcodeChanges = ChangeFactory.create(
                 payload = Gson().toJson(barcode),
+                payloadBefore = Gson().toJson(barcode),
                 entityId = barcode.id,
                 supplierId = vitekSupplier.id,
                 operationType = OperationType.InsertBarcode
@@ -568,6 +574,7 @@ class AssemblyTest {
             )
             var goodsChange = ChangeFactory.create(
                 payload = Gson().toJson(goods),
+                payloadBefore = Gson().toJson(goods),
                 entityId = goods.id,
                 supplierId = vitekSupplier.id,
                 operationType = OperationType.InsertGoods
@@ -582,6 +589,7 @@ class AssemblyTest {
             )
             var pickerChange = ChangeFactory.create(
                 payload = Gson().toJson(pickerItem),
+                payloadBefore = Gson().toJson(pickerItem),
                 entityId = pickerItem.id,
                 supplierId = vitekSupplier.id,
                 operationType = OperationType.InsertGoods
@@ -693,7 +701,8 @@ class AssemblyTest {
             name = "IN-01"
         )
         var cellChange = ChangeFactory.create(
-            payload = Gson().toJson(IN01) ,
+            payload = Gson().toJson(IN01),
+            payloadBefore = Gson().toJson(IN01),
             entityId = IN01.id,
             supplierId = null,
             operationType = OperationType.InsertCell
@@ -707,6 +716,7 @@ class AssemblyTest {
         )
         var teChange = ChangeFactory.create(
             payload = Gson().toJson(N00000001),
+            payloadBefore =  Gson().toJson(N00000001),
             entityId = N00000001.id,
             supplierId = null,
             operationType = OperationType.InsertCell
@@ -741,6 +751,7 @@ class AssemblyTest {
 
         var sessionChange = ChangeFactory.create(
             payload = Gson().toJson(session),
+            payloadBefore = Gson().toJson(session),
             entityId = session.id,
             supplierId = borkSupplier.id,
             operationType = OperationType.InsertIncomeSession
@@ -755,6 +766,7 @@ class AssemblyTest {
             )
             var cellChangeSecond = ChangeFactory.create(
                 payload = Gson().toJson(A111),
+                payloadBefore = Gson().toJson(A111),
                 entityId = A111.id,
                 supplierId = null,
                 operationType = OperationType.InsertCell
@@ -767,6 +779,7 @@ class AssemblyTest {
             )
             var catalogChange = ChangeFactory.create(
                 payload = Gson().toJson(catalog),
+                payloadBefore = Gson().toJson(catalog),
                 entityId = catalog.id,
                 supplierId = borkSupplier.id,
                 operationType = OperationType.InsertCatalog
@@ -779,6 +792,7 @@ class AssemblyTest {
             )
             var barcodeChanges = ChangeFactory.create(
                 payload = Gson().toJson(barcode),
+                payloadBefore = Gson().toJson(barcode),
                 entityId = barcode.id,
                 supplierId = borkSupplier.id,
                 operationType = OperationType.InsertBarcode
@@ -795,6 +809,7 @@ class AssemblyTest {
             )
             var goodsChange = ChangeFactory.create(
                 payload = Gson().toJson(goods),
+                payloadBefore = Gson().toJson(goods),
                 entityId = goods.id,
                 supplierId = borkSupplier.id,
                 operationType = OperationType.InsertGoods
@@ -807,6 +822,7 @@ class AssemblyTest {
             )
             var incomeItemChange = ChangeFactory.create(
                 payload = Gson().toJson(incomeItem),
+                payloadBefore = Gson().toJson(incomeItem),
                 entityId = incomeItem.id,
                 supplierId = borkSupplier.id,
                 operationType = OperationType.InsertIncomeItem
@@ -823,6 +839,7 @@ class AssemblyTest {
             )
             var cellChangeSecond = ChangeFactory.create(
                 payload = Gson().toJson(A111),
+                payloadBefore = Gson().toJson(A111),
                 entityId = A111.id,
                 supplierId = null,
                 operationType = OperationType.InsertCell
@@ -835,6 +852,7 @@ class AssemblyTest {
             )
             var catalogChange = ChangeFactory.create(
                 payload = Gson().toJson(catalog),
+                payloadBefore = Gson().toJson(catalog),
                 entityId = catalog.id,
                 supplierId = borkSupplier.id,
                 operationType = OperationType.InsertCatalog
@@ -848,6 +866,7 @@ class AssemblyTest {
 
             var barcodeChanges = ChangeFactory.create(
                 payload = Gson().toJson(barcode),
+                payloadBefore = Gson().toJson(barcode),
                 entityId = barcode.id,
                 supplierId = borkSupplier.id,
                 operationType = OperationType.InsertBarcode
@@ -864,6 +883,7 @@ class AssemblyTest {
             )
             var goodsChange = ChangeFactory.create(
                 payload = Gson().toJson(goods),
+                payloadBefore = Gson().toJson(goods),
                 entityId = goods.id,
                 supplierId = borkSupplier.id,
                 operationType = OperationType.InsertGoods
@@ -876,6 +896,7 @@ class AssemblyTest {
             )
             var incomeItemChange = ChangeFactory.create(
                 payload = Gson().toJson(incomeItem),
+                payloadBefore = Gson().toJson(incomeItem),
                 entityId = incomeItem.id,
                 supplierId = borkSupplier.id,
                 operationType = OperationType.InsertIncomeItem

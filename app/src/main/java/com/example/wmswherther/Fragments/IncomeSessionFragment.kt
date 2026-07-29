@@ -6,6 +6,7 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.Button
+import android.widget.TextView
 import androidx.appcompat.app.AlertDialog
 import androidx.core.content.ContextCompat
 import androidx.fragment.app.Fragment
@@ -20,6 +21,7 @@ import androidx.work.WorkManager
 import com.example.wmsRemote.R
 import com.example.wmsRemote.data.db.MainDB
 import com.example.wmsRemote.databinding.FragmentIncomeSessionBinding
+import com.example.wmsRemote.isBoxTE
 import com.example.wmswherther.Adapters.IncomeSessionAdapter
 import com.example.wmswherther.Classes.IncomeItem
 import com.example.wmswherther.Classes.UiState
@@ -97,7 +99,7 @@ class IncomeSessionFragment : Fragment() {
                         || localViewModel.IsOverCounter.value == true
                     ) {
                         val view = LayoutInflater.from(activity)
-                            .inflate(R.layout.dialog, null)
+                            .inflate(R.layout.dialog_income_session, null)
                         val btnYes = view.findViewById<Button>(R.id.btnYes)
                         val btnNo = view.findViewById<Button>(R.id.btnNo)
 
@@ -106,16 +108,15 @@ class IncomeSessionFragment : Fragment() {
                             .create()
 
                         btnYes.setOnClickListener {
-                            println(107)
                             finishSessionAndReturnToPreviousFragment(incomeRepo, sessionId)
+                            dialog.dismiss()
                         }
                         btnNo.setOnClickListener {
                             dialog.dismiss()
                         }
+                        dialog.show()
                     } else {
-                        println(117)
                         finishSessionAndReturnToPreviousFragment(incomeRepo, sessionId)
-
                     }
                 }
             })
@@ -173,10 +174,13 @@ class IncomeSessionFragment : Fragment() {
             lifecycleScope.launch {
                 var newItems: MutableList<IncomeItem> = mutableListOf()
                 var bar = incomeRepo.getBarcodeByName(barcode)
-                if (bar != null && bar is Barcode) {
+                if ((bar != null && bar is Barcode) || isTE(barcode, incomeRepo)) {
                     var isAdded = false
                     withContext(Dispatchers.IO) {
-                        isAdded = increaseCounterInMainListForBarcode(bar, isAdded, newItems)
+
+
+
+                        isAdded = increaseCounterInMainListForBarcode(bar,barcode, isAdded, newItems, incomeRepo)
                         createNewItemIfNotFoundInMainList(isAdded, incomeRepo, bar, newItems)
                     }
                     withContext(Dispatchers.Main) {
@@ -220,35 +224,52 @@ class IncomeSessionFragment : Fragment() {
         }
     }
 
-    private fun increaseCounterInMainListForBarcode(
+    suspend private fun increaseCounterInMainListForBarcode(
         bar: Barcode,
+        barcode: String,
         isAdded: Boolean,
-        newItems: MutableList<IncomeItem>
+        newItems: MutableList<IncomeItem>,
+        incomeRepo: IncomeRepository
     ): Boolean {
         var isAdded1 = isAdded
         localViewModel.items.value?.forEach { item ->
-            var teCount = item.teCount
-            if ((viewModel.uiState.value as UiState.IncomeSessionMenu).isTEModeActive) {
-                teCount = teCount + 1
-            }
-            if (item is IncomeItem.GoodsItem &&
-                item.catalogId == bar.catalogId && localViewModel.currentCellName.value.toString() == item.parentCellName) {
+            if (isTE(barcode, incomeRepo)) {
                 isAdded1 = true
-                newItems += IncomeItemFactory.copyGoodsPlusOne(item)
-            }else if (item is IncomeItem.NewGoodsItem &&
-                item.catalogId == bar.catalogId && localViewModel.currentCellName.value.toString() == item.parentCellName){
-                isAdded1 = true
-                newItems += IncomeItemFactory.copyNewGoodsPlusOne(item)
-            }
-            else {
-                newItems += item
-            }
+                    if ((item is IncomeItem.TEItem && item.teName == barcode) || (item is IncomeItem.NewTEItem && item.teName == barcode)) {
+                        item.haveCount = 1
+                        newItems += item
+                    } else if (item.parentCellName == barcode) {
+                        item.haveCount = item.allCount
+                        newItems += item
+                    }else{
+                        newItems += item
+                    }
 
+            } else {
+                var teCount = item.teCount
+                if ((viewModel.uiState.value as UiState.IncomeSessionMenu).isTEModeActive) {
+                    teCount = teCount + 1
+                }
+                if (item is IncomeItem.GoodsItem &&
+                    item.catalogId == bar.catalogId && localViewModel.currentCellName.value.toString() == item.parentCellName
+                ) {
+                    isAdded1 = true
+                    newItems += IncomeItemFactory.copyGoodsPlusOne(item)
+                } else if (item is IncomeItem.NewGoodsItem &&
+                    item.catalogId == bar.catalogId && localViewModel.currentCellName.value.toString() == item.parentCellName
+                ) {
+                    isAdded1 = true
+                    newItems += IncomeItemFactory.copyNewGoodsPlusOne(item)
+                } else {
+                    newItems += item
+                }
+
+            }
         }
         return isAdded1
     }
 
-    private fun appendRemainigItemWithSameTE(
+    fun appendRemainigItemWithSameTE(
         TE: String?,
         innerIncomeItems: MutableList<IncomeItem>
     ) {
@@ -267,7 +288,7 @@ class IncomeSessionFragment : Fragment() {
 
 
 
-    private fun removeDuplication(innerIncomeItems: MutableList<IncomeItem>): MutableList<IncomeItem> {
+    fun removeDuplication(innerIncomeItems: MutableList<IncomeItem>): MutableList<IncomeItem> {
         var result: MutableList<IncomeItem> = mutableListOf()
 
         result += innerIncomeItems.first()//группировка по catalogId чтобы в последующем сложить дубликаты
@@ -300,7 +321,7 @@ class IncomeSessionFragment : Fragment() {
         return result
     }
 
-    private fun resetTeCountAndAppendRemainingItemsToResult(
+    fun resetTeCountAndAppendRemainingItemsToResult(
         TE: String?,
         result: MutableList<IncomeItem>
     ) {
@@ -498,3 +519,18 @@ private fun pullChanges(requireActivity: FragmentActivity) {
         .enqueue(request)
 }
 //TODO когда выходишь из заявки то вылезает окно те мода
+suspend private fun isTE(cell: String, incomeRepo: IncomeRepository): Boolean {
+    val cells = incomeRepo.getCellTypes().filter { cellType -> cellType.type == "te" }
+
+    return cells.any { cellType ->
+        val mask = cellType.mask ?: return@any false
+
+        mask.length == cell.length &&
+                mask.indices.all { i ->
+                    when (mask[i]) {
+                        '#' -> cell[i].isDigit()
+                        else -> mask[i] == cell[i]
+                    }
+                }
+    }
+}

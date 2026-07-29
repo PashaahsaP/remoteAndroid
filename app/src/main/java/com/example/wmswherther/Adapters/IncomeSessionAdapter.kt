@@ -217,27 +217,40 @@ class IncomeSessionAdapter(
                     localViewModel.cellStack.removeLast()
                     localViewModel.setCellName(localViewModel.cellStack.last())
                     for (elem in value){
+                        var have = localViewModel.items.value
+                            ?.filter { item -> (item is IncomeItem.GoodsItem || item is IncomeItem.NewGoodsItem) }
+                            ?.sumOf { inner -> inner.haveCount }
+
+                        var total = localViewModel.items.value
+                            ?.filter { item -> (elem is IncomeItem.GoodsItem || elem is IncomeItem.NewGoodsItem) }
+                            ?.sumOf { inner -> inner.allCount }
+
                         localViewModel.items.value?.forEach { item ->
-                            if(item.getName() == elem.getName()){
+                            if(item.getName() == elem.getName()){// если найден элемент тот же в предыдущем стеке то надо закрыть его(тип поменять)
                                 elem.isExpanded = false
+                                if(have != total &&  (elem is IncomeItem.TEItem || elem is IncomeItem.NewTEItem))
+                                    elem.haveCount = 0
                             }
-                            if( item.getName() == elem.parentCellName){
+                            if( item.getName() == elem.parentCellName){// товар в те который был надо спрятать также
                                 elem.isExpanded = false
                                 elem.isShown = false
                             }
-                            if( (elem is IncomeItem.GoodsItem || elem is IncomeItem.NewGoodsItem) //меняем количество только у товара а не у те
+                            if( (elem is IncomeItem.GoodsItem || elem is IncomeItem.NewGoodsItem) //меняем количество только у товара а не у те. берется количество товара у вложенности и копируется в предыдущий элемент стека
                                     && elem.getCatalogIdOfItem() == item.getCatalogIdOfItem()
                                     && item.parentCellName == elem.parentCellName){
                                 elem.haveCount = item.haveCount
                             }
                         }
+
                     }
+
                     localViewModel.updateItems(value)
                 }
 
             }
             is IncomeSessionCollapsedViewHolder ->{
                 holder.tvLeft.text = item.getName()
+                holder.tvCount.text = "${item.haveCount}/${item.allCount}"
                 holder.container.setOnClickListener {
                     var value = localViewModel.items.value!!.toList()
                     localViewModel.stack.addLast(value)

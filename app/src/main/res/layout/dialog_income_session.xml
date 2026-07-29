@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="440dp"
+    android:layout_height="200dp"
+    android:padding="10dp"
+    >
+
+    <TextView
+        android:id="@+id/tvMessage"
+        android:layout_width="320dp"
+        android:layout_height="70dp"
+        android:text="Приемка завершается с разхождениями.Вы уверенны что хотите завершить приемку?"
+        android:textSize="20dp"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        android:layout_marginTop="30dp">
+
+    </TextView>
+
+
+
+    <Button
+        android:id="@+id/btnYes"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Да"
+        android:backgroundTint="@color/regularBlue"
+        android:layout_marginEnd="25dp"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/tvMessage">
+
+    </Button>
+
+    <Button
+        android:id="@+id/btnNo"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:backgroundTint="@color/regularBlue"
+        android:text="Нет"
+        android:layout_marginEnd="10dp"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toStartOf="@+id/btnYes"
+        app:layout_constraintTop_toBottomOf="@+id/tvMessage">
+
+    </Button>
+</androidx.constraintlayout.widget.ConstraintLayout>

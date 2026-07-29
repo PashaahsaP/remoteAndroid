@@ -740,6 +740,7 @@ class MoveSessionTest {
         )
         var cellChange = ChangeFactory.create(
             payload = Gson().toJson(A111),
+            payloadBefore = Gson().toJson(A111),
             entityId = A111.id,
             supplierId = null,
             operationType = OperationType.InsertCell
@@ -752,6 +753,7 @@ class MoveSessionTest {
         )
         var teChange = ChangeFactory.create(
             payload = Gson().toJson(N00000001),
+            payloadBefore = Gson().toJson(N00000001),
             entityId = N00000001.id,
             supplierId = null,
             operationType = OperationType.InsertCell
@@ -775,6 +777,7 @@ class MoveSessionTest {
         )
         var inventoryChange = ChangeFactory.create(
             payload = Gson().toJson(inventoryTask),
+            payloadBefore = Gson().toJson(inventoryTask),
             entityId = inventoryTask.id,
             supplierId = vitekSupplier.id,
             operationType = OperationType.InsertInventorySession
@@ -789,6 +792,7 @@ class MoveSessionTest {
             )
             var catalogChange = ChangeFactory.create(
                 payload = Gson().toJson(catalog),
+                payloadBefore = Gson().toJson(catalog),
                 entityId = catalog.id,
                 supplierId = vitekSupplier.id,
                 operationType = OperationType.InsertCatalog
@@ -800,6 +804,7 @@ class MoveSessionTest {
             )
             var barcodeChanges = ChangeFactory.create(
                 payload = Gson().toJson(barcode),
+                payloadBefore = Gson().toJson(barcode),
                 entityId = barcode.id,
                 supplierId = vitekSupplier.id,
                 operationType = OperationType.InsertBarcode
@@ -816,6 +821,7 @@ class MoveSessionTest {
             )
             var goodsChange = ChangeFactory.create(
                 payload = Gson().toJson(goods),
+                payloadBefore = Gson().toJson(goods),
                 entityId = goods.id,
                 supplierId = vitekSupplier.id,
                 operationType = OperationType.InsertGoods
@@ -831,6 +837,7 @@ class MoveSessionTest {
             )
             var catalogChange = ChangeFactory.create(
                 payload = Gson().toJson(catalog.id),
+                payloadBefore = Gson().toJson(catalog.id),
                 entityId = catalog.id,
                 supplierId = vitekSupplier.id,
                 operationType = OperationType.InsertCatalog
@@ -842,6 +849,7 @@ class MoveSessionTest {
             )
             var barcodeChanges = ChangeFactory.create(
                 payload = Gson().toJson(barcode),
+                payloadBefore = Gson().toJson(barcode),
                 entityId = barcode.id,
                 supplierId = vitekSupplier.id,
                 operationType = OperationType.InsertBarcode
@@ -858,6 +866,7 @@ class MoveSessionTest {
             )
             var goodsChange = ChangeFactory.create(
                 payload = Gson().toJson(goods),
+                payloadBefore = Gson().toJson(goods),
                 entityId = goods.id,
                 supplierId = vitekSupplier.id,
                 operationType = OperationType.InsertGoods

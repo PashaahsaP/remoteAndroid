@@ -38,7 +38,7 @@ object IncomeItemFactory {
         item.isExpanded = false
         item.isExpandable = false
         item.isShown = true
-        item.haveCount = 0
+        item.haveCount = 1
         item.allCount = allCount
         item.parentCellId = parentCellId
         item.parentCellName = parentCellName
@@ -113,6 +113,54 @@ object IncomeItemFactory {
 
         return item
     }
+    /*fun copyTeOrNewTE(
+        goods: IncomeItem,
+        parentCellName: String,
+        haveCount: Int,
+        allCount: Int
+    ) : IncomeItem{
+        var item: IncomeItem = IncomeItem.TEItem(
+            typeCellId = goods.,
+            id = "",
+            catalogId = "",
+            supplierId = 9999)
+
+        if(goods is IncomeItem.TEItem) {
+            item = IncomeItem.NewGoodsItem(
+                goodsName = goods.goodsName,
+                catalogId = goods.catalogId,
+                supplierId = goods.supplierId,
+            )
+            item.isSelected = goods.isSelected
+            item.isExpanded = goods.isExpanded
+            item.isExpandable = goods.isExpandable
+            item.isShown = false
+            item.haveCount = haveCount
+            item.allCount = allCount
+            item.parentCellId = parentCellName
+            item.parentCellName = parentCellName
+            item.teCount = 0
+
+        }else if(goods is IncomeItem.GoodsItem){
+            item =  IncomeItem.GoodsItem(
+                goodsName = goods.goodsName,
+                id = goods.id,
+                catalogId = goods.catalogId,
+                supplierId = goods.supplierId,
+            )
+            item.isSelected = goods.isSelected
+            item.isExpanded = goods.isExpanded
+            item.isExpandable = goods.isExpandable
+            item.isShown = false
+            item.haveCount = haveCount
+            item.allCount = allCount
+            item.teCount = 0
+            item.parentCellId = parentCellName
+            item.parentCellName = parentCellName
+        }
+
+        return item
+    }*/
     fun copyGoodsPlusOne(
         goods: IncomeItem.GoodsItem
     ) : IncomeItem.GoodsItem{
@@ -272,8 +320,8 @@ object IncomeItemFactory {
         item.isExpanded = false
         item.isExpandable = true
         item.isShown = true
-        item.haveCount = 0
-        item.allCount = 0
+        item.haveCount = 1
+        item.allCount = 1
         item.parentCellName = parentCellName
         item.teCount = 0
 

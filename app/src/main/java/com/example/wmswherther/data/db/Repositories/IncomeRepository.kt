@@ -83,14 +83,20 @@ class IncomeRepository (private val dao: Dao) {
     suspend fun insertMovementAsync(movement: Movement, change: Change){
         dao.insertMovementSync(movement, change)
     }
+    suspend fun insertGoodsAsync(goods: Goods, change: Change){
+        dao.insertGoodsAsync(goods, change)
+    }
     suspend fun insertCellAsync(cell: Cell, change: Change){
         dao.insertCellSync(cell, change)
     }
     suspend fun updateIncomeSessionAsync(session: SessionIncome, change: Change){
         dao.updateIncomeSessionAsync(session, change)
     }
+    suspend fun updateCellAsync(cell: Cell, change: Change){
+        dao.updateCellAsync(cell, change)
+    }
+
     suspend fun deleteIncomeSessionAsync(session: SessionIncome, change: Change){
         dao.deleteIncomeSessionAsync(session, change)
     }
-
 }

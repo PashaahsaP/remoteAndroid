@@ -15,7 +15,9 @@ import com.example.wmswherther.data.db.Entityes.Goods
 import com.example.wmswherther.data.db.Entityes.Movement
 import com.example.wmswherther.data.db.Entityes.SessionIncome
 import com.example.wmswherther.data.db.Repositories.IncomeRepository
+import com.example.wmswherther.data.factory.CellFactory
 import com.example.wmswherther.data.factory.ChangeFactory
+import com.example.wmswherther.data.factory.GoodsFactory
 import com.example.wmswherther.data.factory.IncomeItemFactory
 import com.example.wmswherther.data.factory.MovementFactory
 import com.google.gson.Gson
@@ -222,6 +224,22 @@ class IncomeSessionViewModel : ViewModel() {
         sessionId: String
     ) {
         items.value?.forEach { item ->
+            // обновить ячейки и id  чтобы дальше для простых элементов их(parentCellId) обновить
+            if(item is IncomeItem.TEItem){
+                prepareTeItem(item, incomeRepo, session)
+            }
+            if(item is IncomeItem.NewTEItem){
+                prepareTeItem(item, incomeRepo, session)
+            }
+
+
+        }
+        items.value?.forEach { item ->
+            var cell = incomeRepo.getCellByName(item.parentCellName)
+            item.parentCellId = cell.id
+        }
+
+        items.value?.forEach { item ->
             // TODO добавить обновление id ячейки у goods
             if (item.haveCount == item.allCount && item is IncomeItem.GoodsItem) {
                 prepareEqualItem(incomeRepo, item, session, sessionId)
@@ -232,39 +250,69 @@ class IncomeSessionViewModel : ViewModel() {
             if (item.haveCount < item.allCount && item is IncomeItem.GoodsItem) {
                 prepareLessItem(incomeRepo, item, session, sessionId)
             }
+            if(item is IncomeItem.NewGoodsItem){
+                prepareMoreNewItem(incomeRepo, item, session, sessionId)
+            }
+
+
         }
+
     }
     private suspend fun prepareTeItem(
+        incomeItem: IncomeItem,
         incomeRepo: IncomeRepository,
-        session: SessionIncome,
-        sessionId: String
+        session: SessionIncome
     ) {
-        items.value?.forEach { item ->
-            if(item is IncomeItem.TEItem || item is IncomeItem.NewTEItem){
-                // Добавить все те
-                var cell : Cell = incomeRepo.getCellByName((item as IncomeItem.TEItem).teName)
-
-                if(cell == null){
-                    cell = Cell(
-                        id = UUID.randomUUID(),
-                        typeCellId = incomeRepo.getCellTypes().first { inner -> inner. }
-
-                    )
-                    var change = ChangeFactory.create(
-
-                    )
-                    incomeRepo.insertCellAsync(cell)
-                }
-                // Проверить parent name и проставить id для элементов
-                //
-            }
-            if(item is IncomeItem.TEItem || item is IncomeItem.NewTEItem){
-                // Добавить все те
-                incomeRepo.getCellByName((item as IncomeItem.TEItem).teName)
-                // Проверить parent name и проставить id для элементов
-                //
-            }
+            // Добавить все те
+        var cell : Cell = CellFactory.create("","","")
+        var teName = ""
+        if(incomeItem is IncomeItem.TEItem) {
+            cell = incomeRepo.getCellByName(incomeItem.teName)
+            teName = incomeItem.teName
         }
+        if(incomeItem is IncomeItem.NewTEItem) {
+            cell = incomeRepo.getCellByName(incomeItem.teName)
+            teName = incomeItem.teName
+        }
+
+
+            if(cell == null){
+                var types = incomeRepo.getCellTypes()
+                var type = types.first { inner ->
+                    inner.mask?.length == teName.length &&
+                            inner.mask.indices.all { i ->
+                                when (inner.mask[i]) {
+                                    '#' -> teName[i].isDigit()
+                                    '*' -> teName[i].isLetter()
+                                    else -> teName[i] == inner.mask[i]
+                                }
+                            }
+                }
+                var parentCell = incomeRepo.getCellByName(incomeItem.parentCellName)
+                cell = CellFactory.create(
+                    typeCellId = type.id,
+                    parentCellId = parentCell.id,
+                    name = teName
+                )
+                var change = ChangeFactory.create(
+                    payload = Gson().toJson(cell),
+                    payloadBefore = Gson().toJson(cell),
+                    entityId = cell.id,
+                    supplierId = session.supplierId,
+                    operationType = OperationType.InsertCell
+                )
+                incomeRepo.insertCellAsync(cell, change)
+            }else{
+                var parentCell = incomeRepo.getCellByName(incomeItem.parentCellName)
+                var change = ChangeFactory.create(
+                    payload = Gson().toJson(cell),
+                    payloadBefore = Gson().toJson(cell.copy(parentCellId = parentCell.id)),
+                    entityId = cell.id,
+                    supplierId = session.supplierId,
+                    operationType = OperationType.UpdateCell
+                )
+                incomeRepo.updateCellAsync(cell, change)
+            }
     }
 
     private suspend fun updateSession(
@@ -328,7 +376,7 @@ class IncomeSessionViewModel : ViewModel() {
         var moreChange = ChangeFactory.create(
             entityId = diffMove.id,
             supplierId = session.supplierId,
-            operationType = OperationType.IncomeMovement,
+            operationType = OperationType.InsertMovement,
             payload = Gson().toJson(diffMove),
             payloadBefore =  Gson().toJson(diffMove),
         )
@@ -340,11 +388,11 @@ class IncomeSessionViewModel : ViewModel() {
             entityId = goodsId.id,
             supplierId = session.supplierId,
             operationType = OperationType.UpdateGoods,
-            payload = Gson().toJson(goods.copy(amount = goodsId.haveCount, isAvailable = true)),
+            payload = Gson().toJson(goods.copy(amount = goodsId.haveCount, isAvailable = true, cellId =  goodsId.parentCellId)),
             payloadBefore = Gson().toJson(goods)
         )
         incomeRepo.updateGoodsAsync(
-            goods.copy(amount = goodsId.haveCount, isAvailable = true),
+            goods.copy(amount = goodsId.haveCount, isAvailable = true, cellId =  goodsId.parentCellId),
             updateGoodsChange
         )
 
@@ -363,7 +411,7 @@ class IncomeSessionViewModel : ViewModel() {
             var incomeCell = incomeRepo.getCellByName("income")
             var innerMovement = MovementFactory.create(
                 cellFromId = incomeCell.id,
-                cellToId = session.toCellId.toString(),
+                cellToId = session.incomeCellId.toString(),
                 catalogId = goodsId.catalogId,
                 goodsId = goodsId.id,
                 qty = goodsId.haveCount.toString(),
@@ -373,7 +421,7 @@ class IncomeSessionViewModel : ViewModel() {
             var movementChange = ChangeFactory.create(
                 entityId = innerMovement.id,
                 supplierId = session.supplierId,
-                operationType = OperationType.IncomeMovement,
+                operationType = OperationType.InsertMovement,
                 payload = Gson().toJson(innerMovement),
                 payloadBefore =  Gson().toJson(innerMovement),
             )
@@ -406,7 +454,7 @@ class IncomeSessionViewModel : ViewModel() {
         var moreChange = ChangeFactory.create(
             entityId = diffMove.id,
             supplierId = session.supplierId,
-            operationType = OperationType.IncomeMovement,
+            operationType = OperationType.InsertMovement,
             payload = Gson().toJson(diffMove),
             payloadBefore = Gson().toJson(diffMove),
         )
@@ -418,11 +466,11 @@ class IncomeSessionViewModel : ViewModel() {
             entityId = goodsItem.id,
             supplierId = session.supplierId,
             operationType = OperationType.UpdateGoods,
-            payload = Gson().toJson(goods.copy(amount = goodsItem.haveCount, isAvailable = true)),
+            payload = Gson().toJson(goods.copy(amount = goodsItem.haveCount, isAvailable = true, cellId =  goodsItem.parentCellId)),
             payloadBefore =  Gson().toJson(goodsItem)
         )
         incomeRepo.updateGoodsAsync(
-            goods.copy(amount = goodsItem.haveCount, isAvailable = true),
+            goods.copy(amount = goodsItem.haveCount, isAvailable = true, cellId =  goodsItem.parentCellId),
             updateGoodsChange
         )
 
@@ -430,7 +478,7 @@ class IncomeSessionViewModel : ViewModel() {
         var incomeCell = incomeRepo.getCellByName("income")
         var innerMovement = MovementFactory.create(
             cellFromId = incomeCell.id,
-            cellToId = session.toCellId.toString(),
+            cellToId = session.incomeCellId.toString(),
             catalogId = goodsItem.catalogId,
             goodsId = goodsItem.id,
             qty = goodsItem.haveCount.toString(),
@@ -441,7 +489,7 @@ class IncomeSessionViewModel : ViewModel() {
         var movementChange = ChangeFactory.create(
             entityId = innerMovement.id,
             supplierId = session.supplierId,
-            operationType = OperationType.IncomeMovement,
+            operationType = OperationType.InsertMovement,
             payload = Gson().toJson(innerMovement),
             payloadBefore = Gson().toJson(innerMovement)
 
@@ -449,6 +497,77 @@ class IncomeSessionViewModel : ViewModel() {
         incomeRepo.insertMovementAsync(innerMovement, movementChange)
         println("end prepareMoreItem")
     }
+
+    private suspend fun prepareMoreNewItem(
+        incomeRepo: IncomeRepository,
+        goodsItem: IncomeItem.NewGoodsItem,
+        session: SessionIncome,
+        sessionId: String
+    ) {
+        var goods = GoodsFactory.create(
+            goodsItem.haveCount,
+            goodsItem.parentCellId,
+            goodsItem.catalogId,
+            isAvailable = true
+        )
+        var change = ChangeFactory.create(
+            payload = Gson().toJson(goods),
+            payloadBefore = Gson().toJson(goods),
+            entityId = goods.id,
+            supplierId = session.supplierId,
+            operationType = OperationType.InsertGoods
+        )
+        incomeRepo.insertGoodsAsync(goods, change)
+        // если больше то
+        // создать перемещение в More
+        var cellMore = incomeRepo.getCellByName("more")
+        var diffMove = MovementFactory.create(
+            cellFromId = cellMore.id,
+            cellToId = goods.cellId,
+            catalogId = goodsItem.catalogId,
+            goodsId = goods.id,
+            qty = (goodsItem.haveCount - goodsItem.allCount).toString(),
+            operationType = OperationType.MoreMovement,
+            entityId = goods.id
+        )
+
+        var moreChange = ChangeFactory.create(
+            entityId = diffMove.id,
+            supplierId = session.supplierId,
+            operationType = OperationType.InsertMovement,
+            payload = Gson().toJson(diffMove),
+            payloadBefore = Gson().toJson(diffMove),
+        )
+        incomeRepo.insertMovementAsync(diffMove, moreChange)
+
+        // увеличить количество товара в основном goods
+        // обновить статус goods
+
+
+        // создать перемещение
+        var incomeCell = incomeRepo.getCellByName("income")
+        var innerMovement = MovementFactory.create(
+            cellFromId = incomeCell.id,
+            cellToId = session.incomeCellId.toString(),
+            catalogId = goodsItem.catalogId,
+            goodsId = goods.id,
+            qty = goodsItem.haveCount.toString(),
+            operationType = OperationType.IncomeMovement,
+            entityId = sessionId
+        )
+
+        var movementChange = ChangeFactory.create(
+            entityId = innerMovement.id,
+            supplierId = session.supplierId,
+            operationType = OperationType.InsertMovement,
+            payload = Gson().toJson(innerMovement),
+            payloadBefore = Gson().toJson(innerMovement)
+
+        )
+        incomeRepo.insertMovementAsync(innerMovement, movementChange)
+        println("end prepareMoreItem")
+    }
+
 
     private suspend fun prepareEqualItem(
         incomeRepo: IncomeRepository,
@@ -460,10 +579,10 @@ class IncomeSessionViewModel : ViewModel() {
         var goodsChange = ChangeFactory.create(
             entityId =  innerGoods.id,
             supplierId =  session.supplierId,
-            payload = Gson().toJson(innerGoods.copy(isAvailable = true, amount = innerGoods.amount)),
+            payload = Gson().toJson(innerGoods.copy(isAvailable = true, amount = innerGoods.amount, cellId = goodsItem.parentCellId)),
             payloadBefore = Gson().toJson(innerGoods),
             operationType =  OperationType.UpdateGoods)
-        incomeRepo.updateGoodsAsync(innerGoods.copy(isAvailable = true, amount = innerGoods.amount), goodsChange)
+        incomeRepo.updateGoodsAsync(innerGoods.copy(isAvailable = true, amount = innerGoods.amount, cellId = goodsItem.parentCellId), goodsChange)
 
         var incomeCell = incomeRepo.getCellByName("income")
         var toCellId = if (session.toCellId == null)  incomeCell.id else session.toCellId.toString()
@@ -480,7 +599,7 @@ class IncomeSessionViewModel : ViewModel() {
         var movementChange = ChangeFactory.create(
             entityId = innerMovement.id,
             supplierId = session.supplierId,
-            operationType = OperationType.IncomeMovement,
+            operationType = OperationType.InsertMovement,
             payload =  Gson().toJson(innerMovement),
             payloadBefore = Gson().toJson(innerMovement)
         )
