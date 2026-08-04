@@ -40,6 +40,7 @@ sealed class UiState {
         val isSearchLoopActive: Boolean = true,
         val isBarcodeFieldActive: Boolean = false,
         val isThreeDotsActive: Boolean = false,
+
         val isBackBtnActive: Boolean = true,
         val isCheckModeActive : Boolean = false,
         val prevState: UiState? = null,
@@ -54,6 +55,7 @@ sealed class UiState {
         val isBackBtnActive: Boolean = true,
         var isEmptyList: Boolean = true,
         val isChecked: Boolean = false,
+        val isPinned: Boolean = false,
         val isCheckModeActive : Boolean = true,
         val prevState: UiState? = null,
     ) : UiState()

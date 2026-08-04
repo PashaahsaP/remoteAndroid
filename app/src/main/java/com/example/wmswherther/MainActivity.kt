@@ -131,6 +131,7 @@ class MainActivity : AppCompatActivity() {
                     binding.btnBack.visibility = if (State.isBackBtnActive) View.VISIBLE else View.GONE
                     binding.btnSearch.visibility = if (State.isSearchLoopActive) View.VISIBLE else View.GONE
                     binding.btnBarcode.visibility = if (State.isTEModeActive) View.VISIBLE else View.GONE
+                    binding.btnPin.visibility = if (State.isSearchLoopActive) View.VISIBLE else View.GONE
                     binding.etIncomeBarcode.visibility = if (State.isBarcodeFieldActive) View.VISIBLE else View.GONE
                     var widthOfScanning = getWidth(binding)
                     viewModel.setWidthScanningField(widthOfScanning)
@@ -162,12 +163,14 @@ class MainActivity : AppCompatActivity() {
 
                 }
                 is MainMenu -> {
+                    binding.btnPin.visibility = View.GONE
                     binding.btnBack.visibility = if (State.isBackBtnActive) View.VISIBLE else View.GONE
                     binding.btnSearch.visibility = if (State.isSearchLoopActive) View.VISIBLE else View.GONE
                     binding.btnBarcode.visibility = if (State.isTEModeActive) View.VISIBLE else View.GONE
                     binding.etIncomeBarcode.visibility = if (State.isBarcodeFieldActive) View.VISIBLE else View.GONE
                 }
                 is MoveMenu -> {
+                    binding.btnPin.visibility = View.GONE
                     binding.btnBack.visibility = if (State.isBackBtnActive) View.VISIBLE else View.GONE
                     binding.btnSearch.visibility = if (State.isSearchLoopActive) View.VISIBLE else View.GONE
                     binding.etIncomeBarcode.visibility = if (State.isBarcodeFieldActive) View.VISIBLE else View.GONE
@@ -175,6 +178,7 @@ class MainActivity : AppCompatActivity() {
                 }
                 is MoveSessionMenu -> {
                     //binding.btnCheck.visibility = if (State.isCheckModeActive) View.VISIBLE else View.GONE
+                    binding.btnPin.visibility = View.VISIBLE
                     binding.btnBack.visibility = if (State.isBackBtnActive) View.VISIBLE else View.GONE
                     binding.btnSearch.visibility = if (State.isSearchLoopActive) View.VISIBLE else View.GONE
                     binding.etIncomeBarcode.visibility = if (State.isBarcodeFieldActive) View.VISIBLE else View.GONE
@@ -182,7 +186,14 @@ class MainActivity : AppCompatActivity() {
                     viewModel.setWidthScanningField(widthOfScanning)
                     if (State.isBarcodeFieldActive)
                         binding.etIncomeBarcode.requestFocus()
-                    else binding.etIncomeBarcodeScan.requestFocus()
+                    else
+                        binding.etIncomeBarcodeScan.requestFocus()
+                    if(State.isPinned){
+                        binding.btnPin.setImageResource(R.drawable.chain_selected)
+                    }else{
+                        binding.btnPin.setImageResource(R.drawable.chain)
+                    }
+
 
                 }
                 is InventoryMenu -> {
@@ -461,6 +472,14 @@ class MainActivity : AppCompatActivity() {
                     viewModel.deselectMoveList()
                 }else{
                     viewModel.selectMoveList()
+                }
+            }
+            btnPin.setOnClickListener {
+                if ((viewModel.uiState.value as UiState.MoveSessionMenu).isPinned) {
+                    viewModel.setActiveUi((viewModel.uiState.value as UiState.MoveSessionMenu).copy(isPinned = false))
+                }else{
+                    viewModel.setActiveUi((viewModel.uiState.value as UiState.MoveSessionMenu).copy(isPinned = true))
+
                 }
             }
             etIncomeBarcode.setOnEditorActionListener { v, actionId, event ->
@@ -860,6 +879,13 @@ private fun getWidth(binding: ActivityMainBinding) : Int {
     if(binding.btnBarcode.isVisible){
         if(binding.btnBarcode.width != 0){
             width += binding.btnBarcode.width
+        }else{
+            width += 144
+        }
+    }
+    if(binding.btnPin.isVisible){
+        if(binding.btnPin.width != 0){
+            width += binding.btnPin.width + 140
         }else{
             width += 144
         }

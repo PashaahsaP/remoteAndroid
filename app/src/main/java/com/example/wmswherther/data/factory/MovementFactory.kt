@@ -8,7 +8,7 @@ object MovementFactory {
     fun create (
         cellFromId: String,
         cellToId: String,
-        catalogId: String,
+        catalogId: String?,
         goodsId: String,
         qty: String,
         operationType: OperationType,

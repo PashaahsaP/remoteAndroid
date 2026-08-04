@@ -12,6 +12,7 @@ import com.example.wmswherther.Classes.MoveSessionItem
 import com.example.wmswherther.Classes.UiState
 import com.example.wmswherther.data.db.Entityes.Barcode
 import com.example.wmswherther.data.db.Entityes.Catalog
+import com.example.wmswherther.data.db.Entityes.CellType
 import com.example.wmswherther.data.db.Entityes.Change
 import com.example.wmswherther.data.db.Entityes.Goods
 import com.example.wmswherther.data.db.Repositories.MoveRepository
@@ -140,34 +141,53 @@ class MoveSessionViewModel : ViewModel() {
             }
         }
 
-    fun changeList(barcode: String, moveRepo: MoveeRepository){
+    fun changeList(barcode: String, moveRepo: MoveeRepository, typesList: List<CellType>){
         viewModelScope.launch {
             var list: MutableList<MoveSessionItem> = mutableListOf()
             var localCounter = 0
-            var dbBarcode: Barcode
-            var catalog: Catalog
-            dbBarcode = withContext(Dispatchers.IO) {
-                moveRepo.getBarcodeByName(barcode)
-            } ?: return@launch
 
-            catalog = withContext(Dispatchers.IO) {
-                moveRepo.getCatalogById(dbBarcode.catalogId)
-            } ?: return@launch
+            if (!isCell(barcode, typesList)) {
 
-            withContext(Dispatchers.IO){
-                myData.value?.forEach { item ->
-                    if(item.catalogId == catalog.id && item.haveCount < item.allCount){
-                        list.add(item.copy(haveCount = item.haveCount + 1))
-                        localCounter += 1
-                    }else {
-                        list.add((item))
+                var dbBarcode: Barcode
+                var catalog: Catalog
+                dbBarcode = withContext(Dispatchers.IO) {
+                    moveRepo.getBarcodeByName(barcode)
+                } ?: return@launch
+
+                catalog = withContext(Dispatchers.IO) {
+                    moveRepo.getCatalogById(dbBarcode.catalogId)
+                } ?: return@launch
+
+                withContext(Dispatchers.IO) {
+                    myData.value?.forEach { item ->
+                        if (item.catalogId == catalog.id && item.haveCount < item.allCount) {
+                            list.add(item.copy(haveCount = item.haveCount + 1))
+                            localCounter += 1
+                        } else {
+                            list.add((item))
+                        }
                     }
                 }
-            }
-            withContext(Dispatchers.Main){
-                updateMyData(list)
-                setCounter(getCounter() + localCounter)
+                withContext(Dispatchers.Main) {
+                    updateMyData(list)
+                    setCounter(getCounter() + localCounter)
 
+                }
+            }else{
+                withContext(Dispatchers.IO) {
+                    myData.value?.forEach { item ->
+                        if (item.name == barcode) {
+                            list.add(item.copy(haveCount = 1))
+                            localCounter += 1
+                        } else {
+                            list.add((item))
+                        }
+                    }
+                }
+                withContext(Dispatchers.Main) {
+                    updateMyData(list)
+                    setCounter(getCounter() + localCounter)
+                }
             }
         }
     }
@@ -228,11 +248,27 @@ class MoveSessionViewModel : ViewModel() {
         }
         return totalCount
     }
-    fun isCell(cell: String): Boolean {
+    /*fun isCell(cell: String): Boolean {
         if (cell.length == 4 && cell[0] in 'A' .. 'Z' && cell[1].isDigit() && cell[2].isDigit() && cell[3].isDigit()){
             return true
         }
         return false
+    }*/
+    fun isCell(cell: String, cells: List<CellType>): Boolean {
+
+        return cells.any { cellType ->
+            val mask = cellType.mask ?: return@any false
+
+            mask.length == cell.length &&
+                    mask.indices.all { i ->
+                        when (mask[i]) {
+                            '#' -> cell[i].isDigit()
+                            '*' -> cell[i].isLetter()
+                            else -> mask[i] == cell[i]
+                        }
+                    }
+        }
+        return  false
     }
     private fun updateUiList(
         item: MoveSessionItem,
@@ -342,7 +378,7 @@ class MoveSessionViewModel : ViewModel() {
                 payloadBefore = Gson().toJson(updatedGoods),
             )
 
-            moveRepo.updateGoodsAsync(updatedGoods, updateChange)
+            moveRepo.updateGoodsAsync(updatedGoods.copy(amount = item.allCount - item.haveCount), updateChange)
         }
     }
     suspend fun updateGoodsInDestinationCell(
@@ -376,7 +412,7 @@ class MoveSessionViewModel : ViewModel() {
         } else {
             var catalog = moveRepo.getCatalogById(item.catalogId)
             var listOfGoodsInDestinationCell: List<Goods> = allGoods
-                .filter { goodsItem -> goodsItem.cellId == cellTo.id && goodsItem.catalogId == catalog.id }
+                .filter { goodsItem -> goodsItem.cellId == cellTo.id && goodsItem.catalogId == catalog.id && goodsItem.isAvailable }
             // update db
             if(item.haveCount != 0){
                 insertMovement(moveRepo, item, cellTo, catalog.id, viewModel)
@@ -409,7 +445,7 @@ class MoveSessionViewModel : ViewModel() {
                 if(item.goodsId!= "") moveRepo.getGoodsById(item.goodsId).cellId
                 else moveRepo.getCellById(item.catalogId).parentCellId.toString(),
             cellToId = cellTo.id,
-            catalogId = catalogId,
+            catalogId = null,
             goodsId = item.goodsId,
             qty = item.haveCount.toString(),
             operationType = OperationType.Movement,

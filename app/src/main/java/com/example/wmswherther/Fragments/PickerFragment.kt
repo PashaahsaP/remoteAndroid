@@ -19,6 +19,7 @@ import com.example.wmsRemote.viewModel.AssemblyViewModel
 import com.example.wmswherther.Adapters.AssemblyMenuAdapter
 import com.example.wmswherther.data.db.SyncWorker
 import com.example.wmswherther.viewModel.MainViewModel
+import timber.log.Timber
 
 class PickerFragment: Fragment() {
     private var _binding: FragmentAssemblyBinding? = null
@@ -34,7 +35,6 @@ class PickerFragment: Fragment() {
         var dao = MainDB.getDB(requireActivity()).getDao()
         val localViewModel = ViewModelProvider(requireActivity()).get(AssemblyViewModel::class)
         _binding = FragmentAssemblyBinding.inflate(inflater)
-
 
         var adapter = AssemblyMenuAdapter(listOf(), this, viewModel, localViewModel, dao)
         var recyclerView: RecyclerView = binding.rwAssemblyMenu

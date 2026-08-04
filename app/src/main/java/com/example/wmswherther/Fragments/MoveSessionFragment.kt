@@ -1,5 +1,9 @@
 package com.example.wmswherther.Fragments
 
+import android.content.BroadcastReceiver
+import android.content.Context
+import android.content.Intent
+import android.content.IntentFilter
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
@@ -21,6 +25,8 @@ import com.example.wmsRemote.databinding.FragmentMoveSessionBinding
 import com.example.wmsRemote.viewModel.MoveSessionViewModel
 import com.example.wmswherther.Classes.UiState
 import com.example.wmswherther.data.db.Entityes.CellType
+import com.example.wmswherther.data.db.Repositories.IncomeRepository
+import com.example.wmswherther.data.db.Repositories.MoveRepository
 import com.example.wmswherther.data.db.Repositories.MoveeRepository
 import com.example.wmswherther.data.db.SyncWorker
 import com.example.wmswherther.viewModel.MainViewModel
@@ -29,7 +35,21 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 
 class MoveSessionFragment: Fragment() {
+    private val SCAN_ACTION = "android.intent.action.SCANRESULT"
+    private val BARCODE_EXTRA = "value"
+    private val barcodeReceiver = object : BroadcastReceiver() {
+        override fun onReceive(context: Context?, intent: Intent?) {
+            if (intent?.action == SCAN_ACTION) {
+                // Извлекаем строку штрихкода
+                val barcode = intent.getStringExtra(BARCODE_EXTRA)
 
+                if (!barcode.isNullOrEmpty()) {
+                    // УРА! Данные у нас в коде напрямую
+                    viewModel.setBarcode(barcode)
+                }
+            }
+        }
+    }
     private var _binding: FragmentMoveSessionBinding? = null
     private val binding
         get() = _binding ?: throw IllegalStateException("Binding for FragmentIncome")
@@ -73,14 +93,15 @@ class MoveSessionFragment: Fragment() {
             //TODO  Если нажал ТЕ надо сделать чтобы можно было отменить добавление товара в те.
             if(barcode != "" && viewModel.uiState.value is UiState.MoveSessionMenu) {
                 if (isCell(barcode, listTypes)) {
-                    if (localViewModel.isMoving.value != null && localViewModel.isMoving.value!!) {
-                        localViewModel.moveItems(barcode, moveRepo, viewModel)
+                    if (localViewModel.isMoving.value != null && localViewModel.isMoving.value!! && !barcode.contains("IN")) { //режим перемещения активирован, надо переместить товар
+                        localViewModel.moveItems(barcode, moveRepo, viewModel)//TODO сделать перемещение те
                         pushChanges(requireActivity())
+                        viewModel.setActiveUi((viewModel.uiState.value as UiState.MoveSessionMenu).copy(isPinned = false))
                         // если числа равны то смена ячейки
                         // иначе создается новый goods
-                        //TODO перемещение элементов если нажата клавиша
                     } else {
-                        if(viewModel.uiState.value is UiState.MoveSessionMenu) {
+                        if(viewModel.uiState.value is UiState.MoveSessionMenu && (viewModel.uiState.value as UiState.MoveSessionMenu).isPinned == false) {
+                            //TODO добавить проверку режима pinned cell
                             val totalCount = localViewModel.myData.value!!.toList().sumOf { it.haveCount }
                             if (totalCount != 0){
                                 val dialog = AlertDialog.Builder(requireActivity())
@@ -98,11 +119,13 @@ class MoveSessionFragment: Fragment() {
                                 localViewModel.updateCell(barcode)
                                 localViewModel.loadData(moveRepo, barcode, viewModel)
                             }
+                        }else{
+                            localViewModel.changeList(barcode, moveRepo, listTypes)
                         }
                     }
                 } else {
                     if(barcode != null)
-                        localViewModel.changeList(barcode, moveRepo)
+                        localViewModel.changeList(barcode, moveRepo, listTypes)
                     //TODO шк тут надо, НАЙТИ в бд и ...
                 }
             }
@@ -147,7 +170,26 @@ class MoveSessionFragment: Fragment() {
 
         return binding.root
     }
+    override fun onResume() {
+        super.onResume()
+        val filter = IntentFilter(SCAN_ACTION)
 
+        // Регистрируем через контекст Активити
+        if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.TIRAMISU) {
+            requireActivity().registerReceiver(barcodeReceiver, filter, Context.RECEIVER_EXPORTED)
+        } else {
+            requireActivity().registerReceiver(barcodeReceiver, filter)
+        }
+    }
+    override fun onPause() {
+        super.onPause()
+        try {
+            requireActivity().unregisterReceiver(barcodeReceiver)
+        } catch (e: IllegalArgumentException) {
+            // На случай, если ресивер не был зарегистрирован
+            e.printStackTrace()
+        }
+    }
 
 
 }
@@ -165,14 +207,23 @@ private fun pushChanges(requireActivity: FragmentActivity) {
         .enqueue(request)
 }
 
-fun isCell(cell: String, list: List<CellType>): Boolean {
-    list.forEach { cellType ->
-        if(cellType.mask!!.length == cell.length){
-            return  true
-        }
+fun isCell(cell: String, cells: List<CellType>): Boolean {
+
+    return cells.any { cellType ->
+        val mask = cellType.mask ?: return@any false
+
+        mask.length == cell.length &&
+                mask.indices.all { i ->
+                    when (mask[i]) {
+                        '#' -> cell[i].isDigit()
+                        '*' -> cell[i].isLetter()
+                        else -> mask[i] == cell[i]
+                    }
+                }
     }
-    return false
+    return  false
 }
+
 fun convertToInt(nullableInt: Int?): Int {
     return nullableInt ?: 0  // If nullableInt is null, use 0 as default
 }

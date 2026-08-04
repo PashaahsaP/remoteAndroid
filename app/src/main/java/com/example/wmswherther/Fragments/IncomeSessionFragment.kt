@@ -1,7 +1,12 @@
 package com.example.wmswherther.Fragments
-
-import android.graphics.Color
+import android.content.BroadcastReceiver
+import android.content.Context
+import android.content.Intent
+import android.content.IntentFilter
 import android.os.Bundle
+import android.widget.Toast
+import androidx.appcompat.app.AppCompatActivity
+import android.graphics.Color
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -9,6 +14,8 @@ import android.widget.Button
 import android.widget.TextView
 import androidx.appcompat.app.AlertDialog
 import androidx.core.content.ContextCompat
+import androidx.core.content.ContextCompat.RECEIVER_EXPORTED
+import androidx.core.content.ContextCompat.registerReceiver
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.FragmentActivity
 import androidx.fragment.app.activityViewModels
@@ -45,126 +52,161 @@ object ServiceLocator {
     var assemblyRepository: AssemblyRepository?= null
 }
 class IncomeSessionFragment : Fragment() {
+// 1. Указываем Action и Extra из настроек iScan вашего ТСД
+    private val SCAN_ACTION = "android.intent.action.SCANRESULT"
+    private val BARCODE_EXTRA = "value"
+    private val barcodeReceiver = object : BroadcastReceiver() {
+        override fun onReceive(context: Context?, intent: Intent?) {
+            if (intent?.action == SCAN_ACTION) {
+                // Извлекаем строку штрихкода
+                val barcode = intent.getStringExtra(BARCODE_EXTRA)
 
-        private var _binding: FragmentIncomeSessionBinding? = null
-        private val binding
-            get() = _binding ?: throw IllegalStateException("Binding for FragmentIncome")
-        private val viewModel: MainViewModel by activityViewModels()
-        private val localViewModel: IncomeSessionViewModel by activityViewModels()
-
-        override fun onCreateView(
-            inflater: LayoutInflater,
-            container: ViewGroup?,
-            savedInstanceState: Bundle?
-        ): View? {
-            println("in onCreateView")
-            _binding = FragmentIncomeSessionBinding.inflate(inflater, container, false)
-            var recyclerView: RecyclerView = binding.rwIncomeSessionList
-            var adapterCollection = mutableListOf<IncomeItem>()
-            if( localViewModel.items.value != null){
-                adapterCollection = localViewModel.items.value as MutableList<IncomeItem>
-            }
-            val adapter = IncomeSessionAdapter(adapterCollection, recyclerView, localViewModel, requireActivity(), viewModel)
-            recyclerView.layoutManager = LinearLayoutManager(requireActivity())
-            recyclerView.adapter = adapter
-            val sessionId = arguments?.getString("id")
-            val incomeRepo = ServiceLocator.incomeRepository
-                ?: IncomeRepository(MainDB.getDB(requireActivity()).getDao())
-
-
-
-            viewModel.Barcode.observe(viewLifecycleOwner, { barcode ->
-                prepareBarcodeAndUpdateUI(barcode, incomeRepo)
-            })
-            viewModel.TE.observe(viewLifecycleOwner, { TE ->
-                var innerIncomeItems: MutableList<IncomeItem> = mutableListOf()
-
-                if(TE != "") {
-                    appendTEOrCreateNewTE(TE, innerIncomeItems)
-                    extractTEItemsFromMainCollection(TE, innerIncomeItems)
-                    appendRemainigItemWithSameTE(TE, innerIncomeItems)
-                    var result: MutableList<IncomeItem> = removeDuplication(innerIncomeItems)
-                    resetTeCountAndAppendRemainingItemsToResult(TE, result)
-                }
-            })
-            viewModel.IsCloseTE.observe(viewLifecycleOwner, { isClosed ->
-                resetTeCounterToZeroAndSwitchTeButton(isClosed)
-            })
-            viewModel.IsSelectedIncomeList.observe(viewLifecycleOwner, {flag : Boolean->
-                localViewModel.setSelection(flag)
-            })
-            viewModel.IsFinishIncomeSession.observe(viewLifecycleOwner, { status ->
-                if(status) {
-                    if (localViewModel.CurrentCountOfCount.value != localViewModel.CountOfCount.value
-                        || localViewModel.IsOverCounter.value == true
-                    ) {
-                        val view = LayoutInflater.from(activity)
-                            .inflate(R.layout.dialog_income_session, null)
-                        val btnYes = view.findViewById<Button>(R.id.btnYes)
-                        val btnNo = view.findViewById<Button>(R.id.btnNo)
-
-                        var dialog = AlertDialog.Builder(requireActivity())
-                            .setView(view)
-                            .create()
-
-                        btnYes.setOnClickListener {
-                            finishSessionAndReturnToPreviousFragment(incomeRepo, sessionId)
-                            dialog.dismiss()
-                        }
-                        btnNo.setOnClickListener {
-                            dialog.dismiss()
-                        }
-                        dialog.show()
-                    } else {
-                        finishSessionAndReturnToPreviousFragment(incomeRepo, sessionId)
-                    }
-                }
-            })
-            localViewModel.CurrentCountOfCount.observe(viewLifecycleOwner, {counter ->
-                binding.tvLineCounter.text = "${counter.toString()}  /"
-            })
-            localViewModel.CountOfCount.observe(viewLifecycleOwner, {counter ->
-                binding.tvCounterCounter.text = counter.toString()
-            })
-            localViewModel.IsOverCounter.observe(viewLifecycleOwner, {flag ->
-                if(flag) {
-                    binding.tvCounterCounter.setTextColor(ContextCompat.getColor(requireActivity(), R.color.regularRed))
-                    binding.tvLineCounter.setTextColor(ContextCompat.getColor(requireActivity(), R.color.regularRed))
-                    //binding.tvLineCounter.setTextColor(R.color.regularRed.toInt())
-                }else{
-                    binding.tvCounterCounter.setTextColor(Color.BLACK)
-                    binding.tvLineCounter.setTextColor(Color.BLACK)
-                }
-            })
-            localViewModel.IsFinish.observe(viewLifecycleOwner, {flag ->
-                showFinishButton(flag)
-            })
-            localViewModel.items.observe(viewLifecycleOwner,{ items ->
-                adapter.updateCollection(items, localViewModel.getSelectedItem())
-                //recyclerView.smoothScrollToPosition(localViewModel.getSelectedItem())
-            })
-            localViewModel.currentCellName.observe(viewLifecycleOwner, { cellName ->
-                binding.tvCellName.text = cellName
-            })
-            //todo set red color or black
-            
-
-            binding.btnFinish.setOnClickListener {
-                println(151)
-                finishSessionAndReturnToPreviousFragment(incomeRepo, sessionId)
-
-            }
-            with(binding){
-                swipe.setOnRefreshListener {
-                    pullChanges(requireActivity())
-                    swipe.isRefreshing = false
+                if (!barcode.isNullOrEmpty()) {
+                    // УРА! Данные у нас в коде напрямую
+                    viewModel.setBarcode(barcode)
                 }
             }
-            initSession(incomeRepo, sessionId)
-
-            println("end onCreateView")
-            return  binding.root
         }
+    }
+    private var _binding: FragmentIncomeSessionBinding? = null
+    private val binding
+        get() = _binding ?: throw IllegalStateException("Binding for FragmentIncome")
+    private val viewModel: MainViewModel by activityViewModels()
+    private val localViewModel: IncomeSessionViewModel by activityViewModels()
+
+    override fun onResume() {
+        super.onResume()
+        val filter = IntentFilter(SCAN_ACTION)
+
+        // Регистрируем через контекст Активити
+        if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.TIRAMISU) {
+            requireActivity().registerReceiver(barcodeReceiver, filter, Context.RECEIVER_EXPORTED)
+        } else {
+            requireActivity().registerReceiver(barcodeReceiver, filter)
+        }
+    }
+    override fun onPause() {
+        super.onPause()
+        try {
+            requireActivity().unregisterReceiver(barcodeReceiver)
+        } catch (e: IllegalArgumentException) {
+            // На случай, если ресивер не был зарегистрирован
+            e.printStackTrace()
+        }
+    }
+    override fun onCreateView(
+        inflater: LayoutInflater,
+        container: ViewGroup?,
+        savedInstanceState: Bundle?
+    ): View? {
+        println("in onCreateView")
+        _binding = FragmentIncomeSessionBinding.inflate(inflater, container, false)
+        var recyclerView: RecyclerView = binding.rwIncomeSessionList
+        var adapterCollection = mutableListOf<IncomeItem>()
+        if( localViewModel.items.value != null){
+            adapterCollection = localViewModel.items.value as MutableList<IncomeItem>
+        }
+        val adapter = IncomeSessionAdapter(adapterCollection, recyclerView, localViewModel, requireActivity(), viewModel)
+        recyclerView.layoutManager = LinearLayoutManager(requireActivity())
+        recyclerView.adapter = adapter
+        val sessionId = arguments?.getString("id")
+        val incomeRepo = ServiceLocator.incomeRepository
+            ?: IncomeRepository(MainDB.getDB(requireActivity()).getDao())
+
+
+
+        viewModel.Barcode.observe(viewLifecycleOwner, { barcode ->
+            prepareBarcodeAndUpdateUI(barcode, incomeRepo)
+        })
+        viewModel.TE.observe(viewLifecycleOwner, { TE ->
+            var innerIncomeItems: MutableList<IncomeItem> = mutableListOf()
+
+            if(TE != "") {
+                appendTEOrCreateNewTE(TE, innerIncomeItems)
+                extractTEItemsFromMainCollection(TE, innerIncomeItems)
+                appendRemainigItemWithSameTE(TE, innerIncomeItems)
+                var result: MutableList<IncomeItem> = removeDuplication(innerIncomeItems)
+                resetTeCountAndAppendRemainingItemsToResult(TE, result)
+            }
+        })
+        viewModel.IsCloseTE.observe(viewLifecycleOwner, { isClosed ->
+            resetTeCounterToZeroAndSwitchTeButton(isClosed)
+        })
+        viewModel.IsSelectedIncomeList.observe(viewLifecycleOwner, {flag : Boolean->
+            localViewModel.setSelection(flag)
+        })
+        viewModel.IsFinishIncomeSession.observe(viewLifecycleOwner, { status ->
+            if(status) {
+                if (localViewModel.CurrentCountOfCount.value != localViewModel.CountOfCount.value
+                    || localViewModel.IsOverCounter.value == true
+                ) {
+                    val view = LayoutInflater.from(activity)
+                        .inflate(R.layout.dialog_income_session, null)
+                    val btnYes = view.findViewById<Button>(R.id.btnYes)
+                    val btnNo = view.findViewById<Button>(R.id.btnNo)
+
+                    var dialog = AlertDialog.Builder(requireActivity())
+                        .setView(view)
+                        .create()
+
+                    btnYes.setOnClickListener {
+                        finishSessionAndReturnToPreviousFragment(incomeRepo, sessionId)
+                        dialog.dismiss()
+                    }
+                    btnNo.setOnClickListener {
+                        dialog.dismiss()
+                    }
+                    dialog.show()
+                } else {
+                    finishSessionAndReturnToPreviousFragment(incomeRepo, sessionId)
+                }
+            }
+        })
+        localViewModel.CurrentCountOfCount.observe(viewLifecycleOwner, {counter ->
+            binding.tvLineCounter.text = "${counter.toString()}  /"
+        })
+        localViewModel.CountOfCount.observe(viewLifecycleOwner, {counter ->
+            binding.tvCounterCounter.text = counter.toString()
+        })
+        localViewModel.IsOverCounter.observe(viewLifecycleOwner, {flag ->
+            if(flag) {
+                binding.tvCounterCounter.setTextColor(ContextCompat.getColor(requireActivity(), R.color.regularRed))
+                binding.tvLineCounter.setTextColor(ContextCompat.getColor(requireActivity(), R.color.regularRed))
+                //binding.tvLineCounter.setTextColor(R.color.regularRed.toInt())
+            }else{
+                binding.tvCounterCounter.setTextColor(Color.BLACK)
+                binding.tvLineCounter.setTextColor(Color.BLACK)
+            }
+        })
+        localViewModel.IsFinish.observe(viewLifecycleOwner, {flag ->
+            showFinishButton(flag)
+        })
+        localViewModel.items.observe(viewLifecycleOwner,{ items ->
+            adapter.updateCollection(items, localViewModel.getSelectedItem())
+            //recyclerView.smoothScrollToPosition(localViewModel.getSelectedItem())
+        })
+        localViewModel.currentCellName.observe(viewLifecycleOwner, { cellName ->
+            binding.tvCellName.text = cellName
+        })
+        //todo set red color or black
+
+
+        binding.btnFinish.setOnClickListener {
+            println(151)
+            finishSessionAndReturnToPreviousFragment(incomeRepo, sessionId)
+
+        }
+        with(binding){
+            swipe.setOnRefreshListener {
+                pullChanges(requireActivity())
+                swipe.isRefreshing = false
+            }
+        }
+        initSession(incomeRepo, sessionId)
+
+        println("end onCreateView")
+        return  binding.root
+    }
 
     private fun prepareBarcodeAndUpdateUI(
         barcode: String,

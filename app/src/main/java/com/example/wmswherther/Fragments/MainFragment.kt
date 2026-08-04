@@ -10,6 +10,7 @@ import androidx.fragment.app.FragmentActivity
 import androidx.fragment.app.activityViewModels
 import androidx.fragment.app.commit
 import androidx.fragment.app.replace
+import androidx.lifecycle.lifecycleScope
 import androidx.work.Data
 import androidx.work.OneTimeWorkRequestBuilder
 import androidx.work.WorkManager
@@ -18,6 +19,9 @@ import com.example.wmsRemote.databinding.FragmentMainBinding
 import com.example.wmswherther.Classes.UiState
 import com.example.wmswherther.data.db.SyncWorker
 import com.example.wmswherther.viewModel.MainViewModel
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import timber.log.Timber
 
 
 class MainFragment : Fragment(R.layout.fragment_main) {
@@ -30,6 +34,11 @@ class MainFragment : Fragment(R.layout.fragment_main) {
         container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View? {
+        try {
+            throw Exception("smt")
+        }catch (e: Exception){
+            Timber.e(e,"что то делаю в пикер сессии")
+        }
         var mainContext : Context = requireActivity()
         //viewModel.setCurrFragment(this)
        /* lifecycleScope.launch {
