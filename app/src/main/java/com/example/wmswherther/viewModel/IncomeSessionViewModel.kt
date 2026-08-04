@@ -313,6 +313,13 @@ class IncomeSessionViewModel : ViewModel() {
                 )
                 incomeRepo.updateCellAsync(cell, change)
             }
+            if(item is IncomeItem.TEItem || item is IncomeItem.NewTEItem){
+                // Добавить все те
+                incomeRepo.getCellByName((item as IncomeItem.TEItem).teName)
+                // Проверить parent name и проставить id для элементов
+                //
+            }
+        }
     }
 
     private suspend fun updateSession(
