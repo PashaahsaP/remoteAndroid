@@ -51,6 +51,16 @@
             android:src="@drawable/barcode"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintRight_toLeftOf="@+id/btnSearch" />
+        <ImageButton
+            android:id="@+id/btnPin"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="3dp"
+            android:background="@drawable/selector_background"
+            android:padding="4dp"
+            android:src="@drawable/chain"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintRight_toLeftOf="@+id/btnBarcode" />
 
         <ImageButton
             android:id="@+id/btnCheck"
@@ -104,6 +114,7 @@
             android:focusable="true"
             android:focusableInTouchMode="true"
             android:inputType="text"
+            android:paddingStart="-10dp"
             android:padding="9dp"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintEnd_toStartOf="@+id/btnCheck"

@@ -44,7 +44,26 @@ class IncomeSessionViewModel : ViewModel() {
     val IsFinish: LiveData<Boolean> get() = _finish
     val stack: ArrayDeque<List<IncomeItem>> = ArrayDeque()
     val cellStack: ArrayDeque<String> = ArrayDeque()
-
+    fun setSelection(checked: Boolean) {
+        println("in setSelection")
+        var list: MutableList<IncomeItem> = mutableListOf()
+        if (checked){
+            setCurCountOfCount(_countOfCount.value ?: 0)
+            items.value?.forEach { item ->
+                item.haveCount = if(item.allCount != 0) item.allCount else item.haveCount
+                list.add(item)
+            }
+            updateItems(list)
+        }else{
+            setCurCountOfCount(0)
+            items.value?.forEach { item ->
+                item.haveCount = 0
+                list.add(item)
+            }
+            updateItems(list)
+        }
+        println("in setSelection")
+    }
     fun setCounterValidation(isOverFlag: Boolean){
         _isOverCounter.value = isOverFlag
     }
@@ -312,12 +331,6 @@ class IncomeSessionViewModel : ViewModel() {
                     operationType = OperationType.UpdateCell
                 )
                 incomeRepo.updateCellAsync(cell, change)
-            }
-            if(item is IncomeItem.TEItem || item is IncomeItem.NewTEItem){
-                // Добавить все те
-                incomeRepo.getCellByName((item as IncomeItem.TEItem).teName)
-                // Проверить parent name и проставить id для элементов
-                //
             }
         }
     }
@@ -614,43 +627,26 @@ class IncomeSessionViewModel : ViewModel() {
         incomeRepo.insertMovementAsync(innerMovement, movementChange)
     }
 
-    fun setSelection(checked: Boolean) {
-        println("in setSelection")
-        var list: MutableList<IncomeItem> = mutableListOf()
-        if (checked){
-            setCurCountOfCount(_countOfCount.value ?: 0)
-            items.value?.forEach { item ->
-                item.haveCount = if(item.allCount != 0) item.allCount else item.haveCount
-                list.add(item)
-            }
-            updateItems(list)
-        }else{
-            setCurCountOfCount(0)
-            items.value?.forEach { item ->
-                item.haveCount = 0
-                list.add(item)
-            }
-            updateItems(list)
-        }
-        println("in setSelection")
-    }
-    suspend private fun isTE(cell: String, incomeRepo: IncomeRepository): Boolean {
-        val cells = incomeRepo.getTETypes()
-        println(cells)
-        var result = cells.any { cellType ->
-            val mask = cellType.mask ?: return@any false
 
-            mask.length == cell.length &&
-                    mask.indices.all { i ->
-                        when (mask[i]) {
-                            '#' -> cell[i].isDigit()
-                            else -> mask[i] == cell[i]
-                        }
+
+
+
+suspend fun isTE(cell: String, incomeRepo: IncomeRepository): Boolean {
+    val cells = incomeRepo.getTETypes()
+    println(cells)
+    var result = cells.any { cellType ->
+        val mask = cellType.mask ?: return@any false
+
+        mask.length == cell.length &&
+                mask.indices.all { i ->
+                    when (mask[i]) {
+                        '#' -> cell[i].isDigit()
+                        else -> mask[i] == cell[i]
                     }
-        }
-        println(result)
-        println("##############")
-        return result
-
+                }
     }
+    println(result)
+    println("##############")
+    return result
+
 }

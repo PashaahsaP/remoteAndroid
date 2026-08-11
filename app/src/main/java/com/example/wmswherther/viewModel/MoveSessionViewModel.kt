@@ -15,6 +15,7 @@ import com.example.wmswherther.data.db.Entityes.Catalog
 import com.example.wmswherther.data.db.Entityes.CellType
 import com.example.wmswherther.data.db.Entityes.Change
 import com.example.wmswherther.data.db.Entityes.Goods
+import com.example.wmswherther.data.db.Repositories.AssemblyRepository
 import com.example.wmswherther.data.db.Repositories.MoveRepository
 import com.example.wmswherther.data.db.Repositories.MoveeRepository
 import com.example.wmswherther.data.factory.CellFactory
@@ -315,7 +316,7 @@ class MoveSessionViewModel : ViewModel() {
         if (cellTo == null) {
             var curCell = moveRepo.getCellByName(_cell.value.toString()) // откуда идет перемещение
             var newCell = CellFactory.create(
-                typeCellId = curCell.typeCellId,
+                typeCellId = getCellType(barcode, moveRepo.getCellTypes())!!.id ,
                 parentCellId = curCell.parentCellId,
                 name = barcode
             )
@@ -476,4 +477,34 @@ class MoveSessionViewModel : ViewModel() {
     // </editor-fold>
 
 
+}
+suspend fun isPickerCell(cell: String, moveRepo: MoveeRepository): Boolean {
+    val cells = moveRepo.getCellTypes().filter { cellType -> cellType.type == "Picker" }
+
+    return cells.any { cellType ->
+        val mask = cellType.mask ?: return@any false
+
+        mask.length == cell.length &&
+                mask.indices.all { i ->
+                    when (mask[i]) {
+                        '*' -> cell[i].isLetter()
+                        '#' -> cell[i].isDigit()
+                        else -> mask[i] == cell[i]
+                    }
+                }
+    }
+
+}
+private fun getCellType(name: String, list: List<CellType>): CellType? {
+    return list.firstOrNull { cellType ->
+        val mask = cellType.mask ?: return@firstOrNull false
+
+        mask.length == name.length && mask.withIndex().all { (index, maskChar) ->
+            when (maskChar) {
+                '#' -> name[index].isDigit()
+                '*' -> name[index].isLetter()
+                else -> maskChar == name[index]
+            }
+        }
+    }
 }

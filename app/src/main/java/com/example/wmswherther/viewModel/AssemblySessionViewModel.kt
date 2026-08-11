@@ -316,9 +316,9 @@ class AssemblySessionViewModel : ViewModel() {
         assemblyRepo: AssemblyRepository,
         sessionId: String
     ) : MutableList<AssemblyItem> {
-        return assemblyRepo.getPickerItems()
+        var temp = assemblyRepo.getPickerItems()
             .filter { item -> item.sessionId == sessionId && item.status == StatusType.Created.ordinal }
-            .map { item ->
+        return temp.map { item ->
                 var goodsItem = assemblyRepo.getGoodsById(item.goodsId)
                 var catalog = assemblyRepo.getCatalogById(goodsItem.catalogId)
                 var cell = assemblyRepo.getCellById(item.cellId.toString())
@@ -328,6 +328,8 @@ class AssemblySessionViewModel : ViewModel() {
                 var pickerList: MutableList<com.example.wmswherther.Classes.PickerItem> =
                     mutableListOf(com.example.wmswherther.Classes.PickerItem(catalog.name, barcodes, false))
                 //set selection of last element
+                print("###########")
+                print(item)
                 pickerList += getPickerCell(assemblyRepo, cell)
                 var lastElement = pickerList[pickerList.lastIndex]
                 lastElement.isSelected = true
@@ -391,7 +393,7 @@ class AssemblySessionViewModel : ViewModel() {
     }
 
 suspend fun isPickerCell(cell: String, assemblyRepo: AssemblyRepository): Boolean {
-    val cells = assemblyRepo.getCellTypes().filter { cellType -> cellType.type == "Picker" }
+    val cells = assemblyRepo.getCellTypes().filter { cellType -> cellType.type == "picker" }
 
     return cells.any { cellType ->
         val mask = cellType.mask ?: return@any false

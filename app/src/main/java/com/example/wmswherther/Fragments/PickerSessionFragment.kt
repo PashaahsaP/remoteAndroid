@@ -1,5 +1,9 @@
 package com.example.wmswherther.Fragments
 
+import android.content.BroadcastReceiver
+import android.content.Context
+import android.content.Intent
+import android.content.IntentFilter
 import android.graphics.Color
 import android.os.Bundle
 import android.view.KeyEvent.ACTION_DOWN
@@ -45,13 +49,46 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 
 class PickerSessionFragment: Fragment() {
+    private val SCAN_ACTION = "android.intent.action.SCANRESULT"
+    private val BARCODE_EXTRA = "value"
+    private val barcodeReceiver = object : BroadcastReceiver() {
+        override fun onReceive(context: Context?, intent: Intent?) {
+            if (intent?.action == SCAN_ACTION) {
+                // Извлекаем строку штрихкода
+                val barcode = intent.getStringExtra(BARCODE_EXTRA)
 
+                if (!barcode.isNullOrEmpty()) {
+                    // УРА! Данные у нас в коде напрямую
+                    viewModel.setBarcode(barcode)
+                }
+            }
+        }
+    }
     private var _binding: ActivityAssemblyBinding? = null
     private lateinit var localViewModel: AssemblySessionViewModel
     private val binding
         get() = _binding ?: throw IllegalStateException("Binding for AssemblyMain")
     private val viewModel: MainViewModel by activityViewModels()
+    override fun onResume() {
+        super.onResume()
+        val filter = IntentFilter(SCAN_ACTION)
 
+        // Регистрируем через контекст Активити
+        if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.TIRAMISU) {
+            requireActivity().registerReceiver(barcodeReceiver, filter, Context.RECEIVER_EXPORTED)
+        } else {
+            requireActivity().registerReceiver(barcodeReceiver, filter)
+        }
+    }
+    override fun onPause() {
+        super.onPause()
+        try {
+            requireActivity().unregisterReceiver(barcodeReceiver)
+        } catch (e: IllegalArgumentException) {
+            // На случай, если ресивер не был зарегистрирован
+            e.printStackTrace()
+        }
+    }
     override fun onCreateView(
         inflater: LayoutInflater,
         container: ViewGroup?,

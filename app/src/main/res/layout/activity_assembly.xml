@@ -1,104 +1,101 @@
 <?xml version="1.0" encoding="utf-8"?>
-<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<androidx.constraintlayout.widget.ConstraintLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
-    android:layout_width="match_parent"
-    android:layout_height="match_parent"
     android:id="@+id/clContainer"
-    android:orientation="vertical"
-    android:padding="0dp"
-    >
-<androidx.swiperefreshlayout.widget.SwipeRefreshLayout
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:id="@+id/swipe">
+    android:padding="0dp">
 
+    <androidx.swiperefreshlayout.widget.SwipeRefreshLayout
+        android:id="@+id/swipe"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent">
 
-    <LinearLayout
-        android:id="@+id/llMenuContainer"
-        android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:orientation="vertical"
-        app:layout_constraintTop_toTopOf="parent"
-        android:layout_marginTop="35dp"
-        android:visibility="visible"
-        android:padding="5dp"/>
-    <LinearLayout
-        android:id="@+id/llAssemblyContainer"
-        android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:orientation="vertical"
-        app:layout_constraintTop_toTopOf="parent"
-        android:layout_marginTop="0dp"
-        android:visibility="visible">
-        <LinearLayout
-            android:id="@+id/llMain"
+        <androidx.constraintlayout.widget.ConstraintLayout
             android:layout_width="match_parent"
-            android:layout_height="0dp"
-            android:background="@color/regularBlue"
-            android:layout_weight="0.5"
-            android:paddingTop="10dp"
-            android:orientation="vertical">
+            android:layout_height="match_parent">
 
-
-            <ScrollView
+            <!-- Если меню должно быть скрытым/показываться по кнопке,
+                 лучше использовать match_parent и visibility="gone" -->
+            <LinearLayout
+                android:id="@+id/llMenuContainer"
                 android:layout_width="match_parent"
-                android:layout_height="200dp"
+                android:layout_height="match_parent"
+                android:orientation="vertical"
+                android:padding="5dp"
+                android:visibility="gone"
+                app:layout_constraintTop_toTopOf="parent"
+                app:layout_constraintBottom_toBottomOf="parent"/>
 
-                >
-                <androidx.recyclerview.widget.RecyclerView
-                    android:id="@+id/rwListMain"
+            <LinearLayout
+                android:id="@+id/llAssemblyContainer"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:orientation="vertical"
+                android:visibility="visible"
+                app:layout_constraintTop_toTopOf="parent"
+                app:layout_constraintBottom_toBottomOf="parent">
+
+                <!-- Верхний блок: занимает ровно 50% доступного экрана -->
+                <LinearLayout
+                    android:id="@+id/llMain"
                     android:layout_width="match_parent"
                     android:layout_height="0dp"
-                    android:layout_marginTop="5dp"
-                    android:layout_marginBottom="50dp"
+                    android:layout_weight="0.5"
+                    android:background="@color/regularBlue"
+                    android:paddingTop="10dp"
+                    android:orientation="vertical">
+
+                    <!-- Прямой вызов RecyclerView без ScrollView.
+                         Чтобы не пропадал скролл, убираем margin-bottom в 50dp -->
+                    <androidx.recyclerview.widget.RecyclerView
+                        android:id="@+id/rwListMain"
+                        android:layout_width="match_parent"
+                        android:layout_height="0dp"
+                        android:layout_weight="1.0"
+                        android:padding="5dp"/>
+
+                    <!-- Поле ввода и штрихкод -->
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="horizontal"
+                        android:paddingBottom="5dp">
+
+                        <TextView
+                            android:id="@+id/tvBarcode"
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_weight="0.8"
+                            android:paddingStart="10dp"
+                            android:textColor="@color/regularGrey"
+                            android:textSize="25sp" />
+
+                        <EditText
+                            android:id="@+id/etCount"
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_weight="0.2"
+                            android:layout_marginEnd="10dp"
+                            android:enabled="true"
+                            android:maxLines="1"
+                            android:singleLine="true"
+                            android:textColor="@color/regularGrey"
+                            android:textSize="25sp" />
+                    </LinearLayout>
+                </LinearLayout>
+
+                <!-- Нижний блок: занимает оставшиеся 50% экрана -->
+                <androidx.recyclerview.widget.RecyclerView
+                    android:id="@+id/rwListItem"
+                    android:layout_width="match_parent"
+                    android:layout_height="0dp"
                     android:layout_weight="0.5"
                     android:padding="5dp"/>
-            </ScrollView>
-            <LinearLayout
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:orientation="horizontal"
-                android:layout_weight="0.45"
-                >
-                <TextView
-                    android:id="@+id/tvBarcode"
-                    android:layout_width="wrap_content"
-                    android:layout_height="100dp"
-                    android:paddingStart="10dp"
-                    android:textColor="@color/regularGrey"
-                    android:textSize="25sp"
-                    android:layout_weight="0.9"
 
-                    />
-                <EditText
-                    android:id="@+id/etCount"
-                    android:layout_width="50dp"
-                    android:layout_height="wrap_content"
-                    android:maxLines="1"
-                    android:textSize="25sp"
-                    android:enabled="true"
-                    android:textColor="@color/regularGrey"
-                    android:layout_marginEnd="10dp"
-                    android:layout_weight="0.1"
-                    android:singleLine="true"
-                    />
             </LinearLayout>
-
-        </LinearLayout>
-        <ScrollView
-            android:layout_width="match_parent"
-            android:layout_height="400dp">
-        <androidx.recyclerview.widget.RecyclerView
-            android:id="@+id/rwListItem"
-            android:layout_width="match_parent"
-            android:layout_height="0dp"
-            android:layout_marginTop="5dp"
-            android:layout_marginBottom="50dp"
-            android:layout_weight="0.5"
-            android:padding="5dp"/>
-        </ScrollView>
-    </LinearLayout>
-
-</androidx.swiperefreshlayout.widget.SwipeRefreshLayout>
+        </androidx.constraintlayout.widget.ConstraintLayout>
+    </androidx.swiperefreshlayout.widget.SwipeRefreshLayout>
 </androidx.constraintlayout.widget.ConstraintLayout>
