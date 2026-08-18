@@ -144,13 +144,21 @@ class SyncRepository (
 
                 request.updateAssemblySession(ip, pickerSession, client)
             }
-           OperationType.DeleteIncomeSession.ordinal ->{
+            OperationType.DeleteIncomeSession.ordinal ->{
                val incomeSession = Gson().fromJson(
                    operation.payload,
                    SessionIncome::class.java
                )
 
                request.deleteIncomeSession(ip, incomeSession, client)
+           }
+            OperationType.DeleteGoods.ordinal ->{
+               val goods = Gson().fromJson(
+                   operation.payload,
+                   Goods::class.java
+               )
+
+               request.deleteGoods(ip, goods, client)
            }
 
 

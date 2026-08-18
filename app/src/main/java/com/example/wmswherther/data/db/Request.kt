@@ -263,6 +263,25 @@ class Request {
             }
         }
     }
+    suspend fun deleteGoods(ip: String, goods: Goods, client: OkHttpClient) {
+        val json = JSONObject()
+            .put("id", goods.id)
+            .put("updatedAt", goods.updatedAt)
+            .toString()
+        val requestBody = json.toRequestBody("application/json".toMediaTypeOrNull())
+        val request = Request.Builder()
+            .url("http://$ip:3000/goods/delete")
+            .delete(requestBody)
+            .build()
+
+        return withContext(Dispatchers.IO) {
+            client.newCall(request).execute().use { response ->
+                if (!response.isSuccessful) throw IOException("HTTP ошибка ${response.code}")
+                val body = response.body?.string().orEmpty()
+                body
+            }
+        }
+    }
 
     suspend fun getCatalogs(ip:String, client: OkHttpClient, time: Long)  : JSONArray {
 

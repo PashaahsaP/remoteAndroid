@@ -103,7 +103,7 @@ class SyncWorker(
         for (operation in operations) {
 
             repository.syncPush(
-                ip = "192.168.0.11",
+                ip = "172.31.192.226",
                 operation = operation
             )
 
@@ -112,13 +112,13 @@ class SyncWorker(
     }
 
     suspend fun pulling(dao: Dao, repository: SyncRepository, data: List<PullItem>) {
-        var result = repository.syncPull("192.168.0.11", data)
+        var result = repository.syncPull("172.31.192.226", data)
         prepareAndAppendData(dao, result)
     }
 
     suspend fun totalPulling(dao: Dao, repository: SyncRepository) {
         var data = generateDataForRequest(dao)
-        var result = repository.syncPull("192.168.0.11", data)
+        var result = repository.syncPull("172.31.192.226", data)
 
         prepareAndAppendData(dao, result)
 

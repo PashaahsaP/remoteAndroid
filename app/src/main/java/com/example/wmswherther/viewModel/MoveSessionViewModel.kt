@@ -349,7 +349,7 @@ class MoveSessionViewModel : ViewModel() {
             supplierId = (viewModel.uiState.value as UiState.MoveSessionMenu).supplierId,
             operationType = OperationType.InsertGoods,
             payload = Gson().toJson(goods),
-            payloadBefore = Gson().toJson(goods)
+            payloadBefore = Gson().toJson(item.goodsId)
         )
         moveRepo.insertGoodsAsync(goods,changes)
     }
@@ -360,14 +360,16 @@ class MoveSessionViewModel : ViewModel() {
         moveRepo: MoveeRepository
     ) {
         if (item.haveCount == item.allCount) {
+            var inner = moveRepo.getGoodsById(item.goodsId)
+            var time = System.currentTimeMillis()
             var deleteChanges = ChangeFactory.create(
                 entityId = item.goodsId,
                 supplierId = (viewModel.uiState.value as UiState.MoveSessionMenu).supplierId,
                 operationType = OperationType.DeleteGoods,
-                payload = Gson().toJson(item),
-                payloadBefore = Gson().toJson(item),
+                payload = Gson().toJson(inner.copy(updatedAt = time)),
+                payloadBefore = Gson().toJson(inner),
             )
-            moveRepo.deleteGoodsAsync(moveRepo.getGoodsById(item.goodsId), deleteChanges)
+            moveRepo.deleteGoodsAsync(inner.copy(updatedAt = time), deleteChanges)
         } else {
             var updatedGoods = moveRepo.getGoodsById(item.goodsId)
 
@@ -419,7 +421,7 @@ class MoveSessionViewModel : ViewModel() {
                 insertMovement(moveRepo, item, cellTo, catalog.id, viewModel)
             }
             if (listOfGoodsInDestinationCell.isEmpty() && item.haveCount != 0) {
-                createGoodsInDestinationCell(item, cellTo, viewModel, moveRepo)
+                createGoodsInDestinationCell(item, cellTo, viewModel, moveRepo)//TODO ОШИБКА ЗДЕСЬ когда не те а просто товар то создается дубликат в ячейке назначения
                 updateOrRemoveGoodsInSource(item, viewModel, moveRepo)
             } else if (listOfGoodsInDestinationCell.isNotEmpty() && item.haveCount != 0) {
                 updateGoodsInDestinationCell(
