@@ -325,7 +325,7 @@ interface Dao {
     suspend fun updateIncomeSessionChanges(change: Change)
     @Insert
     suspend fun updateCellChanges(change: Change)
-    @Delete
+    @Insert
     suspend fun deleteGoodsChanges(change: Change)
     @Insert
     suspend fun deleteIncomeSessionChanges(change: Change)
