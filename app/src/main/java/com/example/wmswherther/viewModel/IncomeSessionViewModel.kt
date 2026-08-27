@@ -232,7 +232,7 @@ class IncomeSessionViewModel : ViewModel() {
     suspend fun finishSession(incomeRepo: IncomeRepository, sessionId: String){
         var session = incomeRepo.getIncomeSessionById(sessionId)
 
-        prepareIncomeItem(incomeRepo, session, sessionId)
+        prepareIncomeItem(incomeRepo, session!!, sessionId)
         updateSession(session, incomeRepo)
         deleteSession(session, incomeRepo)
     }

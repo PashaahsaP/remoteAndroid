@@ -56,7 +56,7 @@ class InventoryRepository(private val dao: Dao)  {
         return dao.getAllCells()
     }
     suspend fun getInventorySessionById(id: String) : SessionInventory{
-        return dao.getInventorySessionById(id)
+        return dao.getInventorySessionById(id)!!
     }
     suspend fun insertInventorySessionAsync(sessionInventory: SessionInventory, change: Change){
         dao.insertInventorySessionAsync(sessionInventory, change)

@@ -34,10 +34,10 @@ class AssemblyRepository (private val dao : Dao){
         return dao.getPickerItems()
     }
     suspend fun getGoodsById(id: String) : Goods {
-        return dao.getGoodsById(id)
+        return dao.getGoodsById(id)!!
     }
     suspend fun getCatalogById(id: String) : Catalog {
-        return dao.getCatalogById(id)
+        return dao.getCatalogById(id)!!
     }
     suspend fun getCellById(id: String) : Cell {
         return dao.getCellById(id)
@@ -49,7 +49,7 @@ class AssemblyRepository (private val dao : Dao){
         return  dao.getCellTypes()
     }
     suspend fun getPickerSessionById(id: String) : SessionPicker{
-        return dao.getPickerSessionById(id)
+        return dao.getPickerSessionById(id)!!
     }
     suspend fun getCellsByName(name: String) : List<Cell>{
         return dao.getCellsByName(name)
@@ -61,7 +61,7 @@ class AssemblyRepository (private val dao : Dao){
         return dao.getCellByName(name)
     }
     suspend fun getPickerItemById(id: String): PickerItem{
-        return dao.getPickerItemById(id)
+        return dao.getPickerItemById(id)!!
     }
     suspend fun insertMovementSync(movement: Movement, change: Change){
         dao.insertMovementSync(movement,change)

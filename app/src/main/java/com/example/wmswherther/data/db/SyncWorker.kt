@@ -103,7 +103,7 @@ class SyncWorker(
         for (operation in operations) {
 
             repository.syncPush(
-                ip = "192.168.6.53",
+                ip = "172.25.188.9",
                 operation = operation
             )
 
@@ -112,13 +112,13 @@ class SyncWorker(
     }
 
     suspend fun pulling(dao: Dao, repository: SyncRepository, data: List<PullItem>) {
-        var result = repository.syncPull("192.168.6.53", data)
+        var result = repository.syncPull("172.25.188.9", data)
         prepareAndAppendData(dao, result)
     }
 
     suspend fun totalPulling(dao: Dao, repository: SyncRepository) {
         var data = generateDataForRequest(dao)
-        var result = repository.syncPull("192.168.6.53", data)
+        var result = repository.syncPull("172.25.188.9", data)
 
         prepareAndAppendData(dao, result)
 
@@ -352,7 +352,7 @@ class SyncWorker(
         pairs.forEach {
             if(it.first.ordinal ==  Entities.TrueSign.ordinal && it.second.length() != 0)
             {it.second.toEntity { obj ->
-                var item = TrueSign(
+                var trueSing = TrueSign(
                     id = obj.getString("id"),
                     createdAt = obj.getLong("createdAt"),
                     updatedAt = obj.getLong("updatedAt"),
@@ -364,8 +364,11 @@ class SyncWorker(
                     other = obj.optString("other"),
                 )
                 scope.launch {
-                    var item = dao.get
-                    dao.insertTrueSign(item)
+                    var item = dao.getTrueSingById(trueSing.id)
+                    if(item != null)
+                        dao.updateTrueSing(trueSing)
+                    else
+                        dao.insertTrueSign(trueSing)
                 }
             }}
         }
@@ -389,7 +392,11 @@ class SyncWorker(
                     other = obj.optString("other")
                 )
                 scope.launch {
-                    dao.insertIncomeSession(session)
+                    var item = dao.getIncomeSessionById(session.id)
+                    if(item != null)
+                        dao.updateIncomeSession(session)
+                    else
+                        dao.insertIncomeSession(session)
                 }
             }}
         }
@@ -397,7 +404,7 @@ class SyncWorker(
         pairs.forEach {
             if(it.first.ordinal ==  Entities.IncomeItem.ordinal && it.second.length() != 0)
             {it.second.toEntity { obj ->
-                var item = IncomeItem(
+                var incomeItem = IncomeItem(
                     id = obj.getString("id"),
                     status = obj.getInt("status"),
                     createdAt = obj.getLong("createdAt"),
@@ -409,7 +416,11 @@ class SyncWorker(
                     goodsId = obj.getString("goodsId"),
                 )
                 scope.launch {
-                    dao.insertIncomeItem(item)
+                    var item = dao.getIncomeItemById(incomeItem.id)
+                    if(item != null)
+                        dao.updateIncomeItem(incomeItem)
+                    else
+                        dao.insertIncomeItem(item)
                 }
             }}
         }
@@ -417,7 +428,7 @@ class SyncWorker(
         pairs.forEach {
             if(it.first.ordinal ==  Entities.Service.ordinal && it.second.length() != 0)
             {it.second.toEntity { obj ->
-                var item = Service(
+                var service = Service(
                     id = obj.getString("id"),
                     createdAt = obj.getLong("createdAt"),
                     updatedAt = obj.getLong("updatedAt"),
@@ -428,7 +439,11 @@ class SyncWorker(
                     name = obj.getString("name"),
                 )
                 scope.launch {
-                    dao.insertService(item)
+                    var item = dao.getServiceById(service.id)
+                    if(item != null)
+                        dao.updateService(service)
+                    else
+                        dao.insertService(service)
                 }
             }}
         }
@@ -436,7 +451,7 @@ class SyncWorker(
         pairs.forEach {
             if(it.first.ordinal ==  Entities.Package.ordinal && it.second.length() != 0)
             {it.second.toEntity { obj ->
-                var item = PackageEntity(
+                var packageEntity = PackageEntity(
                     id = obj.getString("id"),
                     createdAt = obj.getLong("createdAt"),
                     updatedAt = obj.getLong("updatedAt"),
@@ -453,7 +468,11 @@ class SyncWorker(
                     volume = obj.optDouble("volume"),
                 )
                 scope.launch {
-                    dao.insertPackageItem(item)
+                    var item = dao.getPackageEntityById(packageEntity.id)
+                    if(item != null)
+                        dao.updatePackageEntity(packageEntity)
+                    else
+                        dao.insertPackageItem(packageEntity)
                 }
             }}
         }
@@ -461,7 +480,7 @@ class SyncWorker(
         pairs.forEach {
             if(it.first.ordinal ==  Entities.Movement.ordinal && it.second.length() != 0)
             {it.second.toEntity { obj ->
-                var item = Movement(
+                var movement = Movement(
                     id = obj.getString("id"),
                     createdAt = obj.getLong("createdAt"),
                     updatedAt = obj.getLong("updatedAt"),
@@ -478,7 +497,11 @@ class SyncWorker(
                     entityId = obj.optString("entityId"),
                 )
                 scope.launch {
-                    dao.insertMovement(item)
+                    var item = dao.getMovementById(movement.id)
+                    if(item != null)
+                        dao.updateMovement(movement)
+                    else
+                        dao.insertMovement(movement)
                 }
             }}
         }
@@ -501,7 +524,11 @@ class SyncWorker(
                     other = obj.optString("other")
                 )
                 scope.launch {
-                    dao.insertInventorySession(session)
+                    var item = dao.getInventorySessionById(session.id)
+                    if(item != null)
+                        dao.updateInventorySession(session)
+                    else
+                        dao.insertInventorySession(session)
                 }
             }}
         }
@@ -509,7 +536,7 @@ class SyncWorker(
         pairs.forEach {
             if(it.first.ordinal ==  Entities.InventoryDiffItem.ordinal && it.second.length() != 0)
             {it.second.toEntity { obj ->
-                var item = InventoryDiffItem(
+                var diff = InventoryDiffItem(
                     id = obj.getString("id"),
                     status = obj.getInt("status"),
                     createdAt = obj.getLong("createdAt"),
@@ -525,7 +552,11 @@ class SyncWorker(
                     diffCount = obj.getInt("diffCount")
                 )
                 scope.launch {
-                    dao.insertInventoryDiffItem(item)
+                    var item = dao.getInventoryDiffItemById(diff.id)
+                    if(item != null)
+                        dao.updateInventoryDiffItem(diff)
+                    else
+                        dao.insertInventoryDiffItem(item)
                 }
             }}
         }
@@ -547,7 +578,11 @@ class SyncWorker(
                     other = obj.optString("other"),
                 )
                 scope.launch {
-                    dao.insertPickerSession(session)
+                    var item = dao.getPickerSessionById(session.id)
+                    if(item != null)
+                        dao.updatePickerSession(session)
+                    else
+                        dao.insertPickerSession(session)
                 }
             }}
         }
@@ -555,7 +590,7 @@ class SyncWorker(
         pairs.forEach {
             if(it.first.ordinal ==  Entities.PickerItem.ordinal && it.second.length() != 0)
             {it.second.toEntity { obj ->
-                var item = PickerItem(
+                var pickerItem = PickerItem(
                     id = obj.getString("id"),
                     status = obj.getInt("status"),
                     createdAt = obj.getLong("createdAt"),
@@ -570,7 +605,11 @@ class SyncWorker(
                     finishedAt = obj.optLong("finishedAt"),
                 )
                 scope.launch {
-                    dao.insertPickerItem(item)
+                    var item = dao.getPickerItemById(pickerItem.id)
+                    if (item != null)
+                        dao.updatePickerItem(pickerItem)
+                    else
+                        dao.insertPickerItem(pickerItem)
                 }
             }}
         }
@@ -594,7 +633,11 @@ class SyncWorker(
                     pickerSessionId = obj.optString("pickerSessionId")
                 )
                 scope.launch {
-                    dao.insertOutcomeSession(session)
+                    var item = dao.getOutcomeSessionById(session.id)
+                    if(item != null)
+                        dao.updateOutcomeSession(session)
+                    else
+                        dao.insertOutcomeSession(session)
                 }
             }}
         }
@@ -602,7 +645,7 @@ class SyncWorker(
         pairs.forEach {
             if(it.first.ordinal ==  Entities.OutcomeItem.ordinal && it.second.length() != 0)
             {it.second.toEntity { obj ->
-                var item = OutcomeItem(
+                var outcomeItem = OutcomeItem(
                     id = obj.getString("id"),
                     status = obj.getInt("status"),
                     createdAt = obj.getLong("createdAt"),
@@ -615,7 +658,11 @@ class SyncWorker(
                     cellId = obj.optString("cellId"),
                 )
                 scope.launch {
-                    dao.insertOutcomeItem(item)
+                    var item = dao.getOutcomeItemById(outcomeItem.id)
+                    if(item != null)
+                        dao.updateOutcomeItem(outcomeItem)
+                    else
+                        dao.insertOutcomeItem(outcomeItem)
                 }
             }}
         }

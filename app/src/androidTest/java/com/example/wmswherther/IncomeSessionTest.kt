@@ -440,7 +440,7 @@ class IncomeSessionTest {
             println("######")
             listGoods = repo.getAllGoods()
             listMovement = repo.getAllMovement()
-            session = repo.getIncomeSessionById(sessionId)
+            session = repo.getIncomeSessionById(sessionId)!!
             goods = listGoods.first()
             catalog = repo.getCatalogById(goods.catalogId)
             cellLess = repo.getCellByName("less")
@@ -499,7 +499,7 @@ class IncomeSessionTest {
             println("######")
             listGoods = repo.getAllGoods()
             listMovement = repo.getAllMovement()
-            session = repo.getIncomeSessionById(sessionId)
+            session = repo.getIncomeSessionById(sessionId)!!
             goods = listGoods.first()
             catalog = repo.getCatalogById(goods.catalogId)
             cellMore = repo.getCellByName("more")
@@ -556,7 +556,7 @@ class IncomeSessionTest {
             println("######")
             listGoods = repo.getAllGoods()
             listMovement = repo.getAllMovement()
-            session = repo.getIncomeSessionById(sessionId)
+            session = repo.getIncomeSessionById(sessionId)!!
             goods = listGoods.first()
             catalog = repo.getCatalogById(goods.catalogId)
             cellIn = repo.getCellByName("IN-01")

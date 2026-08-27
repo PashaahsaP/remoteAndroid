@@ -38,7 +38,7 @@ class IncomeRepository (private val dao: Dao) {
                 )}
         return result
     }
-    suspend fun getIncomeSessionById(sessionId : String) : SessionIncome{
+    suspend fun getIncomeSessionById(sessionId : String) : SessionIncome?{
         return dao.getIncomeSessionById(sessionId)
     }
     suspend fun getAllGoods(): List<Goods>{

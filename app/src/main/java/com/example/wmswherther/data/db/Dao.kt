@@ -82,7 +82,7 @@ interface Dao {
     @Query("SELECT * FROM sessions_income")
     suspend fun getAllIncomeSession(): List<SessionIncome>
     @Query("SELECT * FROM sessions_income WHERE id =:sessionId")
-    suspend fun getIncomeSessionById(sessionId: String): SessionIncome
+    suspend fun getIncomeSessionById(sessionId: String): SessionIncome?
     @Update
     suspend fun updateIncomeSession(session: SessionIncome)
     @Transaction
@@ -106,8 +106,10 @@ interface Dao {
 
     @Query("SELECT * FROM true_signs")
     fun getAllTrueSign(): List<TrueSign>
-    @Query("SELECT * FROM true_signs WHERE id =:batchId")
-    suspend fun getBatcheById(batchId: Int): Batches?
+    @Query("SELECT * FROM true_signs WHERE id =:trueSignId")
+    suspend fun getTrueSingById(trueSignId: String): TrueSign?
+    @Update
+    suspend fun updateTrueSing(trueSign: TrueSign)
     // </editor-fold>
     // <editor-fold desc="Service">
 
@@ -115,7 +117,10 @@ interface Dao {
     fun getAllService(): List<Service>
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     fun insertService(service: Service)
-
+    @Query("SELECT * FROM services WHERE id =:serviceId")
+    suspend fun getServiceById(serviceId: String): Service?
+    @Update
+    suspend fun updateService(service: Service)
     // </editor-fold>
     // <editor-fold desc="Package entities">
     @Insert(onConflict = OnConflictStrategy.REPLACE)
@@ -127,7 +132,10 @@ interface Dao {
     }
     @Query("SELECT * FROM package_entities")
     fun getAllPackageItems(): List<PackageEntity>
-
+    @Query("SELECT * FROM package_entities WHERE id =:packageEntityId")
+    suspend fun getPackageEntityById(packageEntityId: String): PackageEntity?
+    @Update
+    suspend fun updatePackageEntity(packageEntity: PackageEntity)
     // </editor-fold>
     // <editor-fold desc="IncomeItem">
     @Insert(onConflict = OnConflictStrategy.REPLACE)
@@ -141,6 +149,10 @@ interface Dao {
     fun getAllIncomeItem(): List<IncomeItem>
     @Query("SELECT * FROM income_items WHERE sessionId =:incomeSessionId")
     fun getAllIncomeItemBySessionId(incomeSessionId: String): List<IncomeItem>
+    @Query("SELECT * FROM income_items WHERE id =:incomeItemId")
+    suspend fun getIncomeItemById(incomeItemId: String): IncomeItem
+    @Update
+    suspend fun updateIncomeItem(incomeItem: IncomeItem)
     // </editor-fold>
     // <editor-fold desc="OutcomeItem">
     @Insert(onConflict = OnConflictStrategy.REPLACE)
@@ -154,6 +166,10 @@ interface Dao {
     fun getAllOutcomeItems(): List<OutcomeItem>
     @Query("SELECT * FROM outcome_items WHERE sessionId =:outcomeSessionId")
     fun getAllOutcomeItemBySessionId(outcomeSessionId: String): List<OutcomeItem>
+    suspend fun getOutcomeItemById(outcomeItemId: String): OutcomeItem?
+    @Update
+    suspend fun updateOutcomeItem(outcomeItem: OutcomeItem)
+
     // </editor-fold>
     // <editor-fold desc="OutcomeSession">
 
@@ -162,6 +178,10 @@ interface Dao {
 
     @Insert
     fun insertOutcomeSession(sessionOutcome: SessionOutcome)
+    @Query("SELECT * FROM suppliers WHERE id =:id")
+    suspend fun getOutcomeSessionById(id: String): SessionOutcome?
+    @Update
+    suspend fun updateOutcomeSession(session: SessionOutcome)
     // </editor-fold>
     // <editor-fold desc="CellTypes">
     @Insert(onConflict = OnConflictStrategy.REPLACE)
@@ -368,7 +388,7 @@ interface Dao {
     @Query("SELECT * FROM movements")
     fun getAllMovement(): List<Movement>
     @Query("SELECT * FROM movements WHERE id =:movementId")
-    suspend fun getMovementById(movementId: String): Movement
+    suspend fun getMovementById(movementId: String): Movement?
     // </editor-fold>
     // <editor-fold desc="InventoryDiffItem">
     @Insert(onConflict = OnConflictStrategy.REPLACE)
@@ -383,6 +403,8 @@ interface Dao {
     suspend fun getInventoryDiffItemById(id: String): InventoryDiffItem
     @Query("SELECT * FROM inventory_diff_items")
     suspend fun getInventoryDiffItems(): List<InventoryDiffItem>
+    @Update
+    suspend fun updateInventoryDiffItem(inventoryDiffItem: InventoryDiffItem)
     // </editor-fold>
     // <editor-fold desc="SessionInventory">
     @Insert(onConflict = OnConflictStrategy.REPLACE)
@@ -394,10 +416,11 @@ interface Dao {
         return from to to
     }
     @Query("SELECT * FROM sessions_inventory WHERE id =:id")
-    suspend fun getInventorySessionById(id: String): SessionInventory
+    suspend fun getInventorySessionById(id: String): SessionInventory?
     @Query("SELECT * FROM sessions_inventory")
     suspend fun getInventorySessions(): List<SessionInventory>
-
+    @Update
+    suspend fun updateInventorySession(inventorySession: SessionInventory)
 
     // </editor-fold>
     // <editor-fold desc="SessionPicker">
@@ -410,7 +433,7 @@ interface Dao {
         return from to to
     }
     @Query("SELECT * FROM sessions_picker WHERE id =:id")
-    suspend fun getPickerSessionById(id: String): SessionPicker
+    suspend fun getPickerSessionById(id: String): SessionPicker?
     @Query("SELECT * FROM sessions_picker")
     suspend fun getPickerSessions(): List<SessionPicker>
     @Update
@@ -432,7 +455,7 @@ interface Dao {
         return from to to
     }
     @Query("SELECT * FROM picker_items WHERE id =:id")
-    suspend fun getPickerItemById(id: String): PickerItem
+    suspend fun getPickerItemById(id: String): PickerItem?
     @Query("SELECT * FROM picker_items")
     suspend fun getPickerItems(): List<PickerItem>
     @Query("SELECT * FROM picker_items WHERE sessionId=:sessionId")

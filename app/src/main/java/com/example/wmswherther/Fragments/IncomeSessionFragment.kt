@@ -515,7 +515,7 @@ class IncomeSessionFragment : Fragment() {
                 var session = incomeRepo.getIncomeSessionById(sessionId.toString())
                 println("########")
                 println(incomeRepo.getAllIncomeSession())
-                cell = incomeRepo.getCellById(session.incomeCellId.toString())
+                cell = incomeRepo.getCellById(session?.incomeCellId.toString())
                 localViewModel.cellStack.addLast(cell.name)
                 localViewModel.setCellName(cell.name)
             }
