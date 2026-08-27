@@ -106,7 +106,8 @@ interface Dao {
 
     @Query("SELECT * FROM true_signs")
     fun getAllTrueSign(): List<TrueSign>
-
+    @Query("SELECT * FROM true_signs WHERE id =:batchId")
+    suspend fun getBatcheById(batchId: Int): Batches?
     // </editor-fold>
     // <editor-fold desc="Service">
 
@@ -174,7 +175,9 @@ interface Dao {
     @Query("SELECT * FROM cell_types WHERE type =:cellTypeName")
     suspend fun getCellTypeByName(cellTypeName: String): List<CellType>
     @Query("SELECT * FROM cell_types WHERE id =:cellTypeId")
-    suspend fun getCellTypeById(cellTypeId: String): CellType
+    suspend fun getCellTypeById(cellTypeId: String): CellType?
+    @Update
+    suspend fun updateCellType(type: CellType)
     // </editor-fold>
     // <editor-fold desc="Supplier">
     @Insert(onConflict = OnConflictStrategy.REPLACE)
@@ -188,7 +191,9 @@ interface Dao {
     @Query("SELECT * FROM suppliers")
     fun getAllSuppliers(): List<Supplier>
     @Query("SELECT * FROM suppliers WHERE id =:id")
-    suspend fun getSupplierById(id: Int): Supplier
+    suspend fun getSupplierById(id: Int): Supplier?
+    @Update
+    suspend fun updateSupplier(supplier: Supplier)
     // </editor-fold>
     // <editor-fold desc="Credential">
     @Insert(onConflict = OnConflictStrategy.REPLACE)
@@ -196,7 +201,9 @@ interface Dao {
     @Query("SELECT * FROM credentials")
     fun getAllCredential(): List<Credential>
     @Query("SELECT * FROM credentials WHERE id =:id")
-    suspend fun getCredentialById(id: Long): Credential
+    suspend fun getCredentialById(id: Long): Credential?
+    @Update
+    suspend fun updateCredential(credential: Credential)
     // </editor-fold>
     // <editor-fold desc="User">
     @Insert(onConflict = OnConflictStrategy.REPLACE)
@@ -204,7 +211,9 @@ interface Dao {
     @Query("SELECT * FROM users")
     fun getAllUser(): List<User>
     @Query("SELECT * FROM users WHERE id =:id")
-    suspend fun getUserById(id: Long): User
+    suspend fun getUserById(id: Long): User?
+    @Update
+    suspend fun updateUser(user: User)
     // </editor-fold>
     // <editor-fold desc="Catalog">
     @Insert(onConflict = OnConflictStrategy.REPLACE)
@@ -216,9 +225,11 @@ interface Dao {
         return from to to
     }
     @Query("SELECT * FROM catalogs WHERE id =:catalogId")
-    suspend fun getCatalogById(catalogId: String): Catalog
+    suspend fun getCatalogById(catalogId: String): Catalog?
     @Query("SELECT * FROM catalogs ")
     suspend fun getCatalogs(): List<Catalog>
+    @Update
+    suspend fun updateCatalog(catalog: Catalog)
 // </editor-fold>
     // <editor-fold desc="Goods">
         @Insert(onConflict = OnConflictStrategy.REPLACE)
@@ -232,7 +243,7 @@ interface Dao {
         @Query("SELECT * FROM goods WHERE catalogId =:catalogId")
         suspend fun getGoodsByCatalogId(catalogId: String): List<Goods>
         @Query("SELECT * FROM goods WHERE id =:goodsId")
-        suspend fun getGoodsById(goodsId: String): Goods
+        suspend fun getGoodsById(goodsId: String): Goods?
         @Query("SELECT * FROM goods WHERE cellId =:cellId")
         suspend fun getGoodsByCellId(cellId: String): List<Goods>
         @Query("SELECT * FROM goods ")
@@ -268,6 +279,10 @@ interface Dao {
     suspend fun getBarcodeByName(barcodeName: String): Barcode
     @Query("SELECT * FROM barcodes")
     suspend fun getBarcodes(): List<Barcode>
+    @Query("SELECT * FROM barcodes WHERE id =:barcodeId")
+    suspend fun getBarcodeById(barcodeId: String): Barcode?
+    @Update
+    suspend fun updateBarcode(barcode: Barcode)
     // </editor-fold>
     // <editor-fold desc="Batches">
     @Insert(onConflict = OnConflictStrategy.REPLACE)
@@ -282,6 +297,10 @@ interface Dao {
     suspend fun getBatchByName(batchName: String): Batches
     @Query("SELECT * FROM batches")
     suspend fun getBatches(): List<Batches>
+    @Query("SELECT * FROM batches WHERE id =:batchId")
+    suspend fun getBatcheById(batchId: Int): Batches?
+    @Update
+    suspend fun updateBatch(batch: Batches)
     // </editor-fold>
     // <editor-fold desc="Changes">
     @Insert(onConflict = OnConflictStrategy.REPLACE)

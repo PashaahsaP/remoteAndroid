@@ -25,7 +25,7 @@ class InventoryRepository(private val dao: Dao)  {
     suspend fun getInventorySessions() : List<SessionInventory>{
         return dao.getInventorySessions()
     }
-    suspend fun getSupplierById(id: Int) : Supplier{
+    suspend fun getSupplierById(id: Int) : Supplier?{
         return dao.getSupplierById(id)
     }
     suspend fun getCellTypes() : List<CellType>{

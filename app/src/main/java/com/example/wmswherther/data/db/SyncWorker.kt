@@ -103,7 +103,7 @@ class SyncWorker(
         for (operation in operations) {
 
             repository.syncPush(
-                ip = "172.31.192.226",
+                ip = "192.168.6.53",
                 operation = operation
             )
 
@@ -112,13 +112,13 @@ class SyncWorker(
     }
 
     suspend fun pulling(dao: Dao, repository: SyncRepository, data: List<PullItem>) {
-        var result = repository.syncPull("172.31.192.226", data)
+        var result = repository.syncPull("192.168.6.53", data)
         prepareAndAppendData(dao, result)
     }
 
     suspend fun totalPulling(dao: Dao, repository: SyncRepository) {
         var data = generateDataForRequest(dao)
-        var result = repository.syncPull("172.31.192.226", data)
+        var result = repository.syncPull("192.168.6.53", data)
 
         prepareAndAppendData(dao, result)
 
@@ -143,7 +143,11 @@ class SyncWorker(
                         other = obj.optString("other")
                     )
                     scope.launch {
-                        dao.insertSupplier(sup)
+                        var item = dao.getSupplierById(sup.id)
+                        if(item != null)
+                            dao.updateSupplier(sup)
+                        else
+                            dao.insertSupplier(sup)
                     }
                 }
             }
@@ -166,7 +170,11 @@ class SyncWorker(
                         other = obj.optString("other")
                     )
                     scope.launch {
-                        dao.insertCatalog(catalog)
+                        var item = dao.getCatalogById(catalog.id)
+                        if(item != null)
+                            dao.updateCatalog(catalog)
+                        else
+                            dao.insertCatalog(catalog)
                     }
                 }
             }
@@ -186,7 +194,11 @@ class SyncWorker(
                         other = obj.optString("other")
                     )
                     scope.launch {
-                        dao.insertCellType(type)
+                        var item = dao.getCellTypeById(type.id)
+                        if(item != null)
+                            dao.updateCellType(type)
+                        else
+                            dao.insertCellType(type)
                     }
                 }
             }
@@ -207,7 +219,11 @@ class SyncWorker(
                     other = obj.optString("other")
                 )
                 scope.launch {
-                    dao.insertCell(cell)
+                    var item = dao.getCellById(cell.id)
+                    if(item != null)
+                        dao.updateCell(cell)
+                    else
+                        dao.insertCell(cell)
                 }
             }}
         }
@@ -225,7 +241,11 @@ class SyncWorker(
                     other = obj.optString("other")
                 )
                 scope.launch {
-                    dao.insertCredential(crd)
+                    var item = dao.getCredentialById(crd.id)
+                    if(item != null)
+                        dao.updateCredential(crd)
+                    else
+                        dao.insertCredential(crd)
                 }
             }}
         }
@@ -245,7 +265,11 @@ class SyncWorker(
                     other = obj.optString("other")
                 )
                 scope.launch {
-                    dao.insertUser(user)
+                    var item = dao.getUserById(user.id)
+                    if(item != null)
+                        dao.updateUser(user)
+                    else
+                        dao.insertUser(user)
                 }
             }}
         }
@@ -267,7 +291,11 @@ class SyncWorker(
                 )
 
                 scope.launch {
-                    dao.insertGoods(goods)
+                    var item = dao.getGoodsById(goods.id)
+                    if(item != null)
+                        dao.updateGoods(goods)
+                    else
+                        dao.insertGoods(goods)
                 }
             }}
         }
@@ -288,7 +316,11 @@ class SyncWorker(
                 )
 
                 scope.launch {
-                    dao.insertBarcode(bar)
+                    var item = dao.getBarcodeById(bar.id)
+                    if(item != null)
+                        dao.updateBarcode(bar)
+                    else
+                        dao.insertBarcode(bar)
                 }
             }}
         }
@@ -308,7 +340,11 @@ class SyncWorker(
                 )
 
                 scope.launch {
-                    dao.insertBatch(batch)
+                    var item = dao.getBatcheById(batch.id)
+                    if(item != null)
+                        dao.updateBatch(batch)
+                    else
+                        dao.insertBatch(batch)
                 }
             }}
         }
@@ -328,6 +364,7 @@ class SyncWorker(
                     other = obj.optString("other"),
                 )
                 scope.launch {
+                    var item = dao.get
                     dao.insertTrueSign(item)
                 }
             }}
